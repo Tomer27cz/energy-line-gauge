@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css } from "./lit";
 
 import { EnergyLineGaugeEditor } from "./editor.js";
 import { EnergyLineGaugeEditorEntitiesCardRowEditor } from "./entities-card-row-editor.js";

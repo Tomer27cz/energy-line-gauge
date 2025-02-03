@@ -1,0 +1,21 @@
+{
+  "name": "energy-line-gauge",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tomer27cz/energy-line-gauge.git"
+  },
+  "resolutions": {
+    "lit": "^2.1.2",
+    "lit-html": "2.1.2",
+    "lit-element": "3.1.2",
+    "@lit/reactive-element": "1.2.1"
+  },
+  "scripts": {
+    "start": "rollup -c rollup.config.dev.js --watch",
+    "build": "npm run lint && npm run rollup",
+    "lint": "eslint src/*.ts",
+    "rollup": "rollup -c"
+  }
+}
