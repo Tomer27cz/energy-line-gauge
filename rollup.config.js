@@ -1,3 +1,4 @@
+import typescript from 'rollup-plugin-typescript2';
 import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
@@ -24,6 +25,7 @@ const serveopts = {
 const plugins = [
   nodeResolve({}),
   commonjs(),
+  typescript(),
   json(),
   babel({
     exclude: 'node_modules/**',
@@ -41,7 +43,6 @@ export default [
     output: {
       dir: 'dist',
       format: 'es',
-      inlineDynamicImports: true,
     },
     plugins: [...plugins],
   },

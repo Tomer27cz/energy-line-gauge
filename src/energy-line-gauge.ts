@@ -1,7 +1,7 @@
 import { LitElement, html, css } from "lit";
 
-import { EnergyLineGaugeEditor } from "./editor.js";
-import { EnergyLineGaugeEditorEntitiesCardRowEditor } from "./entities-card-row-editor.js";
+import { EnergyLineGaugeEditor } from "./editor";
+import { EnergyLineGaugeEditorEntitiesCardRowEditor } from "./entities-card-row-editor";
 
 const COLORS = [
   "#4269d0",
