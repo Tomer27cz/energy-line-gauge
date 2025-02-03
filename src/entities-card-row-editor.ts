@@ -1,5 +1,5 @@
-import { LitElement, html, css } from "./lit"
-import { repeat } from "./lit/directives/repeat.js";
+import { LitElement, html, css } from "lit"
+import { repeat } from "lit/directives/repeat.js";
 import { mdiClose, mdiDrag, mdiPencil } from "@mdi/js";
 
 import { fireEvent } from "./editor.js"
