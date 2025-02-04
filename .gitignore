@@ -1,1 +1,5 @@
-/.idea
+/node_modules/
+/.rpt2_cache/
+/.idea/
+package-lock.json
+/dist

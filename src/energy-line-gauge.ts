@@ -1,7 +1,29 @@
-import { LitElement, html, css } from "lit";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { LitElement, html, TemplateResult, css, PropertyValues, CSSResultGroup } from 'lit';
+import { customElement, property, state } from 'lit/decorators';
+import {
+  HomeAssistant,
+  hasConfigOrEntityChanged,
+  hasAction,
+  ActionHandlerEvent,
+  handleAction,
+  LovelaceCardEditor,
+} from 'custom-card-helpers'; // This is a community maintained npm module with common helper functions/types. https://github.com/custom-cards/custom-card-helpers
 
-import { EnergyLineGaugeEditor } from "./editor";
-import { EnergyLineGaugeEditorEntitiesCardRowEditor } from "./entities-card-row-editor";
+import type { EnergyLineGaugeConfig } from './types';
+import { actionHandler } from './action-handler-directive';
+import { CARD_VERSION } from './const';
+import { localize } from './localize/localize';
+import {EnergyLineGaugeDeviceConfig} from "./types";
+
+console.info(`%c ${localize('common.version')} ${CARD_VERSION} %c LINE-GAUGE-CARD ", "color: #000000; background:#ffa600 ; font-weight: 700;", "color: #000000; background: #03a9f4; font-weight: 700;`);
+
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
+  type: 'energy-line-gauge',
+  name: 'Energy Line Gauge',
+  description: 'A customizable line gauge with a legend, optionally showing device power use as a percentage of a main entity.',
+});
 
 const COLORS = [
   "#4269d0",
@@ -63,16 +85,249 @@ const COLORS = [
   "#a04a9b",
 ];
 
-// noinspection JSUnusedGlobalSymbols
-class EnergyLineGauge extends LitElement {
-  static get properties() {
+@customElement('energy-line-gauge')
+export class EnergyLineGauge extends LitElement {
+  // TODO Add any properities that should cause your element to re-render here
+  // https://lit.dev/docs/components/properties/
+  @property({ attribute: false }) public hass!: HomeAssistant;
+
+  @state() private config!: EnergyLineGaugeConfig;
+
+  public static async getConfigElement(): Promise<LovelaceCardEditor> {
+    await import('./editor');
+    return document.createElement('energy-line-gauge-editor');
+  }
+  static getStubConfig() {
     return {
-      config: {},
-      hass: {},
-    };
+      entity: "sensor.glow_power_consumption",
+      devices: [
+        {entity: "sensor.plug_0_power", color: "#ff725c", name: "Plug 0", lower_cutoff: 5},
+        {entity: "sensor.plug_1_power", color: "#6cc5b0", name: "Plug 1"},
+        {entity: "sensor.plug_2_power", color: "#a463f2"},
+        {entity: "sensor.plug_3_power"},
+      ],
+      min: 0,
+      max: 7680,
+      accuracy: 0,
+      lower_cutoff: 5,
+      font_size: 2.5,
+      corner: "square",
+      color: "#03a9f4",
+      background_color: "#282828",
+      untracked_legend: true,
+      untracked_legend_name: "Untracked",
+      legend: true,
+      legend_all: false,
+      unit: "W",
+      title: "Power Consumption",
+      subtitle: "Glow",
+      label: "",
+    }
+  }
+  getCardSize() {
+    return null;
   }
 
-  static get styles() {
+  private _setConfig() {
+    this.config.min = this.config.min ?? 0;
+    this.config.max = this.config.max ?? null;
+    this.config.accuracy = this.config.accuracy ?? 0;
+    this.config.lower_cutoff = this.config.lower_cutoff ?? 5;
+    this.config.font_size = this.config.font_size ?? 2.5;
+    this.config.corner = this.config.corner ?? "square";
+    this.config.color = this.config.color ?? getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+    this.config.background_color = this.config.background_color ?? getComputedStyle(document.documentElement).getPropertyValue('--secondary-background-color').trim();
+    this.config.untracked_legend = this.config.untracked_legend ?? true;
+    this.config.untracked_legend_name = this.config.untracked_legend_name ?? "Untracked";
+    this.config.legend = this.config.legend ?? true;
+    this.config.legend_all = this.config.legend_all ?? false;
+
+    if (!this.config.devices) {
+      this.config.devices = null;
+    } else {
+      const device_colors = this.config.devices.map(device => device.color);
+      for (const device of this.config.devices) {
+        if (!device.color) {
+          device.color = COLORS.find(color => !device_colors.includes(color));
+          device_colors.push(device.color);
+        }
+        if (!device.lower_cutoff) {
+          device.lower_cutoff = this.config.lower_cutoff;
+        }
+        if (!device.name) {
+          device.name = device.entity;
+        }
+      }
+    }
+  }
+  public setConfig(config: EnergyLineGaugeConfig): void {
+    if (!config) {throw new Error(localize('common.invalid_configuration'));}
+    this.config = JSON.parse(JSON.stringify(config));
+    this._setConfig();
+  }
+
+  protected shouldUpdate(changedProps: PropertyValues): boolean {
+    if (!this.config) {
+      return false;
+    }
+
+    return hasConfigOrEntityChanged(this, changedProps, false);
+  }
+
+  protected render(): TemplateResult | void {
+    if (!this.config || !this.hass) {
+      throw new Error(localize('common.invalid_configuration'));
+    }
+
+    return html`
+      <ha-card 
+        .header=${this.config.header}
+        @action=${this._handleAction}
+        .actionHandler=${actionHandler({
+          hasHold: hasAction(this.config.hold_action),
+          hasDoubleClick: hasAction(this.config.double_tap_action),
+        })}
+        tabindex="0"
+        .label=${this.config.label}
+      
+      >
+        <div class="line-gauge-card" style="--color: ${this.config.color}; --background-color: ${this.config.background_color}" 
+             @click="${(event) => {event.stopPropagation();this._showDetails(this.config.entity)}}">
+          ${this._createInnerHtml()}
+        </div>
+      </ha-card>
+    `;
+  }
+  _createLegend() {
+    if (!this.config.devices || !this.config.legend) {
+      return html``;
+    }
+
+    return html`
+    <div class="chart-legend">
+      <ul>
+        ${this.config.devices.map((device: EnergyLineGaugeDeviceConfig) => {
+          if (!device.entity) {throw new Error(localize('common.invalid_configuration'));}
+          
+          const stateObj = this.hass.states[device.entity];
+          if (!stateObj) {
+            return html`
+              <hui-warning>
+                ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
+                  entity: device.entity || "[empty]",
+                })}
+              </hui-warning>
+            `;
+          }
+    
+          if (stateObj.state === "unavailable") {
+            return html`
+              <ha-card class="unavailable">
+                ${this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
+                  entity: `${stateObj.attributes?.friendly_name} (${this.config.entity})`,
+                })}
+              </ha-card>
+            `;
+          }
+          
+          if (parseFloat(stateObj.state) < (device.lower_cutoff??0) && !this.config.legend_all) {
+            return html``;
+          }
+          
+          return html`
+            <li title="${device.name}" id="legend-${device.entity.replace('.', '-')}" style="display: inline-grid;" 
+                @click="${(event) => {event.stopPropagation();this._showDetails(device.entity)}}">
+              <div class="bullet" style="background-color:${device.color + "7F"};border-color:${device.color};"></div>
+              <div class="label">${device.name}</div>
+            </li>`;
+        })}  
+        ${this.config.untracked_legend ? html`
+          <li title="${this.config.untracked_legend_name}" id="legend-untracked" style="display: inline-grid;">
+            <div class="bullet" style="background-color:${this.config.color + "7F"};border-color:${this.config.color};"></div>
+            <div class="label">${this.config.untracked_legend_name}</div>
+          </li>` : html``}
+      </ul>
+    </div>`
+  }
+  _createInnerHtml() {
+    if (!this.hass.states[this.config.entity]) {
+      return html`
+        <hui-warning>
+          ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
+            entity: this.config.entity || "[empty]",
+          })}
+        </hui-warning>
+      `;
+    }
+    const value = this.hass.states[this.config.entity].state;
+
+    return html`
+      ${this.config.title ? html`<div class="gauge-title">${this.config.title}</div>` : ''}
+      ${this.config.subtitle ? html`<div class="gauge-subtitle">${this.config.subtitle}</div>` : ''}
+      <div class="gauge-frame">
+        <div class="gauge-value" style="font-size: ${this.config.font_size}">${this._formatValue(value)}</div>
+        <div class="gauge-line">
+          <div class="main-line" style="width: ${this._calculateWidth(this.config.entity)};"></div>
+          <div class="device-line-container">
+          ${this.config.devices ? this.config.devices.map((device) => {
+            const stateObj = this.hass.states[device.entity];
+            
+            if (!stateObj || stateObj.state === "unavailable" || (stateObj.state < this._ce(device.lower_cutoff))) {
+              return html``;
+            }
+            
+            return html`<div id="line-${device.entity.replace(".", "-")}" class="device-line" style="background-color: ${device.color}; width: ${this._calculateWidth(stateObj.state)}" 
+                             @click=${(event) => {event.stopPropagation();this._showDetails(device.entity)}}></div>`;
+          }) : ''}
+          </div>
+        </div>
+      </div>
+      ${this.config.devices ? this._createLegend() : ''}
+      ${this.config.label ? html`<div class="gauge-label">${this.config.label}</div>` : ''}
+    `;
+  }
+
+  _showDetails(entity = this.config.entity) {
+    const event = new CustomEvent('hass-more-info', {
+      bubbles: true,
+      cancelable: false,
+      composed: true,
+      detail: {
+        entityId: entity || this.config.entity,
+      }
+    });
+
+    this.dispatchEvent(event);
+    return event;
+  }
+
+  private _formatValue(value) {
+    return this.config.unit ? `${parseFloat(value).toFixed(this.config.accuracy)} ${this.config.unit}` : parseFloat(value).toFixed(this.config.accuracy);
+  }
+  
+  private _ce(entity: any): any {
+    // Check if entity is an entity_id (configEntity)
+    const stateObj = this.hass.states[entity];
+    if (!stateObj) {return entity;}
+
+    return parseFloat(stateObj.state);
+  }
+
+  // Yes I know using any is bad, but I don't care.
+  private _calculateWidth(value: any, min:any=this.config.min, max:any=this.config.max) {
+    value = this._ce(value);
+    min = this._ce(min);max = this._ce(max);
+    const clampValue = Math.min(Math.max(value, min), max);
+    return `${((clampValue - min) / (max - min)) * 100}%`;
+  }
+
+  private _handleAction(ev: ActionHandlerEvent): void {
+    if (this.hass && this.config && ev.detail.action) {
+      handleAction(this, this.hass, this.config, ev.detail.action);
+    }
+  }
+
+  static get styles(): CSSResultGroup {
     // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol
     return css`
       .line-gauge-card {
@@ -201,247 +456,4 @@ class EnergyLineGauge extends LitElement {
       }
     `;
   }
-
-  static getConfigElement() {
-    return document.createElement("energy-line-gauge-card-editor");
-  }
-  static getStubConfig() {
-    return {
-      entity: "sensor.glow_power_consumption",
-      devices: [
-        {entity: "sensor.plug_0_power", color: "#ff725c", name: "Plug 0", lower_cutoff: 5},
-        {entity: "sensor.plug_1_power", color: "#6cc5b0", name: "Plug 1"},
-        {entity: "sensor.plug_2_power", color: "#a463f2"},
-        {entity: "sensor.plug_3_power"},
-      ],
-      min: 0,
-      max: 7680,
-      accuracy: 0,
-      lower_cutoff: 5,
-      font_size: 2.5,
-      corner: "square",
-      color: "#03a9f4",
-      background_color: "#282828",
-      untracked_legend: true,
-      untracked_legend_name: "Untracked",
-      legend: true,
-      legend_all: false,
-      unit: "W",
-      title: "Power Consumption",
-      subtitle: "Glow",
-      label: "",
-    }
-  }
-
-  getCardSize() {
-    return null;
-  }
-
-  _setConfig() {
-    this.config.min = this.config.min ?? 0;
-    this.config.max = this.config.max ?? this.config.entity;
-    this.config.accuracy = this.config.accuracy ?? 0;
-    this.config.lower_cutoff = this.config.lower_cutoff ?? 5;
-    this.config.font_size = this.config.font_size ?? 2.5;
-    this.config.corner = this.config.corner ?? "square";
-    this.config.color = this.config.color ?? getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-    this.config.background_color = this.config.background_color ?? getComputedStyle(document.documentElement).getPropertyValue('--secondary-background-color').trim();
-    this.config.untracked_legend = this.config.untracked_legend ?? true;
-    this.config.untracked_legend_name = this.config.untracked_legend_name ?? "Untracked";
-    this.config.legend = this.config.legend ?? true;
-    this.config.legend_all = this.config.legend_all ?? false;
-
-    if (!this.config.devices) {
-      this.config.devices = undefined;
-    } else {
-      let device_colors = this.config.devices.map(device => device.color);
-      for (let device of this.config.devices) {
-        if (!device.color) {
-          device.color = COLORS.find(color => !device_colors.includes(color));
-          device_colors.push(device.color);
-        }
-        if (!device.lower_cutoff) {
-          device.lower_cutoff = this.config.lower_cutoff;
-        }
-        if (!device.name) {
-          device.name = device.entity;
-        }
-      }
-    }
-  }
-  setConfig(config) {
-    if (!config.entity) {
-      throw new Error('You need to define an entity');
-    }
-    this.config = JSON.parse(JSON.stringify(config));
-    this._setConfig();
-  }
-
-  shouldUpdate(changedProps) {
-    if (changedProps.has("config")) {
-      return true;
-    }
-
-    const oldHass = changedProps.get("hass");
-    if (!oldHass) {
-      return true;
-    }
-
-
-    if (oldHass.states[this.config.entity] !== this.hass.states[this.config.entity]) {
-      return true;
-    }
-
-    if (this.config.devices) {
-      for (let device of this.config.devices) {
-        if (oldHass.states[device.entity] !== this.hass.states[device.entity]) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  render() {
-    if (!this.config || !this.hass) throw new Error("Invalid configuration");
-
-    return html`
-      <ha-card>
-        <div class="line-gauge-card" style="--color: ${this.config.color}; --background-color: ${this.config.background_color}" 
-             @click="${(event) => {event.stopPropagation();this._showDetails(this.config.entity)}}">
-          ${this._createInnerHtml()}
-        </div>
-      </ha-card>
-    `;
-  }
-
-  _createLegend() {
-    if (!this.config.devices || !this.config.legend) {
-      return html``;
-    }
-
-    return html`
-    <div class="chart-legend">
-      <ul>
-        ${this.config.devices.map((device) => {
-      const stateObj = this.hass.states[device.entity];
-      if (!stateObj) {
-        return html`
-          <hui-warning>
-            ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
-              entity: device.entity || "[empty]",
-            })}
-          </hui-warning>
-        `;
-      }
-
-      if (stateObj.state === "unavailable") {
-        return html`
-          <ha-card class="unavailable">
-            ${this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
-              entity: `${stateObj.attributes?.friendly_name} (${this.config.entity})`,
-            })}
-          </ha-card>
-        `;
-      }
-      
-      if (stateObj.state < this._ce(device.lower_cutoff) && !this.config.legend_all) {
-        return html``;
-      }
-      
-      return html`
-        <li title="${device.name}" id="legend-${device.entity.replace('.', '-')}" style="display: inline-grid;" 
-            @click="${(event) => {event.stopPropagation();this._showDetails(device.entity)}}">
-          <div class="bullet" style="background-color:${device.color + "7F"};border-color:${device.color};"></div>
-          <div class="label">${device.name}</div>
-        </li>`;
-    })}  
-        ${this.config.untracked_legend ? html`
-          <li title="${this.config.untracked_legend_name}" id="legend-untracked" style="display: inline-grid;">
-            <div class="bullet" style="background-color:${this.config.color + "7F"};border-color:${this.config.color};"></div>
-            <div class="label">${this.config.untracked_legend_name}</div>
-          </li>` : html``}
-      </ul>
-    </div>`
-  }
-  _createInnerHtml() {
-    if (!this.hass.states[this.config.entity]) {
-      return html`
-        <hui-warning>
-          ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
-            entity: this.config.entity || "[empty]",
-          })}
-        </hui-warning>
-      `;
-    }
-    const value = this.hass.states[this.config.entity].state;
-
-    return html`
-      ${this.config.title ? html`<div class="gauge-title">${this.config.title}</div>` : ''}
-      ${this.config.subtitle ? html`<div class="gauge-subtitle">${this.config.subtitle}</div>` : ''}
-      <div class="gauge-frame">
-        <div class="gauge-value" style="font-size: ${this.config.font_size}">${this._formatValue(value)}</div>
-        <div class="gauge-line">
-          <div class="main-line" style="width: ${this._calculateWidth(this._ce(this.config.entity))};"></div>
-          <div class="device-line-container">
-          ${this.config.devices ? this.config.devices.map((device) => {
-            const stateObj = this.hass.states[device.entity];
-            
-            if (!stateObj || stateObj.state === "unavailable" || (stateObj.state < this._ce(device.lower_cutoff))) {
-              return html``;
-            }
-            
-            return html`<div id="line-${device.entity.replace(".", "-")}" class="device-line" style="background-color: ${device.color}; width: ${this._calculateWidth(stateObj.state)}" 
-                             @click=${(event) => {event.stopPropagation();this._showDetails(device.entity)}}></div>`;
-          }) : ''}
-          </div>
-        </div>
-      </div>
-      ${this.config.devices ? this._createLegend() : ''}
-      ${this.config.label ? html`<div class="gauge-label">${this.config.label}</div>` : ''}
-    `;
-  }
-
-  _showDetails(entity=this.config.entity) {
-    const event = new Event('hass-more-info', {
-      bubbles: true,
-      cancelable: false,
-      composed: true
-    });
-    event.detail = {
-      entityId: entity || this.config.entity
-    };
-    this.dispatchEvent(event);
-    return event;
-  }
-
-  _formatValue(value) {
-    return this.config.unit ? `${parseFloat(value).toFixed(this._ce(this.config.accuracy))} ${this.config.unit}` : parseFloat(value).toFixed(this._ce(this.config.accuracy));
-  }
-  _ce(entity) {
-    // Check if entity is an entity_id (configEntity)
-    let stateObj = this.hass.states[entity];
-    if (!stateObj) {return entity;}
-
-    return stateObj.state;
-  }
-  _calculateWidth(value, min=this.config.min, max=this.config.max) {
-    min = this._ce(min);max = this._ce(max);
-    const clampValue = Math.min(Math.max(value, min), max);
-    return `${((clampValue - min) / (max - min)) * 100}%`;
-  }
 }
-
-customElements.define('energy-line-gauge-card', EnergyLineGauge);
-customElements.define("energy-line-gauge-card-editor", EnergyLineGaugeEditor);
-customElements.define("energy-line-gauge-editor-entities-card-row-editor", EnergyLineGaugeEditorEntitiesCardRowEditor);
-
-window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "energy-line-gauge-card",
-  name: "Energy Line Gauge",
-  preview: true, // Optional - defaults to false
-  description: "A customizable line gauge with a legend, optionally showing device power use as a percentage of a main entity.", // Optional
-  documentationURL: "https://github.com/Tomer27cz/energy-line-gauge"
-});

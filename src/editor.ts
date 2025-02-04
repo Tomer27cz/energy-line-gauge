@@ -1,4 +1,10 @@
-import { LitElement, html } from "lit";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { LitElement, html, TemplateResult, css, CSSResultGroup } from 'lit';
+import { HomeAssistant, fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
+
+import { ScopedRegistryHost } from '@lit-labs/scoped-registry-mixin';
+import { EnergyLineGaugeConfig, EnergyLineGaugeDeviceConfig } from './types';
+import { customElement, property, state } from 'lit/decorators';
 
 const LOCALE = {
   en: {
@@ -6,32 +12,43 @@ const LOCALE = {
   },
 };
 
-export const fireEvent = (node, type, detail = {}, options = {}) => {
-  const event = new Event(type, {
-    bubbles: options.bubbles ?? true,
-    cancelable: options.cancelable ?? false,
-    composed: options.composed ?? true,
-  });
-  event.detail = detail;
-  node.dispatchEvent(event);
-  return event;
-};
+export interface SubElementEditorConfig {
+  index?: number;
+  elementConfig?: any;
+  saveElementConfig?: (elementConfig: any) => void;
+  context?: any;
+  type?: "header" | "footer" | "row" | "feature" | "element" | "heading-badge" | undefined;
+}
 
-export class EnergyLineGaugeEditor extends LitElement {
-  static get properties() {
-    return {
-      hass: {},
-      config: {},
-    };
+export interface EditorTarget extends EventTarget {
+  value?: string;
+  index?: number;
+  checked?: boolean;
+  configValue?: string;
+  type?: HTMLInputElement["type"];
+  config: any;
+}
+
+
+@customElement('energy-line-gauge-editor')
+export class EnergyLineGaugeEditor extends ScopedRegistryHost(LitElement) implements LovelaceCardEditor {
+  @property({ attribute: false }) public hass?: HomeAssistant;
+
+  @state() private _config?: EnergyLineGaugeConfig;
+
+  @state() private _configEntities: EnergyLineGaugeDeviceConfig[] = processEditorEntities(this._config?.devices);
+
+  @state() private _subElementEditorConfig?: SubElementEditorConfig;
+
+
+  public setConfig(config: EnergyLineGaugeConfig): void {
+    this._config = config;
   }
 
-  setConfig(config) {
-    this.config = config;
-    this._configEntities = processEditorEntities(config.entities)
-  }
-
-  render() {
-    if (!this.config || !this.hass) return html``;
+  protected render(): TemplateResult | void {
+    if (!this.hass || !this._config) {
+      return html``;
+    }
 
     if (this._subElementEditorConfig) {
       return html`
@@ -42,10 +59,10 @@ export class EnergyLineGaugeEditor extends LitElement {
           @config-changed=${this._handleSubElementChanged}
         >
         </hui-sub-element-editor>
-      `
+      `;
     }
 
-    let entity = this.hass.states[this.config.entity];
+    const entity = this.hass.states[this._config.entity];
     const precision_array = Array.from({
         length: 11
     }, (_, i) => ({
@@ -170,7 +187,7 @@ export class EnergyLineGaugeEditor extends LitElement {
     ];
 
     const data = {
-      ...this.config,
+      ...this._config,
     };
 
     return html`
@@ -190,12 +207,75 @@ export class EnergyLineGaugeEditor extends LitElement {
     `;
   }
 
-  _valueChanged = (ev) => {
-    const config = ev.detail.value;
-    fireEvent(this, "config-changed", { config });
-  };
+  // private _valueChanged(ev): void {
+  //   if (!this._config || !this.hass) {
+  //     return;
+  //   }
+  //   const target = ev.target;
+  //   if (this[`_${target.configValue}`] === target.value) {
+  //     return;
+  //   }
+  //   if (target.configValue) {
+  //     if (target.value === '') {
+  //       const tmpConfig = { ...this._config };
+  //       delete tmpConfig[target.configValue];
+  //       this._config = tmpConfig;
+  //     } else {
+  //       this._config = {
+  //         ...this._config,
+  //         [target.configValue]: target.checked !== undefined ? target.checked : target.value,
+  //       };
+  //     }
+  //   }
+  //   fireEvent(this, 'config-changed', { config: this._config });
+  // }
 
-  _computeLabelCallback = (schema) => {
+  private _valueChanged(ev: CustomEvent): void {
+    ev.stopPropagation();
+    if (!this._config || !this.hass) {
+      return;
+    }
+
+    const target = ev.target! as EditorTarget;
+    const configValue =
+      target.configValue || this._subElementEditorConfig?.type;
+    const value =
+      target.checked !== undefined
+        ? target.checked
+        : target.value || ev.detail.config || ev.detail.value;
+
+    if (configValue === "row" || (ev.detail && ev.detail.entities)) {
+      const newConfigEntities =
+        ev.detail.entities || this._configEntities!.concat();
+      if (configValue === "row") {
+        if (!value) {
+          newConfigEntities.splice(this._subElementEditorConfig!.index!, 1);
+          this._goBack();
+        } else {
+          newConfigEntities[this._subElementEditorConfig!.index!] = value;
+        }
+
+        this._subElementEditorConfig!.elementConfig = value;
+      }
+
+      this._config = { ...this._config!, entities: newConfigEntities };
+      this._configEntities = processEditorEntities(this._config!.entities);
+    } else if (configValue) {
+      if (value === "") {
+        this._config = { ...this._config };
+        delete this._config[configValue!];
+      } else {
+        this._config = {
+          ...this._config,
+          [configValue]: value,
+        };
+      }
+    }
+
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  private _computeLabelCallback = (schema) => {
     if (this.hass) {
       switch (schema.name) {
         case "title":
@@ -232,7 +312,7 @@ export class EnergyLineGaugeEditor extends LitElement {
     }
   };
 
-  _handleSubElementChanged(ev) {
+  private _handleSubElementChanged(ev) {
     ev.stopPropagation()
     if (!this._config || !this.hass) {
       return
@@ -244,9 +324,11 @@ export class EnergyLineGaugeEditor extends LitElement {
     if (configValue === "row") {
       const newConfigEntities = this._configEntities.concat()
       if (!value) {
+        // @ts-ignore
         newConfigEntities.splice(this._subElementEditorConfig.index, 1)
         this._goBack()
       } else {
+        // @ts-ignore
         newConfigEntities[this._subElementEditorConfig.index] = value
       }
 
@@ -272,16 +354,33 @@ export class EnergyLineGaugeEditor extends LitElement {
     fireEvent(this, "config-changed", { config: this._config })
   }
 
-  _editDetailElement(ev) {
+  private _editDetailElement(ev) {
     this._subElementEditorConfig = ev.detail.subElementConfig
   }
 
-  _goBack() {
+  private _goBack() {
     this._subElementEditorConfig = undefined
   }
 
   _ll(str) {
     return LOCALE[this.lang]?.[str] ?? LOCALE.en[str] ?? str;
+  }
+
+  static get styles(): CSSResultGroup {
+    // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
+    return css`
+      mwc-select,
+      mwc-textfield {
+        margin-bottom: 16px;
+        display: block;
+      }
+      mwc-formfield {
+        padding-bottom: 8px;
+      }
+      mwc-switch {
+        --mdc-theme-secondary: var(--switch-checked-color);
+      }
+    `;
   }
 }
 
@@ -293,3 +392,4 @@ function processEditorEntities(entities) {
     return entityConf;
   });
 }
+
