@@ -36,7 +36,7 @@ export class EnergyLineGaugeEditor extends ScopedRegistryHost(LitElement) implem
 
   @state() private _config?: EnergyLineGaugeConfig;
 
-  @state() private _configEntities: EnergyLineGaugeDeviceConfig[] = processEditorEntities(this._config?.devices);
+  @state() private _configEntities: EnergyLineGaugeDeviceConfig[] | null | undefined = this._config?.devices;
 
   @state() private _subElementEditorConfig?: SubElementEditorConfig;
 
@@ -259,7 +259,7 @@ export class EnergyLineGaugeEditor extends ScopedRegistryHost(LitElement) implem
       }
 
       this._config = { ...this._config!, entities: newConfigEntities };
-      this._configEntities = processEditorEntities(this._config!.entities);
+      this._configEntities = this._config!.devices;
     } else if (configValue) {
       if (value === "") {
         this._config = { ...this._config };
@@ -322,7 +322,7 @@ export class EnergyLineGaugeEditor extends ScopedRegistryHost(LitElement) implem
     const value = ev.detail.config
 
     if (configValue === "row") {
-      const newConfigEntities = this._configEntities.concat()
+      const newConfigEntities = this._configEntities!.concat()
       if (!value) {
         // @ts-ignore
         newConfigEntities.splice(this._subElementEditorConfig.index, 1)
@@ -333,7 +333,7 @@ export class EnergyLineGaugeEditor extends ScopedRegistryHost(LitElement) implem
       }
 
       this._config = { ...this._config, entities: newConfigEntities }
-      this._configEntities = processEditorEntities(this._config.entities)
+      this._configEntities = this._config.devices
     } else if (configValue) {
       if (value === "") {
         this._config = { ...this._config }
@@ -384,12 +384,4 @@ export class EnergyLineGaugeEditor extends ScopedRegistryHost(LitElement) implem
   }
 }
 
-function processEditorEntities(entities) {
-  return entities.map((entityConf) => {
-    if (typeof entityConf === "string") {
-      return { entity: entityConf };
-    }
-    return entityConf;
-  });
-}
 

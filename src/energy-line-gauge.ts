@@ -87,8 +87,6 @@ const COLORS = [
 
 @customElement('energy-line-gauge')
 export class EnergyLineGauge extends LitElement {
-  // TODO Add any properities that should cause your element to re-render here
-  // https://lit.dev/docs/components/properties/
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private config!: EnergyLineGaugeConfig;
