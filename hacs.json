@@ -1,5 +1,6 @@
 {
-    "name": "energy-line-gauge",
-    "render_readme": true,
-    "filename": "energy-line-gauge.js"
+  "name": "energy-line-gauge",
+  "render_readme": true,
+  "content_in_root": false,
+  "filename": "energy-line-gauge.js"
 }
