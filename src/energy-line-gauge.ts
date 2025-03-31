@@ -134,33 +134,6 @@ export class EnergyLineGauge extends LitElement {
       };
   }
 
-  // static getStubConfig(): Record<string, unknown>  {
-  //   return {
-  //     entity: "sensor.glow_power_consumption",
-  //     entities: [
-  //       {entity: "sensor.plugg_0_power", color: [255, 114, 92], name: "Plug 0", cutoff: 5},
-  //       {entity: "sensor.plugg_1_power", color: [108, 197, 176], name: "Plug 1"},
-  //       {entity: "sensor.plugg_2_power", color: "#a463f2"},
-  //       {entity: "sensor.plugg_3_power"},
-  //     ],
-  //     min: 0,
-  //     max: "sensor.glow_power_consumption",
-  //     precision: 0,
-  //     cutoff: 5,
-  //     corner: "square",
-  //     color: [0, 170, 250],
-  //     color_bg: [40, 40, 40],
-  //     untracked_legend: true,
-  //     untracked_legend_label: "Untracked",
-  //     legend_hide: false,
-  //     legend_all: false,
-  //     unit: "W",
-  //     title: "Power Consumption",
-  //     subtitle: "Glow",
-  //     label: "",
-  //   }
-  // }
-
   @property() public hass!: HomeAssistant;
 
   @state() private _config!: ELGConfig;
@@ -282,6 +255,7 @@ export class EnergyLineGauge extends LitElement {
             return html``;
           }
     
+          // noinspection HtmlUnknownAttribute
           return html`
             <li
               @action=${this._handleAction}
@@ -340,6 +314,7 @@ export class EnergyLineGauge extends LitElement {
               return html``;
             }
       
+            // noinspection HtmlUnknownAttribute
             return html`
               <div 
                   id="line-${device.entity.replace(".", "-")}" 
