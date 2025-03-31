@@ -98,6 +98,10 @@ export const styles = css`
         flex-wrap: nowrap;
         white-space: nowrap;
     }
+    
+    .gauge-header {
+        margin-bottom: 1rem;
+    }
     .gauge-title {
         font-size: 2rem;
         text-align: left;
@@ -111,7 +115,6 @@ export const styles = css`
         flex-wrap: nowrap;
         white-space: nowrap;
         color: gray;
-        margin-bottom: 0.5rem;
     }
 
     .gauge-line {

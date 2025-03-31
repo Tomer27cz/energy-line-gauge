@@ -323,8 +323,11 @@ export class EnergyLineGauge extends LitElement {
     const value = this.hass.states[this._config.entity].state;
 
     return html`
-      ${this._config.title ? html`<div class="gauge-title">${this._config.title}</div>` : ''}
-      ${this._config.subtitle ? html`<div class="gauge-subtitle">${this._config.subtitle}</div>` : ''}
+      ${this._config.title || this._config.subtitle ? html`
+        <div class="gauge-header">
+          ${this._config.title ? html`<div class="gauge-title">${this._config.title}</div>` : ''}
+          ${this._config.subtitle ? html`<div class="gauge-subtitle">${this._config.subtitle}</div>` : ''}
+        </div>` : ''}
       <div class="gauge-frame">
         <div class="gauge-value">${this._formatValue(value)}</div>
         <div class="gauge-line">
