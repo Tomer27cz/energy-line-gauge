@@ -161,7 +161,9 @@ Each entity has its own settings:
 </div>
 <hr/>
 
-**If you find a Bug or have some suggestions, let me know <a href="https://github.com/JonahKr/power-distribution-card/issues">here</a>! I'm happy about every feedback.** 
+**Thanks to <a href="https://github.com/JonahKr/power-distribution-card">JonahKr/power-distribution-card</a> for the inspiration**
+
+**If you find a Bug or have some suggestions, let me know <a href="https://github.com/Tomer27cz/energy-line-gauge/issues">here</a>! I'm happy about every feedback.** 
 
 **Contributions are welcome!**
 
