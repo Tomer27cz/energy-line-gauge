@@ -7,28 +7,36 @@
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
-<img src=".github/img/main.gif" alt="Main Image"/>
+<img src="hhttps://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.gif" alt="Main Image"/>
 </p>
 
 <hr/>
 
 <p align="center">
-<img src=".github/img/only_gauge.png" alt="Main Image"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_gauge.png" alt="Only Gauge"/>
 </p>
 
 <div id="installation">
 <h1> Installation</h1>
 
-<h2> Installation via <a href="https://hacs.xyz/">HACS</a> <img src="https://img.shields.io/badge/-Recommended-%2303a9f4"/> </h2>
+<h2> Installation via <a href="https://hacs.xyz/">HACS</a> (currently not in the store - waiting for pull request) </h2>
 
 1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
 2. Search for `energy-line-gauge` and add it through HACS
 3. Refresh home-assistant.
 
+<h2> Manual installation via <a href="https://hacs.xyz/">HACS</a> <img src="https://img.shields.io/badge/-Recommended-%2303a9f4"/></h2>
+
+1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
+2. Click on the three dots and add this custom repository
+3. Repository: `https://github.com/Tomer27cz/energy-line-gauge`, Type: `Dashboard`
+4. Search for `energy-line-gauge` and add it through HACS
+5. Refresh home-assistant.
+
 <h2> Manual installation</h2>
 
-1. Download the [energy-line-gauge](http://www.github.com/Tomer27cz/energy-line-gauge/releases/latest/download/energy-line-gauge.js)
-2. Place the file in your `config/www` folder
+1. Download the [energy-line-gauge](http://www.github.com/Tomer27cz/energy-line-gauge/releases/latest/download/energy-line-gauge.js) (`energy-line-gauge.js` from latest release)
+2. Create a `energy-line-gauge` folder your `config/www` folder and place the file in there
 3. Include the card code in your `ui-lovelace-card.yaml`
   ```yaml
   resources:
@@ -55,7 +63,7 @@ Then you can paste the following code into the Card Editor:
 <br/>
 
 <p align="center">
-<img src=".github/img/visual_editor.gif"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor.gif" alt="Visual Editor"/>
 </p>
 
 ## YAML Only
