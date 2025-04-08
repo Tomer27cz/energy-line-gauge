@@ -7,7 +7,7 @@
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
-<img src="hhttps://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.gif" alt="Main Image"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.gif" alt="Main Image"/>
 </p>
 
 <hr/>
