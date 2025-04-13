@@ -103,6 +103,30 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                       }
                     }
               },
+              { name: "position", required: false, selector:
+                  {
+                    select: {
+                      mode: "dropdown",
+                      options: [
+                        {value: "left", label: "Left (default)"},
+                        {value: "right", label: "Right"},
+                        {value: "none", label: "Not Displayed"},
+                        {value: "top-left", label: "Top Left"},
+                        {value: "top-middle", label: "Top Middle"},
+                        {value: "top-right", label: "Top Right"},
+                        {value: "bottom-left", label: "Bottom Left"},
+                        {value: "bottom-middle", label: "Bottom Middle"},
+                        {value: "bottom-right", label: "Bottom Right"},
+                      ]
+                    }
+                  }
+              },
+            ],
+          },
+          {
+            name: "",
+            type: "grid",
+            schema: [
               { name: "color", required: false, selector: { color_rgb: {} } },
               { name: "color_bg", required: false, selector: { color_rgb: {} } },
             ],
@@ -284,6 +308,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         case "corner":
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.generic.theme`
+            );
+        case "position":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.entities.secondary_info_values.position`
             );
         default:
           return schema.name;

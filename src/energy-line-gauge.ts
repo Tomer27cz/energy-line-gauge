@@ -148,6 +148,7 @@ export class EnergyLineGauge extends LitElement {
     config.precision = config.precision ?? 0;
     config.cutoff = config.cutoff ?? 5;
     config.corner = config.corner ?? "square";
+    config.position = config.position ?? "left";
 
     config.color = this.rgbToHex(config.color) ?? getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
     config.color_bg = this.rgbToHex(config.color_bg) ?? getComputedStyle(document.documentElement).getPropertyValue('--secondary-background-color').trim();
@@ -302,7 +303,7 @@ export class EnergyLineGauge extends LitElement {
           ${this._config.title ? html`<div class="gauge-title">${this._config.title}</div>` : ''}
           ${this._config.subtitle ? html`<div class="gauge-subtitle">${this._config.subtitle}</div>` : ''}
         </div>` : ''}
-      <div class="gauge-frame">
+      <div class="gauge-frame position-${this._config.position??"left"}">
         <div class="gauge-value">${this._formatValue(value)}</div>
         <div class="gauge-line line-corner-${this._config.corner??"square"}">
           <div class="main-line" style="width: ${this._calculateWidth(this._config.entity)};"></div>

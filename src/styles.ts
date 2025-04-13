@@ -78,18 +78,8 @@ export const styles = css`
     .gauge-frame {
         width: 100%;
         display: flex;
-        flex-direction: row;
         flex-wrap: nowrap;
         flex-grow: 1;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .gauge-value {
-        font-size: 2.5rem;
-        text-align: center;
-        flex-wrap: nowrap;
-        white-space: nowrap;
     }
     .gauge-label {
         margin-top: 1rem;
@@ -98,7 +88,6 @@ export const styles = css`
         flex-wrap: nowrap;
         white-space: nowrap;
     }
-    
     .gauge-header {
         margin-bottom: 1rem;
     }
@@ -117,10 +106,79 @@ export const styles = css`
         color: gray;
     }
 
+    .gauge-value {
+        font-size: 2.5rem;
+        text-align: center;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+
+    /* 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right'; */
+    .position-left {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .position-right {
+        flex-direction: row-reverse;
+        align-items: center;
+    }
+
+    .position-top-left,
+    .position-top-middle,
+    .position-top-right {
+        flex-direction: column;
+    }
+
+    .position-bottom-left,
+    .position-bottom-middle,
+    .position-bottom-right {
+        flex-direction: column-reverse;
+    }
+
+    .position-top-left,
+    .position-bottom-left {
+        align-items: flex-start;
+    }
+
+    .position-top-middle,
+    .position-bottom-middle {
+        align-items: center;
+    }
+
+    .position-top-right,
+    .position-bottom-right {
+        align-items: flex-end;
+    }
+
+    /* Gauge value positioning adjustments */
+    .position-left .gauge-value {
+        margin-right: 1rem;
+    }
+
+    .position-right .gauge-value {
+        margin-left: 1rem;
+    }
+
+    .position-none .gauge-value {
+        display: none;
+    }
+
+    .position-top-left .gauge-value,
+    .position-top-middle .gauge-value,
+    .position-top-right .gauge-value {
+        margin: 0.5rem 0 1rem 0;
+    }
+
+    .position-bottom-left .gauge-value,
+    .position-bottom-middle .gauge-value,
+    .position-bottom-right .gauge-value {
+        margin: 1rem 0 0.5rem 0;
+    }
+
     .gauge-line {
         width: 100%;
         height: 3rem;
-        margin-left: 1rem;
         background-color: var(--background-color);
     }
     .main-line {

@@ -15,6 +15,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   unit?: string;
   cutoff?: number;
   corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
+  position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right';
 
   color?: [number, number, number] | string;
   color_bg?: [number, number, number] | string;
