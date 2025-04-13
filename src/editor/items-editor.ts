@@ -104,7 +104,7 @@ export class ItemsEditor extends LitElement {
             .hass=${this.hass} 
             name="entity" 
             class="add-entity"
-            .includeDomains=${['sensor']}
+            .includeDomains=${["sensor", "input_number", "number", "counter"]}
         ></ha-entity-picker>
         <ha-icon-button
           .label=${this.hass.localize('ui.common.add')}

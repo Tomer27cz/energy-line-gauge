@@ -43,7 +43,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       {
         name: "entity",
         required: true,
-        selector: { entity: { domain: "sensor" } },
+        selector: { entity: { domain: ["sensor", "input_number", "number", "counter"] } },
       },
 
       {
@@ -96,6 +96,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                         options: [
                           {value: "square", label: "Square"},
                           {value: "lite_rounded", label: "Lite Rounded"},
+                          {value: "medium_rounded", label: "Medium Rounded"},
                           {value: "rounded", label: "Rounded"},
                           {value: "circular", label: "Circular"},
                         ]

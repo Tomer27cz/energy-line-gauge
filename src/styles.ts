@@ -145,6 +145,27 @@ export const styles = css`
         background-color: var(--color);
         transition: width 1s ease-out;
     }
+    
+    .line-corner-lite_rounded {
+        border-radius: 0.25rem;
+        overflow: hidden;
+    }
+    .line-corner-medium_rounded {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    .line-corner-rounded {
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+    .line-corner-square {
+        border-radius: 0;
+        overflow: hidden;
+    }
+    .line-corner-circular {
+        border-radius: 1.5rem;
+        overflow: hidden;
+    }
 
     .chart-legend {
         text-align: center;

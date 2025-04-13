@@ -304,22 +304,22 @@ export class EnergyLineGauge extends LitElement {
         </div>` : ''}
       <div class="gauge-frame">
         <div class="gauge-value">${this._formatValue(value)}</div>
-        <div class="gauge-line">
+        <div class="gauge-line line-corner-${this._config.corner??"square"}">
           <div class="main-line" style="width: ${this._calculateWidth(this._config.entity)};"></div>
           <div class="device-line-container">
           ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
             const stateObj = this.hass.states[device.entity];
-      
-            if (!stateObj || stateObj.state === "unavailable" || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))) {
-              return html``;
-            }
       
             // noinspection HtmlUnknownAttribute
             return html`
               <div 
                   id="line-${device.entity.replace(".", "-")}" 
                   class="device-line" 
-                  style="background-color: ${device.color}; width: ${this._calculateWidth(stateObj.state)}"
+                  style="background-color: ${device.color}; width: ${
+                    (!stateObj || stateObj.state === "unavailable" 
+                      || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
+                    ) ? 0 : this._calculateWidth(stateObj.state)
+                  }"
                   @action=${this._handleAction}
                   .actionHandler=${actionHandler({
                     hasHold: hasAction(device.hold_action),

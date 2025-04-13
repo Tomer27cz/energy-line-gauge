@@ -19,12 +19,6 @@
 <div id="installation">
 <h1> Installation</h1>
 
-<h2> Installation via <a href="https://hacs.xyz/">HACS</a> (currently not in the store - waiting for pull request) </h2>
-
-1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
-2. Search for `energy-line-gauge` and add it through HACS
-3. Refresh home-assistant.
-
 <h2> Manual installation via <a href="https://hacs.xyz/">HACS</a> <img src="https://img.shields.io/badge/-Recommended-%2303a9f4"/></h2>
 
 1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
@@ -32,6 +26,13 @@
 3. Repository: `https://github.com/Tomer27cz/energy-line-gauge`, Type: `Dashboard`
 4. Search for `energy-line-gauge` and add it through HACS
 5. Refresh home-assistant.
+
+
+<h2> Installation via <a href="https://hacs.xyz/">HACS</a> (currently not in the store - waiting for pull request) </h2>
+
+1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
+2. Search for `energy-line-gauge` and add it through HACS
+3. Refresh home-assistant.
 
 <h2> Manual installation</h2>
 
@@ -137,7 +138,7 @@ There are a lot of settings you can customize your sensors with:
 | `precision`                   |      number      |              0               |                                            2                                             | The number of decimals to display.                                                          |
 | `unit`                        |      string      |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                       |
 | `cutoff`                      |      number      |              5               |                                            10                                            | Any entity with a value below this will not be displayed.                                   |
-| `corner`                      |      string      |            square            |                                         circular                                         | The theme [shape] of the gauge. (square, lite_rounded, rounded, circular)                   |
+| `corner`                      |      string      |            square            |                                         circular                                         | The theme [shape] of the gauge. (square, lite_rounded, medium_rounded, rounded, circular)   |
 | `color`                       |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                           |                                                                 
 | `color-bg`                    |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity). |
 | `tap_action`                  |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                 |
