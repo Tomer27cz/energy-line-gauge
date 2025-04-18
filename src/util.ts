@@ -176,7 +176,7 @@ export const setConfigDefaults = (
 
   config.legend_hide = config.legend_hide ?? false;
   config.legend_all = config.legend_all ?? false;
-
+  config.show_delta = config.show_delta ?? false;
 
   if (Array.isArray(config.entities)) {
     config.entities = setEntitiesDefaults(config.entities);

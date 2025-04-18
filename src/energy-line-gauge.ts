@@ -127,6 +127,17 @@ export class EnergyLineGauge extends LitElement {
     `;
   }
 
+  _createDelta() {
+    const delta = this._delta();
+    if (!delta) {return html`<hui-warning>Delta could not be calculated</hui-warning>`;}
+    const [state, sum, deltaValue] = delta;
+    return html`
+      <div class="gauge-delta">
+        <div class="gauge-delta-item">State: <span>${this._formatValue(state)}</span></div>
+        <div class="gauge-delta-item">Sum: <span>${this._formatValue(sum)}</span></div>
+        <div class="gauge-delta-item delta">Delta: <span>${this._formatValue(deltaValue)}</span></div>
+      </div>`;
+  }
   _createLegend() {
     if (!this._config.entities || this._config.legend_hide) {
       return html``;
@@ -238,6 +249,7 @@ export class EnergyLineGauge extends LitElement {
           </div>
         </div>
       </div>
+      ${this._config.show_delta ? this._createDelta() : ''}
       ${this._config.entities ? this._createLegend() : ''}
       ${this._config.label ? html`<div class="gauge-label">${this._config.label}</div>` : ''}
     `;
@@ -272,6 +284,28 @@ export class EnergyLineGauge extends LitElement {
     min = this._ce(min);max = this._ce(max);
     const clampValue = Math.min(Math.max(value, min), max);
     return `${((clampValue - min) / (max - min)) * 100}%`;
+  }
+
+  private _devicesSum() {
+    if (!this._config.entities) {return 0;}
+    let sum = 0;
+    for (const device of this._config.entities) {
+      const stateObj = this.hass.states[device.entity];
+      if (!stateObj || stateObj.state === "unavailable") {continue;}
+      sum += parseFloat(stateObj.state);
+    }
+    return sum;
+  }
+
+  private _delta(): [number, number, number] | undefined {
+    const stateObj = this.hass.states[this._config.entity];
+    if (!stateObj || stateObj.state === "unavailable") {return undefined;}
+
+    let sum = this._devicesSum();
+    let state = parseFloat(stateObj.state);
+    let delta = state - sum;
+
+    return [state, sum, delta];
   }
 
   private _handleAction(ev: ActionHandlerEvent): void {

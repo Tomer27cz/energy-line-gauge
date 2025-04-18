@@ -27,6 +27,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   legend_hide?: boolean;
   legend_all?: boolean;
 
+  show_delta?: boolean;
+
   untracked_legend?: boolean;
   untracked_legend_label?: string;
   untracked_legend_icon?: string;

@@ -1,6 +1,6 @@
 {
   "name": "energy-line-gauge",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "license": "MIT",
   "author": "Tomer27cz",
   "description": "A customizable line gauge with a legend, optionally showing device power use as a percentage of a main entity.",

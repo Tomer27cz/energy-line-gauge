@@ -68,7 +68,7 @@ export const styles = css`
         transition: all 0.3s ease-out;
 
         margin: 6px auto;
-        padding: 16px;
+        padding: 10px;
     }
 
     .line-gauge-card div {
@@ -267,5 +267,27 @@ export const styles = css`
         --mdc-icon-size: 24px;
         display: inline-flex;
         margin-right: 4px;
+    }
+    
+    .gauge-delta {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .gauge-delta-item {
+        text-align: center;
+        vertical-align: middle;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        line-height: 1.5rem;
+        color: var(--secondary-text-color);
+    }
+    .gauge-delta-item span {
+        font-size: 1.5rem;
+    }
+    .delta span {
+        font-size: 1.5rem;
+        color: var(--primary-text-color);
     }
 `;
