@@ -90,6 +90,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             schema: [
               { name: "legend_hide", required: false, selector: { boolean: {} } },
               { name: "legend_all", required: false, selector: { boolean: {} } },
+              { name: "show_delta", required: false, selector: { boolean: {} } },
             ]
           },
 
@@ -182,6 +183,16 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "untracked_legend", required: false, selector: { boolean: {} } },
               { name: "untracked_legend_label", required: false, selector: { text: {} } },
               { name: "untracked_legend_icon", required: false, selector: { icon: {} } },
+              {
+                type: "multi_select",
+                options: [
+                  ["name", this.hass.localize("ui.components.state-content-picker.name")],
+                  ["state", this.hass.localize("ui.components.state-content-picker.state")],
+                ],
+                name: "untracked_state_content",
+                required: false,
+                default: ["name"],
+              },
             ],
           },
         ],
@@ -324,6 +335,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             return this.hass.localize(
                 `ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption`
             );
+        case "untracked_state_content":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
+            );
         case "interactions":
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.generic.interactions`
@@ -347,6 +362,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         case "position":
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.entities.secondary_info_values.position`
+            );
+        case "show_delta":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.statistic.stat_types`
             );
         default:
           return schema.name;

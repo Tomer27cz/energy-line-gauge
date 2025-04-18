@@ -98,6 +98,9 @@ show_delta: false
 untracked_legend: true
 untracked_legend_label: Untracked
 untracked_legend_icon: mdi:flash
+untracked_state_content:
+  - name
+  - state
 entities:
   - entity: sensor.plug_0_power
     name: Plug 0
@@ -119,50 +122,56 @@ entities:
       - 92
   - entity: sensor.plug_3_power
     name: Plug 3
+    state_content:
+      - name
+      - state
+      - last_changed
 ```
 
 ## Main Options
 
 There are a lot of settings you can customize your sensors with:
 
-| Setting                  |       type       |           default            |                                         example                                          | description                                                                                 |
-|--------------------------|:----------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------|
-| `entity`                 |      string      |          ! required          |                              sensor.glow_power_consumption                               | You can specify the entity_id here as well.                                                 | 
-| `title`                  |      string      |            [...]             |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                     |
-| `subtitle`               |      string      |            [...]             |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                              |
-| `min`                    | number or string |              0               |                                           100                                            | The minimum value of the gauge.                                                             |
-| `max`                    | number or string |           [entity]           |                              sensor.glow_power_consumption                               | The maximum value of the gauge. Can be an entity_id.                                        |
-| `precision`              |      number      |              0               |                                            2                                             | The number of decimals to display.                                                          |
-| `unit`                   |      string      |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                       |
-| `cutoff`                 |      number      |              5               |                                            10                                            | Any entity with a value below this will not be displayed.                                   |
-| `corner`                 |      string      |            square            |                                         circular                                         | The theme [shape] of the gauge. (square, lite_rounded, medium_rounded, rounded, circular)   |
-| `color`                  |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                           |                                                                 
-| `color-bg`               |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity). |
-| `tap_action`             |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                 |
-| `hold_action`            |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                       |
-| `double_tap_action`      |  Action Config   |             none             | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                 |
-| `legend_hide`            |       bool       |            false             |                                           true                                           | This will hide the legend under the gauge.                                                  |
-| `legend_all`             |       bool       |            false             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge)                  |
-| `show_delta`             |       bool       |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity.             |
-| `untracked_legend`       |       bool       |             true             |                                          false                                           | Show the legend for untracked consumption.                                                  |
-| `untracked_legend_label` |      string      |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                 |
-| `untracked_legend_icon`  |      string      |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                  |
+| Setting                   |       type       |           default            |                                         example                                          | description                                                                                       |
+|---------------------------|:----------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------|
+| `entity`                  |      string      |          ! required          |                              sensor.glow_power_consumption                               | You can specify the entity_id here as well.                                                       | 
+| `title`                   |      string      |            [...]             |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                           |
+| `subtitle`                |      string      |            [...]             |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                    |
+| `min`                     | number or string |              0               |                                           100                                            | The minimum value of the gauge.                                                                   |
+| `max`                     | number or string |           [entity]           |                              sensor.glow_power_consumption                               | The maximum value of the gauge. Can be an entity_id.                                              |
+| `precision`               |      number      |              0               |                                            2                                             | The number of decimals to display.                                                                |
+| `unit`                    |      string      |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                             |
+| `cutoff`                  |      number      |              5               |                                            10                                            | Any entity with a value below this will not be displayed.                                         |
+| `corner`                  |      string      |            square            |                                         circular                                         | The theme [shape] of the gauge. (square, lite_rounded, medium_rounded, rounded, circular)         |
+| `color`                   |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                 |                                                                 
+| `color-bg`                |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).       |
+| `tap_action`              |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                       |
+| `hold_action`             |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                             |
+| `double_tap_action`       |  Action Config   |             none             | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                       |
+| `legend_hide`             |       bool       |            false             |                                           true                                           | This will hide the legend under the gauge.                                                        |
+| `legend_all`              |       bool       |            false             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge)                        |
+| `show_delta`              |       bool       |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity.                   |
+| `untracked_legend`        |       bool       |             true             |                                          false                                           | Show the legend for untracked consumption.                                                        |
+| `untracked_legend_label`  |      string      |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                       |
+| `untracked_legend_icon`   |      string      |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                        |
+| `untracked_state_content` |     string[]     |           ['name']           |                                    ['state']                                     | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot. |
 <p> 
 
 ## Entities
 
 Each entity has its own settings:
 
-| Setting                  |       type       |                                         example                                          | description                                                                             |
-|--------------------------|:----------------:|:----------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------|
-| `entity`                 |      string      |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                             | 
-| `name`                   |      string      |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                   |
-| `icon`                   |      string      |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)              |
-| `cutoff`                 |      number      |                                            10                                            | Any entity with a value below this will not be displayed.                               |
-| `color`                  |  string or rgb   |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order) |                                                                 
-| `tap_action`             |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                             |
-| `hold_action`            |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                   |
-| `double_tap_action`      |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                             |
+| Setting             |     type      |                                         example                                          | description                                                                                                                                                       |
+|---------------------|:-------------:|:----------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`            |    string     |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                                       | 
+| `name`              |    string     |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                                                                             |
+| `icon`              |    string     |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                                                        |
+| `cutoff`            |    number     |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                                         |
+| `color`             | string or rgb |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                                           |                                                                 
+| `state_content`     |   string[]    |                                    ['name', 'state']                                     | ['name','state','last_changed','last_updated'] - Order matters. Info will be separated by a dot. |
+| `tap_action`        | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                                       |
+| `hold_action`       | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                             |
+| `double_tap_action` | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                                       |
 <p> 
 
 </div>

@@ -5,7 +5,7 @@ import { HomeAssistant } from 'custom-card-helpers';
 
 import { fireEvent } from '../util';
 import { ELGEntity, DEFAULT_ACTIONS } from '../types';
-import { mdiGestureTap } from "@mdi/js";
+import { mdiGestureTap, mdiTextShort } from '@mdi/js';
 
 @customElement('energy-line-gauge-item-editor')
 export class ItemEditor extends LitElement {
@@ -25,22 +25,44 @@ export class ItemEditor extends LitElement {
         selector: {entity: {domain: "sensor"}},
       },
 
-      {
-        name: "",
-        type: "grid",
-        schema: [
-          {name: "name", required: false, selector: {text: {}}},
-          {name: "cutoff", required: false, selector: {number: {}}},
 
-        ]
-      },
+
       {
-        name: "",
-        type: "grid",
+        name: "content",
+        type: "expandable",
+        flatten: true,
+        iconPath: mdiTextShort,
         schema: [
-          {name: "color", required: false, selector: {color_rgb: {}}},
-          {name: "icon", required: false, selector: {icon: {}}},
-        ]
+          {
+            name: "",
+            type: "grid",
+            schema: [
+              {name: "name", required: false, selector: {text: {}}},
+              {name: "cutoff", required: false, selector: {number: {}}},
+
+            ]
+          },
+          {
+            name: "",
+            type: "grid",
+            schema: [
+              {name: "color", required: false, selector: {color_rgb: {}}},
+              {name: "icon", required: false, selector: {icon: {}}},
+            ]
+          },
+          {
+            type: "multi_select",
+            options: [
+              ["name", this.hass.localize("ui.components.state-content-picker.name")],
+              ["state", this.hass.localize("ui.components.state-content-picker.state")],
+              ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")],
+              ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")],
+            ],
+            name: "state_content",
+            required: false,
+            default: ["name"],
+          },
+        ],
       },
       {
         name: "interactions",
@@ -115,6 +137,10 @@ export class ItemEditor extends LitElement {
           return this.hass.localize(
               `ui.panel.lovelace.editor.card.generic.icon`
           );
+        case "content":
+          return this.hass.localize(
+              `ui.panel.lovelace.editor.card.markdown.content`
+          );
         case "cutoff":
           return this.hass.localize(
               `ui.panel.lovelace.editor.card.sensor.limit_min`
@@ -134,6 +160,10 @@ export class ItemEditor extends LitElement {
         case "double_tap_action":
           return this.hass.localize(
               `ui.panel.lovelace.editor.card.generic.double_tap_action`
+          );
+        case "state_content":
+          return this.hass.localize(
+              `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
           );
         default:
           return schema.name;

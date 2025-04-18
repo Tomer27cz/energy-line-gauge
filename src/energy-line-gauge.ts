@@ -138,6 +138,20 @@ export class EnergyLineGauge extends LitElement {
         <div class="gauge-delta-item delta">Delta: <span>${this._formatValue(deltaValue)}</span></div>
       </div>`;
   }
+  _createUntrackedLegend() {
+    if (!this._config.untracked_legend) {return html``;}
+
+    return html`
+      <li title="${this._config.untracked_legend_label}" id="legend-untracked" style="display: inline-grid;">
+        ${this._config.untracked_legend_icon ?
+          html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` :
+          html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
+        }
+        <div class="label">
+          ${this._untrackedLabel()}
+        </div>
+      </li>`
+  }
   _createLegend() {
     if (!this._config.entities || this._config.legend_hide) {
       return html``;
@@ -189,17 +203,10 @@ export class EnergyLineGauge extends LitElement {
                   html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
                   html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
-              <div class="label">${this._entityName(device)}</div>
+              <div class="label">${this._entityLabel(device)}</div>
             </li>`;
         })}  
-        ${this._config.untracked_legend ? html`
-          <li title="${this._config.untracked_legend_label}" id="legend-untracked" style="display: inline-grid;">
-            ${this._config.untracked_legend_icon ? 
-                html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` : 
-                html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
-            }
-            <div class="label">${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}</div>
-          </li>` : html``}
+        ${this._createUntrackedLegend()}
       </ul>
     </div>`
   }
@@ -266,7 +273,53 @@ export class EnergyLineGauge extends LitElement {
     return this.hass.states[device.entity].attributes.friendly_name || device.entity.split('.')[1];
   }
 
+  private _entityLabel(device: ELGEntity) {
+    if (!device.entity) {this._invalidConfig()}
+    if (!device.state_content || device.state_content.length === 0) {return this._entityName(device);}
+    const stateObj = this.hass.states[device.entity];
+
+    return html`
+      ${device.state_content.map((value, i, arr) => {
+          const dot = i < arr.length - 1 ? " ⸱ " : '';
+          const timeTemplate = (datetime: string) => html`
+          <ha-relative-time
+            .hass=${this.hass}
+            .datetime=${datetime}
+            capitalize
+          ></ha-relative-time>${dot}
+        `;
+    
+          switch (value) {
+            case "name": return html`${this._entityName(device)}${dot}`;
+            case "state": return html`${this._formatValue(stateObj.state)}${dot}`;
+            case "last_changed": return timeTemplate(stateObj.last_changed);
+            case "last_updated": return timeTemplate(stateObj.last_updated);
+            default: return html`${value}${dot}`;
+          }
+        })}`;
+  }
+
+  private _untrackedLabel() {
+    if (!this._config.untracked_state_content || this._config.untracked_state_content.length === 0) {
+      return this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption");
+    }
+    return html`
+      ${this._config.untracked_state_content?.map((value, i, arr) => {
+        const dot = i < arr.length - 1 ? " ⸱ " : '';
+
+        switch (value) {
+          case "name": return html`${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}${dot}`;
+          case "state": {
+            const [, , delta] = this._delta() ?? [0, 0, undefined];
+            return delta === undefined ? html`` : html`${this._formatValue(delta)}${dot}`;
+          }
+          default: return html`${value}${dot}`;
+        }
+      })}`;
+  }
+
   private _formatValue(value: any) {
+    if (!value) {return ``;}
     return this._config.unit ? `${parseFloat(value).toFixed(this._config.precision)} ${this._config.unit}` : parseFloat(value).toFixed(this._config.precision);
   }
 

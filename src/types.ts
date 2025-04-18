@@ -32,6 +32,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   untracked_legend?: boolean;
   untracked_legend_label?: string;
   untracked_legend_icon?: string;
+  untracked_state_content?: string[];
 
   entities: ELGEntity[];
 }
@@ -43,6 +44,8 @@ export interface ELGEntity {
   icon?: string;
   color?: [number, number, number] | string;
   cutoff?: number;
+
+  state_content?: string[];
 
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
