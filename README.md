@@ -68,7 +68,7 @@ Then you can paste the following code into the Card Editor:
 
 ## YAML Only
 
-Some features are not yet available in the Visual Editor. For example the ability to set `min` and `max` to be an entity.
+Some features are not yet available in the Visual Editor. For example the ability to set `min` and `max` to be an entity or color `auto`.
 ```yaml
 type: 'custom:energy-line-gauge'
 entity: sensor.glow_power_consumption
@@ -100,10 +100,7 @@ untracked_legend_icon: mdi:flash
 entities:
   - entity: sensor.plug_0_power
     name: Plug 0
-    color:
-      - 66
-      - 105
-      - 208
+    color: "auto"
     cutoff: 5
     icon: mdi:flash
   - entity: sensor.plug_1_power
@@ -154,16 +151,16 @@ There are a lot of settings you can customize your sensors with:
 
 Each entity has its own settings:
 
-| Setting                  |       type       |                                         example                                          | description                                                                                 |
-|--------------------------|:----------------:|:----------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------|
-| `entity`                 |      string      |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                 | 
-| `name`                   |      string      |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                       |
-| `icon`                   |      string      |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                  |
-| `cutoff`                 |      number      |                                            10                                            | Any entity with a value below this will not be displayed.                                   |
-| `color`                  |  string or rgb   |                                         #00aafa                                          | The color of the gauge and legend. (default: Home Assistant Energy panel - the same order)  |                                                                 
-| `tap_action`             |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                 |
-| `hold_action`            |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                       |
-| `double_tap_action`      |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                 |
+| Setting                  |       type       |                                         example                                          | description                                                                             |
+|--------------------------|:----------------:|:----------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------|
+| `entity`                 |      string      |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                             | 
+| `name`                   |      string      |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                   |
+| `icon`                   |      string      |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)              |
+| `cutoff`                 |      number      |                                            10                                            | Any entity with a value below this will not be displayed.                               |
+| `color`                  |  string or rgb   |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order) |                                                                 
+| `tap_action`             |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                             |
+| `hold_action`            |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                   |
+| `double_tap_action`      |  Action Config   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                             |
 <p> 
 
 </div>

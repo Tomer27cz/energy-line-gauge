@@ -147,7 +147,7 @@ export class ItemsEditor extends LitElement {
     }
 
     const entity_id = (this.shadowRoot!.querySelector('.add-entity') as HTMLElementValue).value;
-    fireEvent<ELGEntity[]>(this, 'config-changed', setEntitiesDefaults([...this.entities, { entity: entity_id }]));
+    fireEvent<ELGEntity[]>(this, 'config-changed', [...this.entities, { entity: entity_id, color: "auto" }]);
   }
 
   private _rowMoved(ev: SortableEvent): void {

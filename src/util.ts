@@ -192,10 +192,10 @@ export const setEntitiesDefaults = (
   const device_colors = entities_copy.map(device => toHEX(device.color));
 
   for (const device of entities_copy) {
-    if (!device.color) {
+    if (!device.color || device.color === "auto") {
       const availableColor = COLORS.find(c => !device_colors.includes(c.toUpperCase()));
       device.color = toRGB(availableColor);
-      device_colors.push(availableColor);
+      device_colors.push(availableColor?.toUpperCase());
     }
   }
   return entities_copy;
