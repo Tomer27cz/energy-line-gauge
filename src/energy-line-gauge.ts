@@ -16,7 +16,7 @@ import { version } from '../package.json';
 import { ELGConfig, ELGEntity } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities } from './util';
+import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX } from './util';
 
 import './editor/editor';
 
@@ -33,68 +33,20 @@ window.customCards.push({
   preview: true,
 });
 
-const COLORS = [
-  "#4269d0",
-  "#f4bd4a",
-  "#ff725c",
-  "#6cc5b0",
-  "#a463f2",
-  "#ff8ab7",
-  "#9c6b4e",
-  "#97bbf5",
-  "#01ab63",
-  "#9498a0",
-  "#094bad",
-  "#c99000",
-  "#d84f3e",
-  "#49a28f",
-  "#048732",
-  "#d96895",
-  "#8043ce",
-  "#7599d1",
-  "#7a4c31",
-  "#74787f",
-  "#6989f4",
-  "#ffd444",
-  "#ff957c",
-  "#8fe9d3",
-  "#62cc71",
-  "#ffadda",
-  "#c884ff",
-  "#badeff",
-  "#bf8b6d",
-  "#b6bac2",
-  "#927acc",
-  "#97ee3f",
-  "#bf3947",
-  "#9f5b00",
-  "#f48758",
-  "#8caed6",
-  "#f2b94f",
-  "#eff26e",
-  "#e43872",
-  "#d9b100",
-  "#9d7a00",
-  "#698cff",
-  "#d9d9d9",
-  "#00d27e",
-  "#d06800",
-  "#009f82",
-  "#c49200",
-  "#cbe8ff",
-  "#fecddf",
-  "#c27eb6",
-  "#8cd2ce",
-  "#c4b8d9",
-  "#f883b0",
-  "#a49100",
-  "#f48800",
-  "#27d0df",
-  "#a04a9b",
-];
-
 @customElement('energy-line-gauge')
 export class EnergyLineGauge extends LitElement {
+
+  @property() public hass!: HomeAssistant;
+
+  @state() private _config!: ELGConfig;
+
+  @property() private _card!: LovelaceCard;
+
+  // noinspection JSUnusedGlobalSymbols
+  public async setConfig(config: ELGConfig): Promise<void> {
+    if (!config) {this._invalidConfig()}
+    this._config = setConfigDefaults(config);
+  }
 
   // noinspection JSUnusedGlobalSymbols
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -104,79 +56,34 @@ export class EnergyLineGauge extends LitElement {
 
   // noinspection JSUnusedGlobalSymbols
   public static getStubConfig(
-      hass: HomeAssistant,
-      entities: string[],
-      entitiesFallback: string[]
+    hass: HomeAssistant,
+    entities: string[],
+    entitiesFallback: string[]
   ): ELGConfig {
-      const includeDomains = ["counter", "input_number", "number", "sensor"];
-      const maxEntities = 4;
-      const entityFilter = (stateObj: any): boolean =>
-          !isNaN(Number(stateObj.state));
+    const includeDomains = ["counter", "input_number", "number", "sensor"];
+    const maxEntities = 4;
+    const entityFilter = (stateObj: any): boolean =>
+      !isNaN(Number(stateObj.state));
 
-      const foundEntities = findEntities(
-          hass,
-          maxEntities,
-          entities,
-          entitiesFallback,
-          includeDomains,
-          entityFilter
-      );
+    const foundEntities = findEntities(
+      hass,
+      maxEntities,
+      entities,
+      entitiesFallback,
+      includeDomains,
+      entityFilter
+    );
 
-      return {
-        type: "custom:energy-line-gauge",
-        entity: foundEntities[0],
-        title: "Energy Line Gauge",
-        entities: [
-          {entity: foundEntities[1], color: COLORS[0]},
-          {entity: foundEntities[2], color: COLORS[1]},
-          {entity: foundEntities[3], color: COLORS[2]},
-        ]
-      };
-  }
-
-  @property() public hass!: HomeAssistant;
-
-  @state() private _config!: ELGConfig;
-
-  @property() private _card!: LovelaceCard;
-
-  private _setConfig(config: ELGConfig): ELGConfig {
-    config = JSON.parse(JSON.stringify(config));
-
-    config.min = config.min ?? 0;
-    config.max = config.max ?? config.entity;
-    config.precision = config.precision ?? 0;
-    config.cutoff = config.cutoff ?? 5;
-    config.corner = config.corner ?? "square";
-    config.position = config.position ?? "left";
-
-    config.color = this.rgbToHex(config.color) ?? getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-    config.color_bg = this.rgbToHex(config.color_bg) ?? getComputedStyle(document.documentElement).getPropertyValue('--secondary-background-color').trim();
-
-    config.untracked_legend = !!(config.untracked_legend ?? config.entities);
-    config.untracked_legend_label = config.untracked_legend_label === "" ? undefined : config.untracked_legend_label;
-
-    config.legend_hide = config.legend_hide ?? false;
-    config.legend_all = config.legend_all ?? false;
-
-    if (config.entities) {
-      const device_colors = config.entities.map(device => this.rgbToHex(device.color));
-      for (const device of config.entities) {
-        device.color = this.rgbToHex(device.color);
-        if (!device.color) {
-          device.color = COLORS.find(color => !device_colors.includes(color));
-          device_colors.push(device.color);
-        }
-      }
-    }
-
-    return config;
-  }
-
-  // noinspection JSUnusedGlobalSymbols
-  public async setConfig(config: ELGConfig): Promise<void> {
-    if (!config) {this._invalidConfig()}
-    this._config = this._setConfig(config);
+    return setConfigDefaults({
+      type: "custom:energy-line-gauge",
+      entity: foundEntities[0],
+      title: "Energy Line Gauge",
+      entities: [
+        {entity: foundEntities[1], color: toRGB(COLORS[0])},
+        {entity: foundEntities[2], color: toRGB(COLORS[1])},
+        {entity: foundEntities[3], color: toRGB(COLORS[2])},
+      ],
+    });
   }
 
   protected updated(changedProps: PropertyValues): void {
@@ -213,7 +120,7 @@ export class EnergyLineGauge extends LitElement {
         tabindex="0"
         .label=${this._config.label}
       >
-        <div class="line-gauge-card" style="--color: ${this._config.color}; --background-color: ${this._config.color_bg}"">
+        <div class="line-gauge-card" style="--color: ${toHEX(this._config.color)}; --background-color: ${toHEX(this._config.color_bg)}"">
           ${this._createInnerHtml()}
         </div>
       </ha-card>
@@ -268,8 +175,8 @@ export class EnergyLineGauge extends LitElement {
               id="legend-${device.entity.replace('.', '-')}"
             >
               ${device.icon ? 
-                  html`<ha-icon style="color:${device.color}" icon="${device.icon}"></ha-icon>` : 
-                  html`<div class="bullet" style="background-color:${device.color + "7F"};border-color:${device.color};"></div>`
+                  html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
+                  html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
               <div class="label">${this._entityName(device)}</div>
             </li>`;
@@ -277,8 +184,8 @@ export class EnergyLineGauge extends LitElement {
         ${this._config.untracked_legend ? html`
           <li title="${this._config.untracked_legend_label}" id="legend-untracked" style="display: inline-grid;">
             ${this._config.untracked_legend_icon ? 
-                html`<ha-icon style="color:${this._config.color}" icon="${this._config.untracked_legend_icon}"></ha-icon>` : 
-                html`<div class="bullet" style="background-color:${this._config.color + "7F"};border-color:${this._config.color};"></div>`
+                html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` : 
+                html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
             }
             <div class="label">${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}</div>
           </li>` : html``}
@@ -316,7 +223,7 @@ export class EnergyLineGauge extends LitElement {
               <div 
                   id="line-${device.entity.replace(".", "-")}" 
                   class="device-line" 
-                  style="background-color: ${device.color}; width: ${
+                  style="background-color: ${toHEX(device.color)}; width: ${
                     (!stateObj || stateObj.state === "unavailable" 
                       || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
                     ) ? 0 : this._calculateWidth(stateObj.state)
@@ -349,12 +256,6 @@ export class EnergyLineGauge extends LitElement {
 
   private _formatValue(value: any) {
     return this._config.unit ? `${parseFloat(value).toFixed(this._config.precision)} ${this._config.unit}` : parseFloat(value).toFixed(this._config.precision);
-  }
-
-  private rgbToHex(color: [number, number, number] | undefined | string):string | undefined {
-    if (!color) {return undefined;}
-    if (typeof color === "string") {return color;}
-    return "#" + ((1 << 24) | (color[0] << 16) | (color[1] << 8) | color[2]).toString(16).slice(1).toUpperCase();
   }
 
   private _ce(entity: any): any {

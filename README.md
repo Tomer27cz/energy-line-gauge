@@ -1,9 +1,8 @@
 # energy-line-gauge
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/Tomer27cz/energy-line-gauge)](https://github.com/Tomer27cz/energy-line-gauge/blob/master/package.json)
-[![Actions Status](https://github.com/Tomer27cz/energy-line-gauge/workflows/Build/badge.svg)](https://github.com/Tomer27cz/energy-line-gauge/actions)
+[![Validate HACS](https://github.com/Tomer27cz/energy-line-gauge/actions/workflows/validate-hacs.yaml/badge.svg)](https://github.com/Tomer27cz/energy-line-gauge/actions/workflows/validate-hacs.yaml)
 [![GitHub license](https://img.shields.io/github/license/Tomer27cz/energy-line-gauge)](https://img.shields.io/github/license/Tomer27cz/energy-line-gauge/blob/master/LICENSE)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
-
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">

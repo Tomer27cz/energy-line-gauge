@@ -5,7 +5,7 @@ import { EditorTarget, ELGEntity, HTMLElementValue } from '../types';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { mdiDelete, mdiPencil, mdiPlusCircleOutline } from '@mdi/js';
-import { fireEvent } from '../util';
+import { fireEvent, setEntitiesDefaults } from '../util';
 
 import { configElementStyle } from '../styles'
 import Sortable from 'sortablejs';
@@ -147,7 +147,7 @@ export class ItemsEditor extends LitElement {
     }
 
     const entity_id = (this.shadowRoot!.querySelector('.add-entity') as HTMLElementValue).value;
-    fireEvent<ELGEntity[]>(this, 'config-changed', [...this.entities, { entity: entity_id }]);
+    fireEvent<ELGEntity[]>(this, 'config-changed', setEntitiesDefaults([...this.entities, { entity: entity_id }]));
   }
 
   private _rowMoved(ev: SortableEvent): void {

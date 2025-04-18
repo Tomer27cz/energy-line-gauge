@@ -1,7 +1,12 @@
 import { LitElement, TemplateResult, html, css, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { mdiPalette, mdiLightningBolt, mdiListBox, mdiGestureTap } from '@mdi/js';
+import {
+  mdiPalette,
+  mdiLightningBolt,
+  mdiGestureTap,
+  mdiListBox,
+} from '@mdi/js';
 
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import {
@@ -50,19 +55,21 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         name: "",
         type: "grid",
         schema: [
+          { name: "title", required: false, selector: { text: {} } },
+          { name: "subtitle", required: false, selector: { text: {} } }
+        ]
+      },
+
+      {
+        name: "",
+        type: "grid",
+        schema: [
           { name: "min", required: false, selector: { number: {} }},
           { name: "max", required: false, selector: { number: {} }},
 
         ]
       },
-      {
-        name: "",
-        type: "grid",
-        schema: [
-          { name: "unit", required: false, selector: { text: {} } },
-          { name: "precision", required: false, selector: { number: {min: 0, step: 1} }}
-        ]
-      },
+
       {
         type: "expandable",
         title: this.hass.localize(`ui.panel.lovelace.editor.card.map.appearance`),
@@ -72,14 +79,15 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             name: "",
             type: "grid",
             schema: [
-              { name: "title", required: false, selector: { text: {} } },
-              { name: "subtitle", required: false, selector: { text: {} } }
+              { name: "unit", required: false, selector: { text: {} } },
+              { name: "precision", required: false, selector: { number: {min: 0, step: 1} }},
+              { name: "cutoff", required: false, selector: { number: {} } },
             ]
           },
+
           {
             type: "grid",
             schema: [
-              { name: "cutoff", required: false, selector: { number: {} } },
               { name: "legend_hide", required: false, selector: { boolean: {} } },
               { name: "legend_all", required: false, selector: { boolean: {} } },
             ]
@@ -108,15 +116,42 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     select: {
                       mode: "dropdown",
                       options: [
-                        {value: "left", label: "Left (default)"},
-                        {value: "right", label: "Right"},
-                        {value: "none", label: "Not Displayed"},
-                        {value: "top-left", label: "Top Left"},
-                        {value: "top-middle", label: "Top Middle"},
-                        {value: "top-right", label: "Top Right"},
-                        {value: "bottom-left", label: "Bottom Left"},
-                        {value: "bottom-middle", label: "Bottom Middle"},
-                        {value: "bottom-right", label: "Bottom Right"},
+                        {
+                          value: "left",
+                          label: "Left (default)",
+                        },
+                        {
+                          value: "right",
+                          label: "Right",
+                        },
+                        {
+                          value: "none",
+                          label: "Not Displayed",
+                        },
+                        {
+                          value: "top-left",
+                          label: "Top Left",
+                        },
+                        {
+                          value: "top-middle",
+                          label: "Top Middle",
+                        },
+                        {
+                          value: "top-right",
+                          label: "Top Right",
+                        },
+                        {
+                          value: "bottom-left",
+                          label: "Bottom Left",
+                        },
+                        {
+                          value: "bottom-middle",
+                          label: "Bottom Middle",
+                        },
+                        {
+                          value: "bottom-right",
+                          label: "Bottom Right",
+                        },
                       ]
                     }
                   }
