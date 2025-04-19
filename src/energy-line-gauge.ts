@@ -29,7 +29,7 @@ console.info(
 window.customCards.push({
   type: 'energy-line-gauge',
   name: 'Energy Line Gauge',
-  description: "TODO: Add description",
+  description: "A customizable line gauge with a legend, optionally showing device power use as a percentage of a main entity.",
   preview: true,
 });
 
@@ -231,7 +231,7 @@ export class EnergyLineGauge extends LitElement {
       <div class="gauge-frame position-${this._config.position??"left"}">
         <div class="gauge-value">${this._formatValue(value)}</div>
         <div class="gauge-line line-corner-${this._config.corner??"square"}">
-          <div class="main-line" style="width: ${this._calculateWidth(this._config.entity)};"></div>
+          <div class="main-line" style="width: ${this._calculateWidth(this._config.entity)}%;"></div>
           <div class="device-line-container">
           ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
             const stateObj = this.hass.states[device.entity];
@@ -244,8 +244,8 @@ export class EnergyLineGauge extends LitElement {
                   style="background-color: ${toHEX(device.color)}; width: ${
                     (!stateObj || stateObj.state === "unavailable" 
                       || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
-                    ) ? 0 : this._calculateWidth(stateObj.state)
-                  }"
+                    ) ? 0 : this._calculateDeviceWidth(stateObj.state)
+                  }%"
                   @action=${this._handleAction}
                   .actionHandler=${actionHandler({
                     hasHold: hasAction(device.hold_action),
@@ -272,7 +272,6 @@ export class EnergyLineGauge extends LitElement {
     if (device.name) {return device.name;}
     return this.hass.states[device.entity].attributes.friendly_name || device.entity.split('.')[1];
   }
-
   private _entityLabel(device: ELGEntity) {
     if (!device.entity) {this._invalidConfig()}
     if (!device.state_content || device.state_content.length === 0) {return this._entityName(device);}
@@ -298,7 +297,6 @@ export class EnergyLineGauge extends LitElement {
           }
         })}`;
   }
-
   private _untrackedLabel() {
     if (!this._config.untracked_state_content || this._config.untracked_state_content.length === 0) {
       return this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption");
@@ -331,12 +329,17 @@ export class EnergyLineGauge extends LitElement {
     return parseFloat(stateObj.state);
   }
 
-  // Yes I know using any is bad, but I don't care.
-  private _calculateWidth(value: any, min:any=this._config.min, max:any=this._config.max) {
-    value = this._ce(value);
-    min = this._ce(min);max = this._ce(max);
+  private _calculateWidth(value: any, min?: any, max?: any) {
+    value = this._ce(value);min = this._ce(min??this._config.min);max = this._ce(max??this._config.max);
     const clampValue = Math.min(Math.max(value, min), max);
-    return `${((clampValue - min) / (max - min)) * 100}%`;
+    return ((clampValue - min) / (max - min)) * 100;
+  }
+  private _calculateDeviceWidth(value: any) {
+    value = this._ce(value);
+    let min = this._ce(this._config.min);
+    let max = this._ce(this._config.entity);
+    const clampValue = Math.min(Math.max(value, min), max);
+    return ((clampValue - min) / (max - min)) * this._calculateWidth(this._config.entity);
   }
 
   private _devicesSum() {
@@ -349,7 +352,6 @@ export class EnergyLineGauge extends LitElement {
     }
     return sum;
   }
-
   private _delta(): [number, number, number] | undefined {
     const stateObj = this.hass.states[this._config.entity];
     if (!stateObj || stateObj.state === "unavailable") {return undefined;}
