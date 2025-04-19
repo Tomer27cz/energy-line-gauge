@@ -52,6 +52,14 @@ export const configElementStyle = css`
   ha-expansion-panel ha-svg-icon {
     color: var(--secondary-text-color);
   }
+  .back-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+  }
+  ha-icon {
+      display: flex;
+  }  
 `;
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
@@ -260,13 +268,6 @@ export const styles = css`
         margin-right: 6px;
         width: 16px;
         direction: var(--direction);
-    }
-    ha-icon {
-        width: 24px;
-        height: 24px;
-        --mdc-icon-size: 24px;
-        display: inline-flex;
-        margin-right: 4px;
     }
     
     .gauge-delta {
