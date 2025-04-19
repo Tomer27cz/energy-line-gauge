@@ -16,7 +16,7 @@ import { version } from '../package.json';
 import { ELGConfig, ELGEntity } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX } from './util';
+import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, fireEvent } from './util';
 
 import './editor/editor';
 
@@ -191,7 +191,7 @@ export class EnergyLineGauge extends LitElement {
           // noinspection HtmlUnknownAttribute
           return html`
             <li
-              @action=${this._handleAction}
+              @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
               .actionHandler=${actionHandler({
                 hasHold: hasAction(device.hold_action),
                 hasDoubleClick: hasAction(device.double_tap_action),
@@ -246,7 +246,7 @@ export class EnergyLineGauge extends LitElement {
                       || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
                     ) ? 0 : this._calculateDeviceWidth(stateObj.state)
                   }%"
-                  @action=${this._handleAction}
+                  @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
                   .actionHandler=${actionHandler({
                     hasHold: hasAction(device.hold_action),
                     hasDoubleClick: hasAction(device.double_tap_action),
@@ -363,7 +363,14 @@ export class EnergyLineGauge extends LitElement {
     return [state, sum, delta];
   }
 
-  private _handleAction(ev: ActionHandlerEvent): void {
-    handleAction(this, this.hass!, this._config!, ev.detail.action!);
+  // private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
+  //   // fireEvent(this, "hass-action", { config: this._config!, action: ev.detail.action, });
+  //   // ev.stopPropagation();
+  //   fireEvent(this, "hass-action", { config: device ?? this._config!, action: ev.detail.action, });
+  // }
+
+  private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
+    ev.stopPropagation();
+    handleAction(this, this.hass!, device ?? this._config!, ev.detail.action!);
   }
 }
