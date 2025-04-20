@@ -6,15 +6,15 @@
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
-<img src=".github/img/main.gif" alt="Main Image"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.gif" alt="Main Image"/>
 </p>
 
 <p align="center">
-<img src=".github/img/only_gauge.png" alt="Only Gauge"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_gauge.png" alt="Only Gauge"/>
 </p>
 
 <p align="center">
-<img src=".github/img/only_gauge_entities.png" alt="Only Gauge"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_gauge_entities.png" alt="Only Gauge"/>
 </p>
 
 The main idea of this card is to show the energy consumption of your devices as a percentage of the **main entity** (your entity for tracking whole **house consumption**).
@@ -69,15 +69,15 @@ Then you can paste the following code into the Card Editor:
 ### Visual Editor
 
 <p align="center">
-<img src=".github/img/visual_editor_appearance.png" alt="Visual Editor Appearance"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_appearance.png" alt="Visual Editor Appearance"/>
 </p>
 
 <p align="center">
-<img src=".github/img/visual_editor_untracked_interactions.png" alt="Visual Editor Untracked + Interactions"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_untracked_interactions.png" alt="Visual Editor Untracked + Interactions"/>
 </p>
 
 <p align="center">
-<img src=".github/img/visual_editor_entities.png" alt="Visual Editor Entities"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_entities.png" alt="Visual Editor Entities"/>
 </p>
 
 <br/>
@@ -182,7 +182,7 @@ There are a lot of settings you can customize your sensors with:
 ## Entities
 
 <p align="center">
-<img src=".github/img/visual_editor_entity.png" alt="Visual Editor Entity"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_entity.png" alt="Visual Editor Entity"/>
 </p>
 
 The only required field is `entity`. The rest of the fields are optional. Color `auto` can only be set in the YAML file (or it will be set to `auto` by default when creating the card).
@@ -211,7 +211,7 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 
 ### Icons in the legend
 
-<img src=".github/img/icons.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/icons.png">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -231,9 +231,9 @@ untracked_state_content:
 
 ### Only Line
 
-<img src=".github/img/only_line_entities.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_line_entities.png">
 
-<img src=".github/img/only_line_max.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_line_max.png">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -247,7 +247,7 @@ corner: square
 
 Shows the difference between the main entity and the sum of all the entities.
 
-<img src=".github/img/delta.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/delta.png">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -262,7 +262,7 @@ entities:
 
 ### Legend with all entities
 
-<img src=".github/img/legend_all.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_all.png">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -279,7 +279,7 @@ entities:
 Mainly using the default settings. The only thing I changed is the `cutoff` to null to show all the entities. 
 I am also using the automatic color option, and I have the entities in the same order as I have them in the Home Assistant Energy panel.
 
-<img src=".github/img/normal.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/normal.png">
 
 ```yaml
 type: custom:energy-line-gauge
@@ -306,27 +306,27 @@ untracked_legend_label: Untracked
 
 ### `position: none`
 
-<img src=".github/img/position/none.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/none.png">
 
 ### `position: left`
 
-<img src=".github/img/position/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/left.png">
 
 ### `position: right`
 
-<img src=".github/img/position/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/right.png">
 
 ### `position: top-left`
 
-<img src=".github/img/position/top_left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_left.png">
 
 ### `position: top-middle`
 
-<img src=".github/img/position/top_middle.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_middle.png">
 
 ### `position: top-right`
 
-<img src=".github/img/position/top_right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_right.png">
 
 ## Theme
 
@@ -334,23 +334,23 @@ untracked_legend_label: Untracked
 
 ### `corner: square`
 
-<img src=".github/img/theme/square.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/square.png">
 
 ### `corner: lite_rounded`
 
-<img src=".github/img/theme/lite_rounded.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/lite_rounded.png">
 
 ### `corner: medium_rounded`
 
-<img src=".github/img/theme/medium_rounded.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/medium_rounded.png">
 
 ### `corner: rounded`
 
-<img src=".github/img/theme/rounded.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/rounded.png">
 
 ### `corner: circular`
 
-<img src=".github/img/theme/circular.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png">
 
 </div>
 
