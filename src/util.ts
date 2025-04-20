@@ -173,6 +173,7 @@ export const setConfigDefaults = (
 
   config.untracked_legend = !!(config.untracked_legend ?? config.entities);
   config.untracked_legend_label = config.untracked_legend_label === "" ? undefined : config.untracked_legend_label;
+  config.untracked_state_content = config.untracked_state_content ?? ['name'];
 
   config.legend_hide = config.legend_hide ?? false;
   config.legend_all = config.legend_all ?? false;

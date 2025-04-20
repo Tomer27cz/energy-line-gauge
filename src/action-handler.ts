@@ -166,7 +166,6 @@ class ActionHandler extends HTMLElement implements ActionHandlerType {
       }
       if (options.hasHold && this.held) {
         fireEvent(target, "action", { action: "hold" });
-        return; // Don't fire tap or double tap after hold
       }
       if (options.hasDoubleClick) {
         if (

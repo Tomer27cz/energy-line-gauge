@@ -103,7 +103,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                       select: {
                         mode: "dropdown",
                         options: [
-                          {value: "square", label: "Square"},
+                          {value: "square", label: "Square (default)"},
                           {value: "lite_rounded", label: "Lite Rounded"},
                           {value: "medium_rounded", label: "Medium Rounded"},
                           {value: "rounded", label: "Rounded"},
