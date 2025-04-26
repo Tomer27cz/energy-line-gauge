@@ -25,6 +25,8 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
 <div id="installation">
 <h1> Installation</h1>
 
+<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=Tomer27cz&amp;repository=energy-line-gauge&amp;category=plugin" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
+
 <h2> Manual installation via <a href="https://hacs.xyz/">HACS</a> <img src="https://img.shields.io/badge/-Recommended-%2303a9f4"/></h2>
 
 1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
