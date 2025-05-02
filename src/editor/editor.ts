@@ -430,9 +430,9 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                 `ui.panel.lovelace.editor.card.statistic.stat_types`
             );
         case "line_text_size":
-            return this.hass.localize(
+            return `${this.hass.localize(
                 `ui.panel.lovelace.editor.card.generic.icon_height`
-            );
+            )} (rem)`;
         default:
           return schema.name;
       }

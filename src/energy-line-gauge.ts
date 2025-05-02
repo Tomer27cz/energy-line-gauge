@@ -80,6 +80,8 @@ export class EnergyLineGauge extends LitElement {
       type: "custom:energy-line-gauge",
       entity: foundEntities[0],
       title: "Energy Line Gauge",
+      min: 0,
+      max: 100,
       entities: [
         {entity: foundEntities[1], color: toRGB(COLORS[0])},
         {entity: foundEntities[2], color: toRGB(COLORS[1])},
