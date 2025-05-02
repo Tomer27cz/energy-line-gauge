@@ -161,18 +161,8 @@ export class EnergyLineGauge extends LitElement {
     <div class="chart-legend">
       <ul>
         ${this._config.entities.map((device: ELGEntity) => {
-          if (!device.entity) {this._invalidConfig()}
-    
+          if (!device.entity) {return this._entityNotFound(device.entity);}
           const stateObj = this.hass.states[device.entity];
-          if (!stateObj) {
-            return html`
-              <hui-warning>
-                ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
-                  entity: device.entity || "[empty]",
-                })}
-              </hui-warning>
-            `;
-          }
     
           if (stateObj.state === "unavailable") {
             return html`
@@ -215,7 +205,9 @@ export class EnergyLineGauge extends LitElement {
     return html`
       <div class="device-line-container">
         ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
+          if (!device.entity) {return this._entityNotFound(device.entity);}
           const stateObj = this.hass.states[device.entity];
+          
           this._deviceWidths[device.entity] = (!stateObj || stateObj.state === "unavailable"
             || (this._calcMlt(stateObj, device) < this._ce(device.cutoff??this._config.cutoff))
           ) ? 0 : this._calculateDeviceWidth(this._calcMlt(stateObj, device));
@@ -282,6 +274,13 @@ export class EnergyLineGauge extends LitElement {
   private _invalidConfig() {
     if (!this.hass) {throw new Error("Invalid configuration (no hass)");}
     throw new Error(this.hass.localize("ui.panel.lovelace.editor.condition-editor.invalid_config_title"));
+  }
+  private _entityNotFound(entity: string): TemplateResult {
+    return html`<hui-warning>
+      ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", { 
+        entity: entity || "[empty]", 
+      })}
+    </hui-warning>`;
   }
 
   private _entityName(device: ELGEntity): string {
