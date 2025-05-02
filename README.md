@@ -104,6 +104,9 @@ precision: 0
 unit: W
 cutoff: 5
 corner: 'square'
+position: 'left'
+line_text_position: 'bottom-right'
+line_text_size: 1.5
 color: "#00aafa"
 color_bg:
     - 40
@@ -137,13 +140,17 @@ entities:
       - 244
       - 189
       - 74
-    cutoff: 5
+    state_content: 
+      - name
+      - state
   - entity: sensor.plug_2_power
     name: Plug 2
     color:
       - 255
       - 114
       - 92
+    line_state_content:
+      - percentage
   - entity: sensor.plug_3_power
     name: Plug 3
     state_content:
@@ -171,7 +178,7 @@ There are a lot of settings you can customize your sensors with:
 | `line_text_position`      |      string      |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']    |
 | `line_text_size`          |      number      |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                               |
 | `color`                   |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                 |                                                                 
-| `color-bg`                |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).       |
+| `color_bg`                |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).       |
 | `tap_action`              |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                       |
 | `hold_action`             |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                             |
 | `double_tap_action`       |  Action Config   |             none             | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                       |
@@ -337,6 +344,7 @@ untracked_legend_label: Untracked
 </div>
 
 <div id="theme">
+
 ## Theme
 
 <hr/>
