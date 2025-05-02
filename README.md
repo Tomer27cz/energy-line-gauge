@@ -166,7 +166,10 @@ There are a lot of settings you can customize your sensors with:
 | `precision`               |      number      |              0               |                                            2                                             | The number of decimals to display.                                                                |
 | `unit`                    |      string      |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                             |
 | `cutoff`                  |      number      |              5               |                                            10                                            | Any entity with a value below this will not be displayed.                                         |
-| `corner`                  |      string      |            square            |                                         circular                                         | The theme [shape] of the gauge. (square, lite_rounded, medium_rounded, rounded, circular)         |
+| `corner`                  |      string      |            square            |                                         circular                                         | The theme (shape) of the gauge [see more](#theme)                                                 |
+| `position`                |      string      |             left             |                                           none                                           | Position of the main label [see more](#position)                                                  |
+| `line_text_position`      |      string      |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']    |
+| `line_text_size`          |      number      |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                               |
 | `color`                   |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                 |                                                                 
 | `color-bg`                |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).       |
 | `tap_action`              |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                       |
@@ -191,17 +194,18 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 
 #### Each entity has its own settings:
 
-| Setting             |     type      |                                         example                                          | description                                                                                                                                                       |
-|---------------------|:-------------:|:----------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`            |    string     |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                                       | 
-| `name`              |    string     |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                                                                             |
-| `icon`              |    string     |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                                                        |
-| `cutoff`            |    number     |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                                         |
-| `color`             | string or rgb |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                                           |                                                                 
-| `state_content`     |   string[]    |                                    ['name', 'state']                                     | ['name','state','last_changed','last_updated'] - Order matters. Info will be separated by a dot. |
-| `tap_action`        | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                                       |
-| `hold_action`       | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                             |
-| `double_tap_action` | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                                       |
+| Setting              |     type      |                                         example                                          | description                                                                                                    |
+|----------------------|:-------------:|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------|
+| `entity`             |    string     |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                    | 
+| `name`               |    string     |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                          |
+| `icon`               |    string     |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                     |
+| `cutoff`             |    number     |                                            10                                            | Any entity with a value below this will not be displayed.                                                      |
+| `color`              | string or rgb |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                        |                                                                 
+| `state_content`      |   string[]    |                                    ['name', 'state']                                     | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot. |
+| `line_state_content` |   string[]    |                                 ['percentage', 'state']                                  | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot.                                                                                                               |
+| `tap_action`         | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                    |
+| `hold_action`        | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                          |
+| `double_tap_action`  | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                    |
 <p> 
 
 </div>
@@ -300,6 +304,7 @@ untracked_legend: true
 untracked_legend_label: Untracked
 ```
 
+<div id="position">
 
 ## Position
 
@@ -329,6 +334,9 @@ untracked_legend_label: Untracked
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_right.png">
 
+</div>
+
+<div id="theme">
 ## Theme
 
 <hr/>
@@ -353,6 +361,7 @@ untracked_legend_label: Untracked
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png">
 
+</div>
 </div>
 
 ### Some things that should be added in the future:
