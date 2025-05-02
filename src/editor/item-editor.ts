@@ -34,10 +34,6 @@ export class ItemEditor extends LitElement {
 
         ]
       },
-
-
-
-
       {
         name: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"),
         type: "expandable",
@@ -53,7 +49,6 @@ export class ItemEditor extends LitElement {
             ]
           },
           {
-            name: this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`),
             type: "grid",
             schema: [
               {
@@ -187,8 +182,6 @@ export class ItemEditor extends LitElement {
         ],
       },
     ];
-
-    // <h1>${this.hass.localize("ui.panel.lovelace.editor.sub-element-editor.types.element")}</h1>
 
     return html`
       <ha-form

@@ -222,7 +222,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                         }
                       }
                   },
-                  { name: "line_text_size", required: false, selector: { number: { min: 0.25, max: 4, step: 0.1, mode: "box"} } },
+                  { name: "line_text_size", required: false, selector: { number: { min: 0.2, max: 4, step: 0.1, mode: "box"} } },
                 ],
               },
             ]

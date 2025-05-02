@@ -66,8 +66,9 @@ export class ItemsEditor extends LitElement {
   }
 
   protected render() {
-    if (!this.entities || !this.hass) {
-      return nothing;
+    if (!this.hass) {return nothing;}
+    if (!this.entities) {
+      this.entities = [];
     }
 
     return html`
