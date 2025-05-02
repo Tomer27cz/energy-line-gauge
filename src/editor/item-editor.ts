@@ -57,10 +57,24 @@ export class ItemEditor extends LitElement {
               ["state", this.hass.localize("ui.components.state-content-picker.state")],
               ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")],
               ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")],
+              ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"],
             ],
             name: "state_content",
             required: false,
             default: ["name"],
+          },
+          {
+            type: "multi_select",
+            options: [
+              ["name", this.hass.localize("ui.components.state-content-picker.name")],
+              ["state", this.hass.localize("ui.components.state-content-picker.state")],
+              ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")],
+              ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")],
+              ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"],
+            ],
+            name: "line_state_content",
+            required: false,
+            default: [],
           },
         ],
       },
@@ -165,6 +179,12 @@ export class ItemEditor extends LitElement {
           return this.hass.localize(
               `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
           );
+        case "line_state_content":
+          return `${this.hass.localize(
+            `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
+          )} (${this.hass.localize(
+            "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"
+          )})`;
         default:
           return schema.name;
       }

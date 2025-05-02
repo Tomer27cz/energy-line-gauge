@@ -134,8 +134,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                           label: "Top Left",
                         },
                         {
-                          value: "top-middle",
-                          label: "Top Middle",
+                          value: "top-center",
+                          label: "Top Center",
                         },
                         {
                           value: "top-right",
@@ -146,8 +146,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                           label: "Bottom Left",
                         },
                         {
-                          value: "bottom-middle",
-                          label: "Bottom Middle",
+                          value: "bottom-center",
+                          label: "Bottom Center",
                         },
                         {
                           value: "bottom-right",
@@ -157,6 +157,54 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     }
                   }
               },
+            ],
+          },
+          {
+            name: "",
+            type: "grid",
+            schema: [
+              { name: "line_text_position", required: false, selector:
+                {
+                  select: {
+                    mode: "dropdown",
+                    options: [
+                      {
+                        value: "left",
+                        label: "Left (default)",
+                      },
+                      {
+                        value: "right",
+                        label: "Right",
+                      },
+                      {
+                        value: "top-left",
+                        label: "Top Left",
+                      },
+                      {
+                        value: "top-center",
+                        label: "Top Center",
+                      },
+                      {
+                        value: "top-right",
+                        label: "Top Right",
+                      },
+                      {
+                        value: "bottom-left",
+                        label: "Bottom Left",
+                      },
+                      {
+                        value: "bottom-center",
+                        label: "Bottom Center",
+                      },
+                      {
+                        value: "bottom-right",
+                        label: "Bottom Right",
+                      },
+                    ]
+                  }
+                }
+              },
+              { name: "line_text_size", required: false, selector: { number: { min: 0.25, max: 4, step: 0.1, mode: "box"} } },
             ],
           },
           {

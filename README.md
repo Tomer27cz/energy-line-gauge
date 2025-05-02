@@ -278,8 +278,8 @@ entities:
 
 ### Normal usage ( how I use it )
 
-Mainly using the default settings. The only thing I changed is the `cutoff` to null to show all the entities. 
-I am also using the automatic color option, and I have the entities in the same order as I have them in the Home Assistant Energy panel.
+Mainly using the default settings. 
+I am using the automatic color option, and I have the entities in the same order as I have them in the Home Assistant Energy panel.
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/normal.png">
 
@@ -288,7 +288,6 @@ type: custom:energy-line-gauge
 entity: sensor.glow_power_consumption
 min: 0
 unit: W
-cutoff: null
 entities:
   - entity: sensor.plug_0_power
     name: PC
@@ -322,9 +321,9 @@ untracked_legend_label: Untracked
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_left.png">
 
-### `position: top-middle`
+### `position: top-center`
 
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_middle.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top_center.png">
 
 ### `position: top-right`
 

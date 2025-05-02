@@ -156,6 +156,16 @@ export const toRGB = (
   return color;
 }
 
+export const textColor = (
+  backgroundColor: [number, number, number] | undefined | string
+): [number, number, number] | undefined => {
+  if (typeof backgroundColor === "string") {backgroundColor = toRGB(backgroundColor);}
+  if (!backgroundColor) {return undefined;}
+  const [r, g, b] = backgroundColor;
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 125 ? [0, 0, 0] : [255, 255, 255];
+}
+
 export const setConfigDefaults = (
     config: ELGConfig
 ): ELGConfig => {
@@ -167,6 +177,9 @@ export const setConfigDefaults = (
   config.cutoff = config.cutoff ?? 5;
   config.corner = config.corner ?? "square";
   config.position = config.position ?? "left";
+
+  config.line_text_position = config.line_text_position ?? "left";
+  config.line_text_size = config.line_text_size ?? 1;
 
   config.color = toRGB(config.color) ?? toRGB(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim());
   config.color_bg = toRGB(config.color_bg) ?? toRGB(getComputedStyle(document.documentElement).getPropertyValue('--secondary-background-color').trim());

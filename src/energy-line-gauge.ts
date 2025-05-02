@@ -16,7 +16,7 @@ import { version } from '../package.json';
 import { ELGConfig, ELGEntity } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, fireEvent } from './util';
+import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, fireEvent, textColor } from './util';
 
 import './editor/editor';
 
@@ -41,6 +41,8 @@ export class EnergyLineGauge extends LitElement {
   @state() private _config!: ELGConfig;
 
   @property() private _card!: LovelaceCard;
+
+  private _deviceWidths: Record<string, number> = {};
 
   // noinspection JSUnusedGlobalSymbols
   public async setConfig(config: ELGConfig): Promise<void> {
@@ -210,6 +212,40 @@ export class EnergyLineGauge extends LitElement {
       </ul>
     </div>`
   }
+  _createDeviceLines() {
+    if (!this._config.entities) {return html``;}
+    return html`
+      <div class="device-line-container">
+        ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
+          const stateObj = this.hass.states[device.entity];
+          this._deviceWidths[device.entity] = (!stateObj || stateObj.state === "unavailable"
+            || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
+          ) ? 0 : this._calculateDeviceWidth(stateObj.state);
+  
+          // noinspection HtmlUnknownAttribute
+          return html`
+            <div 
+              id="line-${device.entity.replace(".", "-")}" 
+              class="device-line" 
+              style="background-color: ${toHEX(device.color)}; width: ${this._deviceWidths[device.entity]}%;"
+              @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
+              .actionHandler=${actionHandler({ 
+                hasHold: hasAction(device.hold_action), 
+                hasDoubleClick: hasAction(device.double_tap_action), 
+              })}
+            >
+              ${this._deviceWidths[device.entity] > 0 ? html`
+                <div 
+                  class="device-line-label line-text-position-${this._config.line_text_position??"left"}" 
+                  style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size??1}rem;"
+                >
+                  ${this._entityLabel(device, true)}
+                </div>
+              ` : html``}
+            </div>`;
+        }) : ''}
+      </div>`;
+  }
   _createInnerHtml() {
     if (!this.hass.states[this._config.entity]) {
       return html`
@@ -221,6 +257,7 @@ export class EnergyLineGauge extends LitElement {
       `;
     }
     const value = this.hass.states[this._config.entity].state;
+    this._deviceWidths = {};
 
     return html`
       ${this._config.title || this._config.subtitle ? html`
@@ -229,31 +266,13 @@ export class EnergyLineGauge extends LitElement {
           ${this._config.subtitle ? html`<div class="gauge-subtitle">${this._config.subtitle}</div>` : ''}
         </div>` : ''}
       <div class="gauge-frame position-${this._config.position??"left"}">
-        <div class="gauge-value">${this._formatValue(value)}</div>
+        <div class="gauge-value">
+          ${parseFloat(value).toFixed(this._config.precision)}
+          ${this._config.unit ? html`<span class="unit">${this._config.unit}</span>` : ''}
+        </div>
         <div class="gauge-line line-corner-${this._config.corner??"square"}">
           <div class="main-line" style="width: ${this._calculateWidth(this._config.entity)}%;"></div>
-          <div class="device-line-container">
-          ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
-            const stateObj = this.hass.states[device.entity];
-      
-            // noinspection HtmlUnknownAttribute
-            return html`
-              <div 
-                  id="line-${device.entity.replace(".", "-")}" 
-                  class="device-line" 
-                  style="background-color: ${toHEX(device.color)}; width: ${
-                    (!stateObj || stateObj.state === "unavailable" 
-                      || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
-                    ) ? 0 : this._calculateDeviceWidth(stateObj.state)
-                  }%"
-                  @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
-                  .actionHandler=${actionHandler({
-                    hasHold: hasAction(device.hold_action),
-                    hasDoubleClick: hasAction(device.double_tap_action),
-                  })}
-              ></div>`;
-          }) : ''}
-          </div>
+          ${this._createDeviceLines()}
         </div>
       </div>
       ${this._config.show_delta ? this._createDelta() : ''}
@@ -272,13 +291,17 @@ export class EnergyLineGauge extends LitElement {
     if (device.name) {return device.name;}
     return this.hass.states[device.entity].attributes.friendly_name || device.entity.split('.')[1];
   }
-  private _entityLabel(device: ELGEntity) {
+  private _entityLabel(device: ELGEntity, line?: boolean): TemplateResult | string | undefined {
     if (!device.entity) {this._invalidConfig()}
-    if (!device.state_content || device.state_content.length === 0) {return this._entityName(device);}
+    if (line) {
+      if (!device.line_state_content || device.line_state_content.length === 0) {return;}
+    } else {
+      if (!device.state_content || device.state_content.length === 0) {return this._entityName(device);}
+    }
     const stateObj = this.hass.states[device.entity];
 
     return html`
-      ${device.state_content.map((value, i, arr) => {
+      ${(line ? device.line_state_content : device.state_content)?.map((value, i, arr) => {
           const dot = i < arr.length - 1 ? " ⸱ " : '';
           const timeTemplate = (datetime: string) => html`
           <ha-relative-time
@@ -293,6 +316,7 @@ export class EnergyLineGauge extends LitElement {
             case "state": return html`${this._formatValue(stateObj.state)}${dot}`;
             case "last_changed": return timeTemplate(stateObj.last_changed);
             case "last_updated": return timeTemplate(stateObj.last_updated);
+            case "percentage": return html`${this._deviceWidths[device.entity].toFixed(0)}%${dot}`;
             default: return html`${value}${dot}`;
           }
         })}`;

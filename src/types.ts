@@ -17,6 +17,9 @@ export interface ELGConfig extends LovelaceCardConfig {
   corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
   position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right';
 
+  line_text_position?: 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center';
+  line_text_size?: number;
+
   color?: [number, number, number] | string;
   color_bg?: [number, number, number] | string;
 
@@ -46,6 +49,7 @@ export interface ELGEntity {
   cutoff?: number;
 
   state_content?: string[];
+  line_state_content?: string[];
 
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;

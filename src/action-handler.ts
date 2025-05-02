@@ -13,7 +13,7 @@ export interface ActionHandlerOptions {
 }
 
 export const isTouch =
-  "ontouchstart" in window ||
+  'ontouchstart' in window ||
   navigator.maxTouchPoints > 0 ||
   // @ts-ignore
   navigator.msMaxTouchPoints > 0;
@@ -22,6 +22,7 @@ interface ActionHandlerType extends HTMLElement {
   holdTime: number;
   bind(element: Element, options?: ActionHandlerOptions): void;
 }
+
 interface ActionHandlerElement extends HTMLElement {
   actionHandler?: {
     options: ActionHandlerOptions;
@@ -33,38 +34,34 @@ interface ActionHandlerElement extends HTMLElement {
 
 class ActionHandler extends HTMLElement implements ActionHandlerType {
   public holdTime = 500;
-
   protected timer?: number;
-
   protected held = false;
-
   private cancelled = false;
-
   private dblClickTimeout?: number;
 
   public connectedCallback() {
     Object.assign(this.style, {
-      position: "fixed",
-      width: isTouch ? "100px" : "50px",
-      height: isTouch ? "100px" : "50px",
-      transform: "translate(-50%, -50%) scale(0)",
-      pointerEvents: "none",
-      zIndex: "999",
-      background: "var(--primary-color)",
+      position: 'fixed',
+      width: isTouch ? '100px' : '50px',
+      height: isTouch ? '100px' : '50px',
+      transform: 'translate(-50%, -50%) scale(0)',
+      pointerEvents: 'none',
+      zIndex: '999',
+      background: 'var(--primary-color)',
       display: null,
-      opacity: "0.2",
-      borderRadius: "50%",
-      transition: "transform 180ms ease-in-out",
+      opacity: '0.2',
+      borderRadius: '50%',
+      transition: 'transform 180ms ease-in-out',
     });
 
     [
-      "touchcancel",
-      "mouseout",
-      "mouseup",
-      "touchmove",
-      "mousewheel",
-      "wheel",
-      "scroll",
+      'touchcancel',
+      'mouseout',
+      'mouseup',
+      'touchmove',
+      'mousewheel',
+      'wheel',
+      'scroll',
     ].forEach((ev) => {
       document.addEventListener(
         ev,
@@ -93,42 +90,30 @@ class ActionHandler extends HTMLElement implements ActionHandlerType {
     }
 
     if (element.actionHandler) {
-      element.removeEventListener("touchstart", element.actionHandler.start!);
-      element.removeEventListener("touchend", element.actionHandler.end!);
-      element.removeEventListener("touchcancel", element.actionHandler.end!);
-
-      element.removeEventListener("mousedown", element.actionHandler.start!);
-      element.removeEventListener("click", element.actionHandler.end!);
-
-      element.removeEventListener(
-        "keydown",
-        element.actionHandler.handleKeyDown!
-      );
-    } else {
-      element.addEventListener("contextmenu", (ev: Event) => {
-        const e = ev || window.event;
-        if (e.preventDefault) {
-          e.preventDefault();
-        }
-        if (e.stopPropagation) {
-          e.stopPropagation();
-        }
-        e.cancelBubble = true;
-        e.returnValue = false;
-        return false;
-      });
+      element.removeEventListener('touchstart', element.actionHandler.start!);
+      element.removeEventListener('touchend', element.actionHandler.end!);
+      element.removeEventListener('touchcancel', element.actionHandler.end!);
+      element.removeEventListener('mousedown', element.actionHandler.start!);
+      element.removeEventListener('click', element.actionHandler.end!);
+      element.removeEventListener('keydown', element.actionHandler.handleKeyDown!);
     }
 
     element.actionHandler = { options };
 
-    if (options.disabled) {
-      return;
-    }
-
     element.actionHandler.start = (ev: Event) => {
+      if ((ev as MouseEvent).button === 2) {
+        // Ignore right-click for hold
+        return;
+      }
+
+      if (options.disabled) {
+        return;
+      }
+
       this.cancelled = false;
-      let x;
-      let y;
+      let x: number;
+      let y: number;
+
       if ((ev as TouchEvent).touches) {
         x = (ev as TouchEvent).touches[0].clientX;
         y = (ev as TouchEvent).touches[0].clientY;
@@ -140,6 +125,7 @@ class ActionHandler extends HTMLElement implements ActionHandlerType {
       if (options.hasHold) {
         this.held = false;
         this.timer = window.setTimeout(() => {
+          if (this.cancelled) {return;}
           this._startAnimation(x, y);
           this.held = true;
         }, this.holdTime);
@@ -147,71 +133,78 @@ class ActionHandler extends HTMLElement implements ActionHandlerType {
     };
 
     element.actionHandler.end = (ev: Event) => {
-      // Don't respond when moved or scrolled while touch
+      const target = ev.target as HTMLElement;
+
+      // Ignore right-click
+      if ((ev as MouseEvent).button === 2) return;
+
       if (
-        ev.type === "touchcancel" ||
-        (ev.type === "touchend" && this.cancelled)
+        ev.type === 'touchcancel' ||
+        (ev.type === 'touchend' && this.cancelled)
       ) {
         return;
       }
-      const target = ev.target as HTMLElement;
-      // Prevent mouse event if touch event
+
       if (ev.cancelable) {
         ev.preventDefault();
       }
+
       if (options.hasHold) {
+        this.cancelled = true;
         clearTimeout(this.timer);
         this._stopAnimation();
         this.timer = undefined;
       }
+
       if (options.hasHold && this.held) {
-        fireEvent(target, "action", { action: "hold" });
+        fireEvent(target, 'action', { action: 'hold' });
+        return; // Don't fire tap after hold
       }
+
       if (options.hasDoubleClick) {
         if (
-          (ev.type === "click" && (ev as MouseEvent).detail < 2) ||
+          (ev.type === 'click' && (ev as MouseEvent).detail < 2) ||
           !this.dblClickTimeout
         ) {
           this.dblClickTimeout = window.setTimeout(() => {
             this.dblClickTimeout = undefined;
-            fireEvent(target, "action", { action: "tap" });
+            fireEvent(target, 'action', { action: 'tap' });
           }, 250);
         } else {
           clearTimeout(this.dblClickTimeout);
           this.dblClickTimeout = undefined;
-          fireEvent(target, "action", { action: "double_tap" });
+          fireEvent(target, 'action', { action: 'double_tap' });
         }
       } else {
-        fireEvent(target, "action", { action: "tap" });
+        fireEvent(target, 'action', { action: 'tap' });
       }
     };
 
     element.actionHandler.handleKeyDown = (ev: KeyboardEvent) => {
-      if (!["Enter", " "].includes(ev.key)) {
+      if (!['Enter', ' '].includes(ev.key)) {
         return;
       }
       (ev.currentTarget as ActionHandlerElement).actionHandler!.end!(ev);
     };
 
-    element.addEventListener("touchstart", element.actionHandler.start, {
+    element.addEventListener('touchstart', element.actionHandler.start, {
       passive: true,
     });
-    element.addEventListener("touchend", element.actionHandler.end);
-    element.addEventListener("touchcancel", element.actionHandler.end);
+    element.addEventListener('touchend', element.actionHandler.end);
+    element.addEventListener('touchcancel', element.actionHandler.end);
 
-    element.addEventListener("mousedown", element.actionHandler.start, {
+    element.addEventListener('mousedown', element.actionHandler.start, {
       passive: true,
     });
-    element.addEventListener("click", element.actionHandler.end);
-
-    element.addEventListener("keydown", element.actionHandler.handleKeyDown);
+    element.addEventListener('click', element.actionHandler.end);
+    element.addEventListener('keydown', element.actionHandler.handleKeyDown);
   }
 
   private _startAnimation(x: number, y: number) {
     Object.assign(this.style, {
       left: `${x}px`,
       top: `${y}px`,
-      transform: "translate(-50%, -50%) scale(1)",
+      transform: 'translate(-50%, -50%) scale(1)',
     });
   }
 
@@ -219,20 +212,19 @@ class ActionHandler extends HTMLElement implements ActionHandlerType {
     Object.assign(this.style, {
       left: null,
       top: null,
-      transform: "translate(-50%, -50%) scale(0)",
+      transform: 'translate(-50%, -50%) scale(0)',
     });
   }
 }
 
-customElements.define("action-handler-energy-line-gauge", ActionHandler);
+customElements.define('action-handler-energy-line-gauge', ActionHandler);
 
 const getActionHandler = (): ActionHandlerType => {
   const body = document.body;
-  if (body.querySelector("action-handler-energy-line-gauge")) {
-    return body.querySelector("action-handler-energy-line-gauge") as ActionHandlerType;
-  }
+  const existing = body.querySelector('action-handler-energy-line-gauge');
+  if (existing) return existing as ActionHandlerType;
 
-  const actionhandler = document.createElement("action-handler-energy-line-gauge");
+  const actionhandler = document.createElement('action-handler-energy-line-gauge');
   body.appendChild(actionhandler);
 
   return actionhandler as ActionHandlerType;
@@ -243,9 +235,7 @@ export const actionHandlerBind = (
   options?: ActionHandlerOptions
 ) => {
   const actionhandler: ActionHandlerType = getActionHandler();
-  if (!actionhandler) {
-    return;
-  }
+  if (!actionhandler) return;
   actionhandler.bind(element, options);
 };
 
@@ -256,7 +246,6 @@ export const actionHandler = directive(
       return noChange;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     render(_options?: ActionHandlerOptions) {}
   }
 );

@@ -113,6 +113,8 @@ export const styles = css`
         white-space: nowrap;
         color: gray;
     }
+    
+    /* Gauge Value -------------------------------------------*/
 
     .gauge-value {
         font-size: 2.5rem;
@@ -120,8 +122,17 @@ export const styles = css`
         flex-wrap: nowrap;
         white-space: nowrap;
     }
-
-    /* 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right'; */
+    .unit {
+        font-size: 1.5rem;
+        text-align: center;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        color: var(--secondary-text-color);
+    }
+    
+    /* MAIN Label Position -------------------------------------------------- */
+    
+    /* 'left' | 'right' | 'none' | 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'; */
     .position-left {
         flex-direction: row;
         align-items: center;
@@ -134,12 +145,14 @@ export const styles = css`
 
     .position-top-left,
     .position-top-middle,
+    .position-top-center,
     .position-top-right {
         flex-direction: column;
     }
 
     .position-bottom-left,
     .position-bottom-middle,
+    .position-bottom-center,
     .position-bottom-right {
         flex-direction: column-reverse;
     }
@@ -150,7 +163,9 @@ export const styles = css`
     }
 
     .position-top-middle,
-    .position-bottom-middle {
+    .position-bottom-middle,
+    .position-top-center,
+    .position-bottom-center {
         align-items: center;
     }
 
@@ -174,15 +189,19 @@ export const styles = css`
 
     .position-top-left .gauge-value,
     .position-top-middle .gauge-value,
+    .position-top-center .gauge-value,
     .position-top-right .gauge-value {
         margin: 0.5rem 0 1rem 0;
     }
 
     .position-bottom-left .gauge-value,
     .position-bottom-middle .gauge-value,
+    .position-bottom-center .gauge-value,
     .position-bottom-right .gauge-value {
         margin: 1rem 0 0.5rem 0;
     }
+    
+    /*Gauge line -------------------------------------------*/
 
     .gauge-line {
         width: 100%;
@@ -195,8 +214,7 @@ export const styles = css`
         background-color: var(--color);
         transition: width 1s ease-out;
     }
-
-
+    
     .device-line-container {
         display: flex;
         position: relative;
@@ -204,13 +222,65 @@ export const styles = css`
         height: 3rem;
         width: 100%;
     }
+    
+    /* Device line --------------------------------------------*/
+
     .device-line {
         float: left;
-        width: var(--line-width);
         height: 100%;
-        background-color: var(--color);
         transition: width 1s ease-out;
+        display: flex;
     }
+    .device-line-label {
+        white-space: nowrap;
+        overflow: hidden;
+        width: 100%;
+        min-width: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    /* Device line label position --------------------------------------------*/
+    /* 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center'; */
+    
+    .line-text-position-left {
+        text-align: left;
+        align-content: center;
+    }
+    .line-text-position-right {
+        text-align: right;
+        align-content: center;
+    }
+    .line-text-position-center {
+        text-align: center;
+        align-content: center;
+    }
+    .line-text-position-top-left {
+        text-align: left;
+        align-content: start;
+    }
+    .line-text-position-top-right {
+        text-align: right;
+        align-content: start;
+    }
+    .line-text-position-top-center {
+        text-align: center;
+        align-content: start;
+    }
+    .line-text-position-bottom-left {
+        text-align: left;
+        align-content: end;
+    }
+    .line-text-position-bottom-right {
+        text-align: right;
+        align-content: end;
+    }
+    .line-text-position-bottom-center {
+        text-align: center;
+        align-content: end;
+    }
+    
+    /*Theme  --------------------------------------------------*/
     
     .line-corner-lite_rounded {
         border-radius: 0.25rem;
@@ -232,6 +302,8 @@ export const styles = css`
         border-radius: 1.5rem;
         overflow: hidden;
     }
+    
+    /*Legend -------------------------------------------------*/
 
     .chart-legend {
         text-align: center;
@@ -269,6 +341,8 @@ export const styles = css`
         width: 16px;
         direction: var(--direction);
     }
+    
+    /*Delta -------------------------------------------------*/
     
     .gauge-delta {
         display: flex;
