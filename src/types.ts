@@ -46,7 +46,11 @@ export interface ELGEntity {
   name?: string;
   icon?: string;
   color?: [number, number, number] | string;
+
   cutoff?: number;
+  unit?: string;
+  multiplier?: number;
+  precision?: number;
 
   state_content?: string[];
   line_state_content?: string[];

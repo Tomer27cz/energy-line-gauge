@@ -211,6 +211,8 @@ export const setEntitiesDefaults = (
       device.color = toRGB(availableColor);
       device_colors.push(availableColor?.toUpperCase());
     }
+
+    device.multiplier = device.multiplier ?? 1;
   }
   return entities_copy;
 };

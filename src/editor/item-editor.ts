@@ -5,7 +5,7 @@ import { HomeAssistant } from 'custom-card-helpers';
 
 import { fireEvent } from '../util';
 import { ELGEntity, DEFAULT_ACTIONS } from '../types';
-import { mdiGestureTap, mdiTextShort } from '@mdi/js';
+import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 
 @customElement('energy-line-gauge-item-editor')
 export class ItemEditor extends LitElement {
@@ -24,8 +24,6 @@ export class ItemEditor extends LitElement {
         required: true,
         selector: {entity: {domain: "sensor"}},
       },
-
-
 
       {
         name: "content",
@@ -78,6 +76,70 @@ export class ItemEditor extends LitElement {
           },
         ],
       },
+
+
+      {
+        name: "unit",
+        type: "expandable",
+        flatten: true,
+        iconPath: mdiRuler,
+        schema: [
+          {
+            name: "",
+            type: "grid",
+            schema: [
+              {name: "unit", required: false, selector: {text: {}}},
+              { name: "multiplier", required: false, selector:
+                {
+                  select: {
+                    mode: "dropdown",
+                    options: [
+                      {
+                        value: 1000000000000,
+                        label: "10^12 (Tera)",
+                      },
+                      {
+                        value: 1000000000,
+                        label: "10^9 (Giga)",
+                      },
+                      {
+                        value: 1000000,
+                        label: "10^6 (Mega)",
+                      },
+                      {
+                        value: 1000,
+                        label: "10^3 (Kilo)",
+                      },
+                      {
+                        value: 1,
+                        label: "1 (Same as Main)",
+                      },
+                      {
+                        value: 0.001,
+                        label: "10^-3 (Milli)",
+                      },
+                      {
+                        value: 0.000001,
+                        label: "10^-6 (Micro)",
+                      },
+                      {
+                        value: 0.000000001,
+                        label: "10^-9 (Nano)",
+                      },
+                      {
+                        value: 0.000000000001,
+                        label: "10^-12 (Pico)",
+                      },
+                    ]
+                  }
+                }
+              },
+              {name: "precision", required: false, selector: {number: {}}},
+            ]
+          }
+        ],
+      },
+
       {
         name: "interactions",
         type: "expandable",

@@ -8,7 +8,7 @@ import {
   LovelaceCard,
   hasAction,
   ActionHandlerEvent,
-  handleAction,
+  handleAction, stateIcon,
 } from 'custom-card-helpers';
 
 import { version } from '../package.json';
@@ -135,9 +135,9 @@ export class EnergyLineGauge extends LitElement {
     const [state, sum, deltaValue] = delta;
     return html`
       <div class="gauge-delta">
-        <div class="gauge-delta-item">State: <span>${this._formatValue(state)}</span></div>
-        <div class="gauge-delta-item">Sum: <span>${this._formatValue(sum)}</span></div>
-        <div class="gauge-delta-item delta">Delta: <span>${this._formatValue(deltaValue)}</span></div>
+        <div class="gauge-delta-item">State: <span>${this._formatValueMain(state)}</span></div>
+        <div class="gauge-delta-item">Sum: <span>${this._formatValueMain(sum)}</span></div>
+        <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(deltaValue)}</span></div>
       </div>`;
   }
   _createUntrackedLegend() {
@@ -186,7 +186,7 @@ export class EnergyLineGauge extends LitElement {
             `;
           }
     
-          if (parseFloat(stateObj.state) < (device.cutoff??this._config.cutoff??0) && !this._config.legend_all) {
+          if (this._calcMlt(stateObj, device) < (device.cutoff??this._config.cutoff??0) && !this._config.legend_all) {
             return html``;
           }
     
@@ -219,8 +219,8 @@ export class EnergyLineGauge extends LitElement {
         ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
           const stateObj = this.hass.states[device.entity];
           this._deviceWidths[device.entity] = (!stateObj || stateObj.state === "unavailable"
-            || (stateObj.state < this._ce(device.cutoff??this._config.cutoff))
-          ) ? 0 : this._calculateDeviceWidth(stateObj.state);
+            || (this._calcMlt(stateObj, device) < this._ce(device.cutoff??this._config.cutoff))
+          ) ? 0 : this._calculateDeviceWidth(this._calcMlt(stateObj, device));
   
           // noinspection HtmlUnknownAttribute
           return html`
@@ -313,7 +313,7 @@ export class EnergyLineGauge extends LitElement {
     
           switch (value) {
             case "name": return html`${this._entityName(device)}${dot}`;
-            case "state": return html`${this._formatValue(stateObj.state)}${dot}`;
+            case "state": return html`${this._formatValueDevice(this._calcMlt(stateObj, device), device)}${dot}`;
             case "last_changed": return timeTemplate(stateObj.last_changed);
             case "last_updated": return timeTemplate(stateObj.last_updated);
             case "percentage": return html`${this._deviceWidths[device.entity].toFixed(0)}%${dot}`;
@@ -333,24 +333,34 @@ export class EnergyLineGauge extends LitElement {
           case "name": return html`${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}${dot}`;
           case "state": {
             const [, , delta] = this._delta() ?? [0, 0, undefined];
-            return delta === undefined ? html`` : html`${this._formatValue(delta)}${dot}`;
+            return delta === undefined ? html`` : html`${this._formatValueMain(delta)}${dot}`;
           }
           default: return html`${value}${dot}`;
         }
       })}`;
   }
 
-  private _formatValue(value: any) {
+  private _formatValueMain(value: any) {
     if (!value) {return ``;}
     return this._config.unit ? `${parseFloat(value).toFixed(this._config.precision)} ${this._config.unit}` : parseFloat(value).toFixed(this._config.precision);
   }
-
+  private _formatValueDevice(value: any, device: ELGEntity) {
+    if (!value) {return ``;}
+    if (device.unit) {return `${parseFloat(value).toFixed(device.precision??this._config.precision)} ${device.unit}`;}
+    return parseFloat(value).toFixed(device.precision??this._config.precision);
+  }
   private _ce(entity: any): any {
     // Check if entity is an entity_id (configEntity)
     const stateObj = this.hass.states[entity];
     if (!stateObj) {return entity;}
 
     return parseFloat(stateObj.state);
+  }
+
+  private _calcMlt(stateObj: any, device: ELGEntity): number {
+    if (!stateObj) {return 0;}
+    if (!device.multiplier) {return stateObj.state;}
+    return parseFloat(stateObj.state) * device.multiplier;
   }
 
   private _calculateWidth(value: any, min?: any, max?: any) {
@@ -372,7 +382,7 @@ export class EnergyLineGauge extends LitElement {
     for (const device of this._config.entities) {
       const stateObj = this.hass.states[device.entity];
       if (!stateObj || stateObj.state === "unavailable") {continue;}
-      sum += parseFloat(stateObj.state);
+      sum += this._calcMlt(stateObj, device);
     }
     return sum;
   }

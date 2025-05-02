@@ -1,7 +1,7 @@
 import {LitElement, html, css, CSSResultGroup, nothing} from 'lit';
 
 import { HomeAssistant } from 'custom-card-helpers';
-import { EditorTarget, ELGEntity, HTMLElementValue } from '../types';
+import { EditorTarget, ELGConfig, ELGEntity, HTMLElementValue } from '../types';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { mdiDelete, mdiPencil, mdiPlusCircleOutline } from '@mdi/js';
@@ -16,6 +16,8 @@ SortableCore.mount(OnSpill, new AutoScroll());
 @customElement('energy-line-gauge-items-editor')
 export class ItemsEditor extends LitElement {
   @property({ attribute: false }) entities?: ELGEntity[];
+
+  @property({ attribute: false }) entity_id?: string;
 
   @property({ attribute: false }) hass?: HomeAssistant;
 
@@ -147,7 +149,37 @@ export class ItemsEditor extends LitElement {
     }
 
     const entity_id = (this.shadowRoot!.querySelector('.add-entity') as HTMLElementValue).value;
-    fireEvent<ELGEntity[]>(this, 'config-changed', [...this.entities, { entity: entity_id, color: "auto", state_content: ['name'] }]);
+    const stateObj = this.hass.states[entity_id];
+
+    const units = {
+      'TW': 1000000000000,
+      'GW': 1000000000,
+      'MW': 1000000,
+      'kW': 1000,
+      'W': 1,
+      'mW': 0.001,
+    }
+
+    const unit_of_measurement = stateObj.attributes.unit_of_measurement;
+    const main_unit = this.entity_id ? this.hass.states[this.entity_id].attributes.unit_of_measurement : "W";
+
+    // what multiplier is needed for the selected entity to match the main unit
+    // check if the unit_of_measurement is in the units object
+    const multiplier =
+      unit_of_measurement && main_unit &&
+      unit_of_measurement in units && main_unit in units
+        ? units[main_unit] / units[unit_of_measurement]
+        : 1;
+
+    let entity: ELGEntity = {
+      entity: entity_id,
+      color: "auto",
+      state_content: ['name'],
+      multiplier: multiplier,
+      unit: unit_of_measurement,
+    };
+
+    fireEvent<ELGEntity[]>(this, 'config-changed', [...this.entities, entity]);
   }
 
   private _rowMoved(ev: SortableEvent): void {

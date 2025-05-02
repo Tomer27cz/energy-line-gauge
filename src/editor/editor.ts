@@ -303,6 +303,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           <energy-line-gauge-items-editor
               .hass=${this.hass}
               .entities=${this._config.entities}
+              .entity_id=${this._config.entity}
               @edit-item=${this._edit_item}
               @config-changed=${this._entitiesChanged}
           ></energy-line-gauge-items-editor>
