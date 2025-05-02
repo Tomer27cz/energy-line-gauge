@@ -8,7 +8,7 @@ import {
   LovelaceCard,
   hasAction,
   ActionHandlerEvent,
-  handleAction, stateIcon,
+  handleAction,
 } from 'custom-card-helpers';
 
 import { version } from '../package.json';
@@ -16,7 +16,7 @@ import { version } from '../package.json';
 import { ELGConfig, ELGEntity } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, fireEvent, textColor } from './util';
+import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
 
 import './editor/editor';
 
@@ -106,10 +106,6 @@ export class EnergyLineGauge extends LitElement {
     if (!this._config || !this.hass) {
       this._invalidConfig()
     }
-
-  // .tap_action=${this._config.tap_action}
-  // .hold_action=${this._config.hold_action}
-  // .double_tap_action=${this._config.double_tap_action}
 
     return html`
       <ha-card 
@@ -302,24 +298,25 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
       ${(line ? device.line_state_content : device.state_content)?.map((value, i, arr) => {
-          const dot = i < arr.length - 1 ? " ⸱ " : '';
-          const timeTemplate = (datetime: string) => html`
-          <ha-relative-time
-            .hass=${this.hass}
-            .datetime=${datetime}
-            capitalize
-          ></ha-relative-time>${dot}
-        `;
-    
-          switch (value) {
-            case "name": return html`${this._entityName(device)}${dot}`;
-            case "state": return html`${this._formatValueDevice(this._calcMlt(stateObj, device), device)}${dot}`;
-            case "last_changed": return timeTemplate(stateObj.last_changed);
-            case "last_updated": return timeTemplate(stateObj.last_updated);
-            case "percentage": return html`${this._deviceWidths[device.entity].toFixed(0)}%${dot}`;
-            default: return html`${value}${dot}`;
-          }
-        })}`;
+        const dot = i < arr.length - 1 ? " ⸱ " : '';
+        const timeTemplate = (datetime: string) => html`
+        <ha-relative-time
+          .hass=${this.hass}
+          .datetime=${datetime}
+          capitalize
+        ></ha-relative-time>${dot}
+      `;
+  
+        switch (value) {
+          case "name": return html`${this._entityName(device)}${dot}`;
+          case "state": return html`${this._formatValueDevice(this._calcMlt(stateObj, device), device)}${dot}`;
+          case "last_changed": return timeTemplate(stateObj.last_changed);
+          case "last_updated": return timeTemplate(stateObj.last_updated);
+          case "percentage": return html`${this._deviceWidths[device.entity].toFixed(0)}%${dot}`;
+          default: return html`${value}${dot}`;
+        }
+      })
+    }`;
   }
   private _untrackedLabel() {
     if (!this._config.untracked_state_content || this._config.untracked_state_content.length === 0) {
@@ -340,27 +337,24 @@ export class EnergyLineGauge extends LitElement {
       })}`;
   }
 
-  private _formatValueMain(value: any) {
-    if (!value) {return ``;}
-    return this._config.unit ? `${parseFloat(value).toFixed(this._config.precision)} ${this._config.unit}` : parseFloat(value).toFixed(this._config.precision);
+  private _formatValue(value: any, precision?: number, unit?: string): string {
+    if (!value) return '';
+    return `${parseFloat(value).toFixed(precision??0)}${unit ? ` ${unit}` : ''}`;
   }
-  private _formatValueDevice(value: any, device: ELGEntity) {
-    if (!value) {return ``;}
-    if (device.unit) {return `${parseFloat(value).toFixed(device.precision??this._config.precision)} ${device.unit}`;}
-    return parseFloat(value).toFixed(device.precision??this._config.precision);
+  private _formatValueMain(value: any): string {
+    return this._formatValue(value, this._config.precision, this._config.unit);
   }
-  private _ce(entity: any): any {
-    // Check if entity is an entity_id (configEntity)
-    const stateObj = this.hass.states[entity];
-    if (!stateObj) {return entity;}
-
-    return parseFloat(stateObj.state);
+  private _formatValueDevice(value: any, device: ELGEntity): string {
+    return this._formatValue(value, device.precision ?? this._config.precision, device.unit);
   }
 
+  private _ce(entity: any): number {
+    const state = this.hass.states[entity]?.state;
+    return state !== undefined ? parseFloat(state) : entity;
+  }
   private _calcMlt(stateObj: any, device: ELGEntity): number {
-    if (!stateObj) {return 0;}
-    if (!device.multiplier) {return stateObj.state;}
-    return parseFloat(stateObj.state) * device.multiplier;
+    const value = parseFloat(stateObj?.state);
+    return isNaN(value) ? 0 : value * (device.multiplier ?? 1);
   }
 
   private _calculateWidth(value: any, min?: any, max?: any) {
@@ -376,15 +370,11 @@ export class EnergyLineGauge extends LitElement {
     return ((clampValue - min) / (max - min)) * this._calculateWidth(this._config.entity);
   }
 
-  private _devicesSum() {
-    if (!this._config.entities) {return 0;}
-    let sum = 0;
-    for (const device of this._config.entities) {
+  private _devicesSum(): number {
+    return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
       const stateObj = this.hass.states[device.entity];
-      if (!stateObj || stateObj.state === "unavailable") {continue;}
-      sum += this._calcMlt(stateObj, device);
-    }
-    return sum;
+      return stateObj?.state !== 'unavailable' ? sum + this._calcMlt(stateObj, device) : sum;
+    }, 0);
   }
   private _delta(): [number, number, number] | undefined {
     const stateObj = this.hass.states[this._config.entity];
@@ -396,12 +386,6 @@ export class EnergyLineGauge extends LitElement {
 
     return [state, sum, delta];
   }
-
-  // private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
-  //   // fireEvent(this, "hass-action", { config: this._config!, action: ev.detail.action, });
-  //   // ev.stopPropagation();
-  //   fireEvent(this, "hass-action", { config: device ?? this._config!, action: ev.detail.action, });
-  // }
 
   private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
     ev.stopPropagation();

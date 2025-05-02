@@ -159,54 +159,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               },
             ],
           },
-          {
-            name: "",
-            type: "grid",
-            schema: [
-              { name: "line_text_position", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      {
-                        value: "left",
-                        label: "Left (default)",
-                      },
-                      {
-                        value: "right",
-                        label: "Right",
-                      },
-                      {
-                        value: "top-left",
-                        label: "Top Left",
-                      },
-                      {
-                        value: "top-center",
-                        label: "Top Center",
-                      },
-                      {
-                        value: "top-right",
-                        label: "Top Right",
-                      },
-                      {
-                        value: "bottom-left",
-                        label: "Bottom Left",
-                      },
-                      {
-                        value: "bottom-center",
-                        label: "Bottom Center",
-                      },
-                      {
-                        value: "bottom-right",
-                        label: "Bottom Right",
-                      },
-                    ]
-                  }
-                }
-              },
-              { name: "line_text_size", required: false, selector: { number: { min: 0.25, max: 4, step: 0.1, mode: "box"} } },
-            ],
-          },
+
           {
             name: "",
             type: "grid",
@@ -214,6 +167,65 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "color", required: false, selector: { color_rgb: {} } },
               { name: "color_bg", required: false, selector: { color_rgb: {} } },
             ],
+          },
+
+          {
+            type: "expandable",
+            title: `${this.hass.localize(
+              `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
+            )} (${this.hass.localize(
+              "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"
+            )})`,
+            flatten: true,
+            schema: [
+              {
+                type: "grid",
+                schema: [
+                  { name: "line_text_position", required: false, selector:
+                      {
+                        select: {
+                          mode: "dropdown",
+                          options: [
+                            {
+                              value: "left",
+                              label: "Left (default)",
+                            },
+                            {
+                              value: "right",
+                              label: "Right",
+                            },
+                            {
+                              value: "top-left",
+                              label: "Top Left",
+                            },
+                            {
+                              value: "top-center",
+                              label: "Top Center",
+                            },
+                            {
+                              value: "top-right",
+                              label: "Top Right",
+                            },
+                            {
+                              value: "bottom-left",
+                              label: "Bottom Left",
+                            },
+                            {
+                              value: "bottom-center",
+                              label: "Bottom Center",
+                            },
+                            {
+                              value: "bottom-right",
+                              label: "Bottom Right",
+                            },
+                          ]
+                        }
+                      }
+                  },
+                  { name: "line_text_size", required: false, selector: { number: { min: 0.25, max: 4, step: 0.1, mode: "box"} } },
+                ],
+              },
+            ]
           },
 
         ],
@@ -409,12 +421,17 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                 `ui.panel.lovelace.editor.card.generic.theme`
             );
         case "position":
+        case "line_text_position":
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.entities.secondary_info_values.position`
             );
         case "show_delta":
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.statistic.stat_types`
+            );
+        case "line_text_size":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.generic.icon_height`
             );
         default:
           return schema.name;

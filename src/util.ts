@@ -166,87 +166,56 @@ export const textColor = (
   return brightness > 125 ? [0, 0, 0] : [255, 255, 255];
 }
 
-export const setConfigDefaults = (
-    config: ELGConfig
-): ELGConfig => {
-  config = JSON.parse(JSON.stringify(config));
+export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
+  const rootStyle = getComputedStyle(document.documentElement);
+  const defaultColor = toRGB(rootStyle.getPropertyValue('--primary-color').trim());
+  const defaultBgColor = toRGB(rootStyle.getPropertyValue('--secondary-background-color').trim());
 
-  config.min = config.min ?? 0;
-  config.max = config.max ?? config.entity;
-  config.precision = config.precision ?? 0;
-  config.cutoff = config.cutoff ?? 5;
-  config.corner = config.corner ?? "square";
-  config.position = config.position ?? "left";
+  return {
+    ...config,
+    min: config.min ?? 0,
+    max: config.max ?? config.entity,
+    precision: config.precision ?? 0,
+    cutoff: config.cutoff ?? 5,
+    corner: config.corner ?? "square",
+    position: config.position ?? "left",
 
-  config.line_text_position = config.line_text_position ?? "left";
-  config.line_text_size = config.line_text_size ?? 1;
+    line_text_position: config.line_text_position ?? "left",
+    line_text_size: config.line_text_size ?? 1,
 
-  config.color = toRGB(config.color) ?? toRGB(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim());
-  config.color_bg = toRGB(config.color_bg) ?? toRGB(getComputedStyle(document.documentElement).getPropertyValue('--secondary-background-color').trim());
+    color: toRGB(config.color) ?? defaultColor,
+    color_bg: toRGB(config.color_bg) ?? defaultBgColor,
 
-  config.untracked_legend = !!(config.untracked_legend ?? config.entities);
-  config.untracked_legend_label = config.untracked_legend_label === "" ? undefined : config.untracked_legend_label;
-  config.untracked_state_content = config.untracked_state_content ?? ['name'];
+    untracked_legend: !!(config.untracked_legend ?? config.entities),
+    untracked_legend_label: config.untracked_legend_label === "" ? undefined : config.untracked_legend_label,
+    untracked_state_content: config.untracked_state_content ?? ['name'],
 
-  config.legend_hide = config.legend_hide ?? false;
-  config.legend_all = config.legend_all ?? false;
-  config.show_delta = config.show_delta ?? false;
+    legend_hide: config.legend_hide ?? false,
+    legend_all: config.legend_all ?? false,
+    show_delta: config.show_delta ?? false,
 
-  if (Array.isArray(config.entities)) {
-    config.entities = setEntitiesDefaults(config.entities);
-  }
-
-  return config;
+    entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities,
+  };
 };
 
-export const setEntitiesDefaults = (
-  entities: ELGEntity[]
-): ELGEntity[] => {
-  const entities_copy = entities.map(device => ({ ...device }));
-  const device_colors = entities_copy.map(device => toHEX(device.color));
+export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
+  const usedColors = new Set(
+    entities.map(e => toHEX(e.color)?.toUpperCase()).filter(Boolean)
+  );
 
-  for (const device of entities_copy) {
-    if (!device.color || device.color === "auto") {
-      const availableColor = COLORS.find(c => !device_colors.includes(c.toUpperCase()));
-      device.color = toRGB(availableColor);
-      device_colors.push(availableColor?.toUpperCase());
+  return entities.map(entity => {
+    let color = entity.color;
+
+    if (!color || color === "auto") {
+      const available = COLORS.find(c => !usedColors.has(c.toUpperCase()));
+      color = toRGB(available);
+      usedColors.add(available?.toUpperCase() || "");
     }
 
-    device.multiplier = device.multiplier ?? 1;
-  }
-  return entities_copy;
+    return {
+      ...entity,
+      color,
+      multiplier: entity.multiplier ?? 1,
+    };
+  });
 };
-
-
-
-
-
-
-
-
-
-
-//
-//
-//
-//   if (config.entities) {
-//     config.entities = setConfigDefaults(config.entities, stub);
-//   }
-//
-//   return config;
-// }
-//
-// export const setEntitiesDefaults = (
-//   entities: ELGEntity[],
-//   stub?: boolean
-// ): ELGEntity[] => {
-//   const device_colors = entities.map(device => toHex(device.color, stub));
-//   for (const device of entities) {
-//     device.color = toHex(device.color, stub);
-//     if (!device.color) {
-//       device.color = toHex(COLORS.find(color => !device_colors.includes(color)), stub);
-//       device_colors.push(device.color);
-//     }
-//   }
-//   return entities;
-// }
