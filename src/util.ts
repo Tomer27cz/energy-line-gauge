@@ -194,6 +194,8 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     legend_all: config.legend_all ?? false,
     show_delta: config.show_delta ?? false,
 
+    suppress_warnings: config.suppress_warnings ?? false,
+
     entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities,
   };
 };

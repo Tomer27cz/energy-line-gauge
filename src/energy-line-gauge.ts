@@ -13,7 +13,7 @@ import {
 
 import { version } from '../package.json';
 
-import { ELGConfig, ELGEntity } from './types';
+import { ELGConfig, ELGEntity, HassEntity } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
 import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
@@ -42,7 +42,7 @@ export class EnergyLineGauge extends LitElement {
 
   @property() private _card!: LovelaceCard;
 
-  private _deviceWidths: Record<string, number> = {};
+  @property() private _deviceWidths: Record<string, number> = {};
 
   // noinspection JSUnusedGlobalSymbols
   public async setConfig(config: ELGConfig): Promise<void> {
@@ -64,7 +64,7 @@ export class EnergyLineGauge extends LitElement {
   ): ELGConfig {
     const includeDomains = ["counter", "input_number", "number", "sensor"];
     const maxEntities = 4;
-    const entityFilter = (stateObj: any): boolean =>
+    const entityFilter = (stateObj: HassEntity): boolean =>
       !isNaN(Number(stateObj.state));
 
     const foundEntities = findEntities(
@@ -129,7 +129,7 @@ export class EnergyLineGauge extends LitElement {
 
   _createDelta() {
     const delta = this._delta();
-    if (!delta) {return html`<hui-warning>Delta could not be calculated</hui-warning>`;}
+    if (!delta) {return this._config.suppress_warnings ? html`` : html`<hui-warning>Delta could not be calculated</hui-warning>`;}
     const [state, sum, deltaValue] = delta;
     return html`
       <div class="gauge-delta">
@@ -161,23 +161,15 @@ export class EnergyLineGauge extends LitElement {
     <div class="chart-legend">
       <ul>
         ${this._config.entities.map((device: ELGEntity) => {
-          if (!device.entity) {return this._entityNotFound(device.entity);}
-          const stateObj = this.hass.states[device.entity];
-    
-          if (stateObj.state === "unavailable") {
-            return html`
-              <ha-card class="unavailable">
-                ${this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
-                  entity: `${stateObj?.attributes?.friendly_name} (${device.entity})` || device.entity,
-                })}
-              </ha-card>
-            `;
-          }
+          const validationResult = this._validateEntityState(device.entity);
+          if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
+
+          const stateObj: HassEntity = this.hass.states[device.entity];
     
           if (this._calcMlt(stateObj, device) < (device.cutoff??this._config.cutoff??0) && !this._config.legend_all) {
             return html``;
           }
-    
+
           // noinspection HtmlUnknownAttribute
           return html`
             <li
@@ -186,14 +178,14 @@ export class EnergyLineGauge extends LitElement {
                 hasHold: hasAction(device.hold_action),
                 hasDoubleClick: hasAction(device.double_tap_action),
               })}
-              title="${this._entityName(device)}" 
+              title="${this._entityName(device, stateObj)}" 
               id="legend-${device.entity.replace('.', '-')}"
             >
               ${device.icon ? 
                   html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
                   html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
-              <div class="label">${this._entityLabel(device)}</div>
+              <div class="label">${this._entityLabel(device, stateObj)}</div>
             </li>`;
         })}  
         ${this._createUntrackedLegend()}
@@ -205,12 +197,17 @@ export class EnergyLineGauge extends LitElement {
     return html`
       <div class="device-line-container">
         ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
-          if (!device.entity) {return this._entityNotFound(device.entity);}
-          const stateObj = this.hass.states[device.entity];
+          const validationResult = this._validateEntityState(device.entity);
+          if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
           
-          this._deviceWidths[device.entity] = (!stateObj || stateObj.state === "unavailable"
-            || (this._calcMlt(stateObj, device) < this._ce(device.cutoff??this._config.cutoff))
+          const stateObj: HassEntity = this.hass.states[device.entity];
+          
+          this._deviceWidths[device.entity] = (this._calcMlt(stateObj, device) < this._ce(device.cutoff??this._config.cutoff)
           ) ? 0 : this._calculateDeviceWidth(this._calcMlt(stateObj, device));
+          
+          // The div is still created even if the width is 0, 
+          // so when the width is suddenly more than 0, the transition is smooth from 0 to the new width 
+          // (not just appearing without transition)
   
           // noinspection HtmlUnknownAttribute
           return html`
@@ -229,7 +226,7 @@ export class EnergyLineGauge extends LitElement {
                   class="device-line-label line-text-position-${this._config.line_text_position??"left"}" 
                   style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size??1}rem;"
                 >
-                  ${this._entityLabel(device, true)}
+                  ${this._entityLabel(device, stateObj, true)}
                 </div>
               ` : html``}
             </div>`;
@@ -237,15 +234,9 @@ export class EnergyLineGauge extends LitElement {
       </div>`;
   }
   _createInnerHtml() {
-    if (!this.hass.states[this._config.entity]) {
-      return html`
-        <hui-warning>
-          ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
-            entity: this._config.entity || "[empty]",
-          })}
-        </hui-warning>
-      `;
-    }
+    const validationResult = this._validateEntityState(this._config.entity);
+    if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
+
     const value = this.hass.states[this._config.entity].state;
     this._deviceWidths = {};
 
@@ -282,20 +273,35 @@ export class EnergyLineGauge extends LitElement {
       })}
     </hui-warning>`;
   }
-
-  private _entityName(device: ELGEntity): string {
-    if (!device.entity) {this._invalidConfig()}
-    if (device.name) {return device.name;}
-    return this.hass.states[device.entity].attributes.friendly_name || device.entity.split('.')[1];
+  private _entityUnavailable(stateObj: HassEntity): TemplateResult {
+    return html`
+      <hui-warning>
+        ${this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
+          entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`,
+        })}
+      </ha-card>
+    `;
   }
-  private _entityLabel(device: ELGEntity, line?: boolean): TemplateResult | string | undefined {
-    if (!device.entity) {this._invalidConfig()}
+  private _entityNotNumeric(stateObj: HassEntity): TemplateResult {
+    return html`
+      <hui-warning>
+        ${this.hass.localize("ui.panel.lovelace.warning.entity_non_numeric", {
+          entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`,
+        })}
+      </hui-warning>
+    `;
+  }
+
+  private _entityName(device: ELGEntity, stateObj: HassEntity): string {
+    if (device.name) {return device.name;}
+    return stateObj.attributes.friendly_name || device.entity.split('.')[1];
+  }
+  private _entityLabel(device: ELGEntity, stateObj: HassEntity, line?: boolean): TemplateResult | string | undefined {
     if (line) {
       if (!device.line_state_content || device.line_state_content.length === 0) {return;}
     } else {
-      if (!device.state_content || device.state_content.length === 0) {return this._entityName(device);}
+      if (!device.state_content || device.state_content.length === 0) {return this._entityName(device, stateObj);}
     }
-    const stateObj = this.hass.states[device.entity];
 
     return html`
       ${(line ? device.line_state_content : device.state_content)?.map((value, i, arr) => {
@@ -309,7 +315,7 @@ export class EnergyLineGauge extends LitElement {
       `;
   
         switch (value) {
-          case "name": return html`${this._entityName(device)}${dot}`;
+          case "name": return html`${this._entityName(device, stateObj)}${dot}`;
           case "state": return html`${this._formatValueDevice(this._calcMlt(stateObj, device), device)}${dot}`;
           case "last_changed": return timeTemplate(stateObj.last_changed);
           case "last_updated": return timeTemplate(stateObj.last_updated);
@@ -349,11 +355,23 @@ export class EnergyLineGauge extends LitElement {
     return this._formatValue(value, device.precision ?? this._config.precision, device.unit);
   }
 
+  private _validateEntityState(entityId: string ): TemplateResult | undefined {
+    if (!entityId) {return this._entityNotFound(entityId);}
+
+    const stateObj: HassEntity | undefined = this.hass.states[entityId];
+    if (!stateObj) {return this._entityNotFound(entityId);}
+
+    if (stateObj.state === "unavailable") {return this._entityUnavailable(stateObj);}
+    if (isNaN(Number(stateObj.state))) {return this._entityNotNumeric(stateObj);}
+
+    return undefined; // Return undefined if all checks pass
+  }
+
   private _ce(entity: any): number {
     const state = this.hass.states[entity]?.state;
     return state !== undefined ? parseFloat(state) : entity;
   }
-  private _calcMlt(stateObj: any, device: ELGEntity): number {
+  private _calcMlt(stateObj: HassEntity, device: ELGEntity): number {
     const value = parseFloat(stateObj?.state);
     return isNaN(value) ? 0 : value * (device.multiplier ?? 1);
   }
@@ -373,12 +391,12 @@ export class EnergyLineGauge extends LitElement {
 
   private _devicesSum(): number {
     return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
-      const stateObj = this.hass.states[device.entity];
+      const stateObj: HassEntity = this.hass.states[device.entity];
       return stateObj?.state !== 'unavailable' ? sum + this._calcMlt(stateObj, device) : sum;
     }, 0);
   }
   private _delta(): [number, number, number] | undefined {
-    const stateObj = this.hass.states[this._config.entity];
+    const stateObj: HassEntity = this.hass.states[this._config.entity];
     if (!stateObj || stateObj.state === "unavailable") {return undefined;}
 
     let sum = this._devicesSum();

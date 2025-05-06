@@ -91,6 +91,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "legend_hide", required: false, selector: { boolean: {} } },
               { name: "legend_all", required: false, selector: { boolean: {} } },
               { name: "show_delta", required: false, selector: { boolean: {} } },
+              { name: "suppress_warnings", required: false, selector: { boolean: {} } },
             ]
           },
 
@@ -433,6 +434,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             return `${this.hass.localize(
                 `ui.panel.lovelace.editor.card.generic.icon_height`
             )} (rem)`;
+        case "suppress_warnings":
+            return "Suppress Warnings";
         default:
           return schema.name;
       }

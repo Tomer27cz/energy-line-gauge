@@ -189,9 +189,13 @@ There are a lot of settings you can customize your sensors with:
 | `untracked_legend_label`  |      string      |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                       |
 | `untracked_legend_icon`   |      string      |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                        |
 | `untracked_state_content` |     string[]     |           ['name']           |                                        ['state']                                         | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot. |
+| `suppress_warnings`        |       bool       |            false             |                                           true                                           | Do not show the warnings, such as "Entity unavailable" or "Entity not found"                      |
+| `entities`                |     Entities     |            [...]             |                                    (Example in yaml)                                     | The list of entities. Config [here.](#entities)                                                   |
 <p> 
 
 ## Entities
+
+<div id="entities">
 
 <p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_entity.png" alt="Visual Editor Entity"/>
@@ -219,6 +223,9 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 <p> 
 
 </div>
+
+</div>
+
 <hr/>
 
 <div id="example">
