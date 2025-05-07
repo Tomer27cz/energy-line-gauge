@@ -69,13 +69,13 @@ export const styles = css`
         --color: var(--primary-color);
         --background-color: var(--secondary-background-color);
 
-        width: 90%;
+        width: 95%;
         box-sizing:border-box;
         cursor: pointer;
         /*pointer-events: none;*/
         transition: all 0.3s ease-out;
 
-        margin: 6px auto;
+        margin: 2px auto;
         padding: 10px;
     }
 
@@ -88,13 +88,6 @@ export const styles = css`
         display: flex;
         flex-wrap: nowrap;
         flex-grow: 1;
-    }
-    .gauge-label {
-        margin-top: 1rem;
-        font-size: 1.5rem;
-        text-align: center;
-        flex-wrap: nowrap;
-        white-space: nowrap;
     }
     .gauge-header {
         margin-bottom: 1rem;
@@ -127,6 +120,7 @@ export const styles = css`
         text-align: center;
         flex-wrap: nowrap;
         white-space: nowrap;
+        height: 100%;
         color: var(--secondary-text-color);
     }
     

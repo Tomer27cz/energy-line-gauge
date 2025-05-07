@@ -6,7 +6,6 @@ export interface ELGConfig extends LovelaceCardConfig {
   title?: string;
   subtitle?: string;
   header?: string;
-  label?: string;
 
   min?: number;
   max?: number;
@@ -15,8 +14,10 @@ export interface ELGConfig extends LovelaceCardConfig {
   unit?: string;
   cutoff?: number;
   offset?: string | number;
+
   corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
   position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right';
+  text_size?: number;
 
   line_text_position?: 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center';
   line_text_size?: number;

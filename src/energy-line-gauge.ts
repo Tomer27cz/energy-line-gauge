@@ -253,9 +253,9 @@ export class EnergyLineGauge extends LitElement {
           ${this._config.subtitle ? html`<div class="gauge-subtitle">${this._config.subtitle}</div>` : ''}
         </div>` : ''}
       <div class="gauge-frame position-${this._config.position??"left"}">
-        <div class="gauge-value">
+        <div class="gauge-value" style="font-size: ${this._config.text_size??2.5}rem;">
           ${parseFloat(value).toFixed(this._config.precision)}
-          ${this._config.unit ? html`<span class="unit">${this._config.unit}</span>` : ''}
+          ${this._config.unit ? html`<span class="unit" style="font-size: ${(this._config.text_size??2.5)/2}rem;">${this._config.unit}</span>` : ''}
         </div>
         <div class="gauge-line line-corner-${this._config.corner??"square"}">
           <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
@@ -264,7 +264,6 @@ export class EnergyLineGauge extends LitElement {
       </div>
       ${this._config.show_delta ? this._createDelta() : ''}
       ${this._config.entities ? this._createLegend() : ''}
-      ${this._config.label ? html`<div class="gauge-label">${this._config.label}</div>` : ''}
     `;
   }
 

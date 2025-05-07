@@ -159,6 +159,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     }
                   }
               },
+              { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box"} } },
             ],
           },
 
@@ -195,6 +196,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                             {
                               value: "right",
                               label: "Right",
+                            },
+                            {
+                              value: "center",
+                              label: "Center",
                             },
                             {
                               value: "top-left",
