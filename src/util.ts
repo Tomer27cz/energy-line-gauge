@@ -174,7 +174,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
   return {
     ...config,
     min: config.min ?? 0,
-    max: config.max ?? config.entity,
+    // max: config.max ?? config.entity,
     precision: config.precision ?? 0,
     cutoff: config.cutoff ?? 5,
     corner: config.corner ?? "square",
@@ -221,3 +221,24 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
     };
   });
 };
+
+export function parseDurationToMilliseconds(durationStr: string) {
+  const match = durationStr.match(/^(\d+)([hmsd])$/i); // Case-insensitive for unit
+  if (!match) return null;
+
+  const value = parseInt(match[1]);
+  const unit = match[2].toLowerCase();
+
+  switch (unit) {
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    case 'd':
+      return value * 24 * 60 * 60 * 1000;
+    default:
+      return null;
+  }
+}

@@ -13,10 +13,10 @@ import {
 
 import { version } from '../package.json';
 
-import { ELGConfig, ELGEntity, HassEntity } from './types';
+import { ELGConfig, ELGEntity, ELGHistory, HassEntity, HassHistory, HassHistoryEntry } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
+import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor, parseDurationToMilliseconds } from './util';
 
 import './editor/editor';
 
@@ -35,14 +35,19 @@ window.customCards.push({
 
 @customElement('energy-line-gauge')
 export class EnergyLineGauge extends LitElement {
-
   @property() public hass!: HomeAssistant;
 
   @state() private _config!: ELGConfig;
 
   @property() private _card!: LovelaceCard;
 
-  @property() private _deviceWidths: Record<string, number> = {};
+  @property() private _entitiesWidth: Record<string, number> = {};
+
+  @property() private _entitiesHistory: ELGHistory | undefined = undefined;
+
+  @property() private _offsetTime: number | undefined = undefined;
+
+  private readonly HISTORY_WINDOW_MS = 60000;
 
   // noinspection JSUnusedGlobalSymbols
   public async setConfig(config: ELGConfig): Promise<void> {
@@ -64,8 +69,7 @@ export class EnergyLineGauge extends LitElement {
   ): ELGConfig {
     const includeDomains = ["counter", "input_number", "number", "sensor"];
     const maxEntities = 4;
-    const entityFilter = (stateObj: HassEntity): boolean =>
-      !isNaN(Number(stateObj.state));
+    const entityFilter = (stateObj: HassEntity): boolean => !isNaN(Number(stateObj.state));
 
     const foundEntities = findEntities(
       hass,
@@ -83,9 +87,9 @@ export class EnergyLineGauge extends LitElement {
       min: 0,
       max: 100,
       entities: [
-        {entity: foundEntities[1], color: toRGB(COLORS[0])},
-        {entity: foundEntities[2], color: toRGB(COLORS[1])},
-        {entity: foundEntities[3], color: toRGB(COLORS[2])},
+        { entity: foundEntities[1], color: toRGB(COLORS[0]) },
+        { entity: foundEntities[2], color: toRGB(COLORS[1]) },
+        { entity: foundEntities[3], color: toRGB(COLORS[2]) },
       ],
     });
   }
@@ -153,9 +157,7 @@ export class EnergyLineGauge extends LitElement {
       </li>`
   }
   _createLegend() {
-    if (!this._config.entities || this._config.legend_hide) {
-      return html``;
-    }
+    if (!this._config.entities || this._config.legend_hide) {return html``;}
 
     return html`
     <div class="chart-legend">
@@ -165,8 +167,9 @@ export class EnergyLineGauge extends LitElement {
           if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
 
           const stateObj: HassEntity = this.hass.states[device.entity];
-    
-          if (this._calcMlt(stateObj, device) < (device.cutoff??this._config.cutoff??0) && !this._config.legend_all) {
+          const state = this._calcState(stateObj, device);
+
+          if (state < (device.cutoff ?? this._config.cutoff ?? 0) && !this._config.legend_all) {
             return html``;
           }
 
@@ -185,7 +188,7 @@ export class EnergyLineGauge extends LitElement {
                   html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
                   html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
-              <div class="label">${this._entityLabel(device, stateObj)}</div>
+              <div class="label">${this._entityLabel(device, stateObj, false, state)}</div>
             </li>`;
         })}  
         ${this._createUntrackedLegend()}
@@ -194,6 +197,7 @@ export class EnergyLineGauge extends LitElement {
   }
   _createDeviceLines() {
     if (!this._config.entities) {return html``;}
+
     return html`
       <div class="device-line-container">
         ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
@@ -201,12 +205,12 @@ export class EnergyLineGauge extends LitElement {
           if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
           
           const stateObj: HassEntity = this.hass.states[device.entity];
-          
-          this._deviceWidths[device.entity] = (this._calcMlt(stateObj, device) < this._ce(device.cutoff??this._config.cutoff)
-          ) ? 0 : this._calculateDeviceWidth(this._calcMlt(stateObj, device));
-          
-          // The div is still created even if the width is 0, 
-          // so when the width is suddenly more than 0, the transition is smooth from 0 to the new width 
+          const state = this._calcState(stateObj, device);
+
+          this._entitiesWidth[device.entity] = (state <= (device.cutoff ?? this._config.cutoff ?? 0)) ? 0 : this._calculateDeviceWidth(state);
+
+          // The div is still created even if the width is 0,
+          // so when the width is suddenly more than 0, the transition is smooth from 0 to the new width
           // (not just appearing without transition)
   
           // noinspection HtmlUnknownAttribute
@@ -214,19 +218,19 @@ export class EnergyLineGauge extends LitElement {
             <div 
               id="line-${device.entity.replace(".", "-")}" 
               class="device-line" 
-              style="background-color: ${toHEX(device.color)}; width: ${this._deviceWidths[device.entity]}%;"
+              style="background-color: ${toHEX(device.color)}; width: ${this._entitiesWidth[device.entity]}%;"
               @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
               .actionHandler=${actionHandler({ 
                 hasHold: hasAction(device.hold_action), 
                 hasDoubleClick: hasAction(device.double_tap_action), 
               })}
             >
-              ${this._deviceWidths[device.entity] > 0 ? html`
+              ${this._entitiesWidth[device.entity] > 0 ? html`
                 <div 
                   class="device-line-label line-text-position-${this._config.line_text_position??"left"}" 
                   style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size??1}rem;"
                 >
-                  ${this._entityLabel(device, stateObj, true)}
+                  ${this._entityLabel(device, stateObj, true, state)}
                 </div>
               ` : html``}
             </div>`;
@@ -237,8 +241,10 @@ export class EnergyLineGauge extends LitElement {
     const validationResult = this._validateEntityState(this._config.entity);
     if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
 
-    const value = this.hass.states[this._config.entity].state;
-    this._deviceWidths = {};
+    if (this._config.offset) {this._getHistory();}
+
+    const value = String(this._calcStateMain());
+    this._entitiesWidth = {};
 
     return html`
       ${this._config.title || this._config.subtitle ? html`
@@ -252,7 +258,7 @@ export class EnergyLineGauge extends LitElement {
           ${this._config.unit ? html`<span class="unit">${this._config.unit}</span>` : ''}
         </div>
         <div class="gauge-line line-corner-${this._config.corner??"square"}">
-          <div class="main-line" style="width: ${this._calculateWidth(this._config.entity)}%;"></div>
+          <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
           ${this._createDeviceLines()}
         </div>
       </div>
@@ -296,7 +302,7 @@ export class EnergyLineGauge extends LitElement {
     if (device.name) {return device.name;}
     return stateObj.attributes.friendly_name || device.entity.split('.')[1];
   }
-  private _entityLabel(device: ELGEntity, stateObj: HassEntity, line?: boolean): TemplateResult | string | undefined {
+  private _entityLabel(device: ELGEntity, stateObj: HassEntity, line?: boolean, calculatedState?: number,): TemplateResult | string | undefined {
     if (line) {
       if (!device.line_state_content || device.line_state_content.length === 0) {return;}
     } else {
@@ -316,10 +322,10 @@ export class EnergyLineGauge extends LitElement {
   
         switch (value) {
           case "name": return html`${this._entityName(device, stateObj)}${dot}`;
-          case "state": return html`${this._formatValueDevice(this._calcMlt(stateObj, device), device)}${dot}`;
+          case "state": return html`${this._formatValueDevice(calculatedState, device)}${dot}`;
           case "last_changed": return timeTemplate(stateObj.last_changed);
           case "last_updated": return timeTemplate(stateObj.last_updated);
-          case "percentage": return html`${this._deviceWidths[device.entity].toFixed(0)}%${dot}`;
+          case "percentage": return html`${this._entitiesWidth[device.entity].toFixed(0)}%${dot}`;
           default: return html`${value}${dot}`;
         }
       })
@@ -367,40 +373,132 @@ export class EnergyLineGauge extends LitElement {
     return undefined; // Return undefined if all checks pass
   }
 
-  private _ce(entity: any): number {
-    const state = this.hass.states[entity]?.state;
-    return state !== undefined ? parseFloat(state) : entity;
+  private _calcStateMain(): number {
+    return (this._config.offset) ? this._getHistoryState(this._config.entity) : parseFloat(this.hass.states[this._config.entity].state)
   }
-  private _calcMlt(stateObj: HassEntity, device: ELGEntity): number {
-    const value = parseFloat(stateObj?.state);
+  private _calcState(stateObj: HassEntity, device: ELGEntity): number {
+    const value = (this._config.offset) ? this._getHistoryState(device.entity) : parseFloat(stateObj?.state);
     return isNaN(value) ? 0 : value * (device.multiplier ?? 1);
   }
 
-  private _calculateWidth(value: any, min?: any, max?: any) {
-    value = this._ce(value);min = this._ce(min??this._config.min);max = this._ce(max??this._config.max);
+  private _getHistoryState(entityID: string): number {
+    if (!this._offsetTime) {return 0;}
+    if (!this._entitiesHistory) {return 0;}
+    if (!this._entitiesHistory.history) {return 0;}
+
+    const history: HassHistory = this._entitiesHistory.history[entityID];
+    if (!history || history.length === 0) {return 0;}
+
+    for (let i = history.length - 1; i >= 0; i--) {
+      const entry: HassHistoryEntry = history[i];
+      const lastUpdatedTime: number = new Date(entry.last_updated).getTime();
+
+      if (lastUpdatedTime <= this._offsetTime) {
+        // Found the state at or before the requested time
+        const stateValue = parseFloat(entry.state);
+        return isNaN(stateValue) ? 0 : stateValue;
+      }
+    }
+
+    // If no entry is found before the offsetTime, return the earliest state
+    const earliestEntry: HassHistoryEntry = history[0];
+    if (earliestEntry) {
+      const stateValue: number = parseFloat(earliestEntry.state);
+      return isNaN(stateValue) ? 0 : stateValue;
+    }
+
+    return 0;
+  }
+  private _getHistory(): void {
+    this._calculateOffsetTime();
+    if (!this._offsetTime) {return;}
+    if (this._entitiesHistory?.updating) {return;}
+    if (this._entitiesHistory?.end_time && this._entitiesHistory.end_time - 100 > this._offsetTime) {return;}
+
+    if (!this._entitiesHistory) {
+      this._entitiesHistory = {
+        start_time: this._offsetTime,
+        end_time: this._offsetTime + this.HISTORY_WINDOW_MS,
+        history: {},
+        updating: true
+      }
+    }
+    this._entitiesHistory.updating = true;
+
+    const startTime = new Date(this._offsetTime);
+    const endTime = new Date(this._offsetTime + this.HISTORY_WINDOW_MS);
+    const entityIDs = (this._config.entities?.map((device: ELGEntity) => device.entity) ?? []).concat(this._config.entity);
+
+    this._fetchHistory(entityIDs, startTime, endTime, true).then((history: HassHistory[]) => {
+      if (!history || history.length === 0) {
+        if (this._entitiesHistory) {
+          this._entitiesHistory.updating = false;
+        }
+        return;
+      }
+
+      const transformedData = history.reduce((acc, innerArray) => {
+        innerArray.forEach(item => {
+          const entityId = item.entity_id;
+          acc[entityId] = acc[entityId] || [];
+          acc[entityId].push(item);
+        });
+        return acc;
+      }, {});
+
+      this._entitiesHistory = {
+        start_time: startTime.valueOf(),
+        end_time: endTime.valueOf(),
+        history: transformedData,
+        updating: false,
+      };
+    });
+  }
+  private async _fetchHistory(entityIDs: string[], start: Date, end: Date, skipInitialState: boolean,): Promise<HassHistory[]> {
+    let url = `history/period/${start.toISOString()}?filter_entity_id=${entityIDs.join(',')}&end_time=${end.toISOString()}`;
+    if (skipInitialState) url += '&skip_initial_state';
+    url += '&significant_changes_only=0';
+    return this.hass?.callApi('GET', url);
+  }
+  private _calculateOffsetTime() {
+    if (!this._config.offset) {return;}
+
+    const offset = parseDurationToMilliseconds(this._config.offset);
+    if (offset === null) {throw new Error(`Invalid offset: ${this._config.offset}`);}
+
+    this._offsetTime = Date.now() - offset;
+  }
+
+  private _calculateMainWidth(): number {
+    if (!this._config.max) {return 100;}
+
+    const min: number = this._config.min??0;
+    const max: number = this._config.max;
+    const value: number = this._calcStateMain();
+
     const clampValue = Math.min(Math.max(value, min), max);
     return ((clampValue - min) / (max - min)) * 100;
   }
-  private _calculateDeviceWidth(value: any) {
-    value = this._ce(value);
-    let min = this._ce(this._config.min);
-    let max = this._ce(this._config.entity);
+  private _calculateDeviceWidth(value: number): number {
+    const mainWidth: number = this._calculateMainWidth();
+
+    const min: number = this._config.min??0;
+    const max: number = this._config.max??this._calcStateMain();
+
     const clampValue = Math.min(Math.max(value, min), max);
-    return ((clampValue - min) / (max - min)) * this._calculateWidth(this._config.entity);
+    return ((clampValue - min) / (max - min)) * mainWidth;
   }
 
   private _devicesSum(): number {
     return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
-      const stateObj: HassEntity = this.hass.states[device.entity];
-      return stateObj?.state !== 'unavailable' ? sum + this._calcMlt(stateObj, device) : sum;
+      const validationResult = this._validateEntityState(device.entity);
+      if (validationResult) {return sum;}
+      return sum + this._calcState(this.hass.states[device.entity], device);
     }, 0);
   }
   private _delta(): [number, number, number] | undefined {
-    const stateObj: HassEntity = this.hass.states[this._config.entity];
-    if (!stateObj || stateObj.state === "unavailable") {return undefined;}
-
     let sum = this._devicesSum();
-    let state = parseFloat(stateObj.state);
+    let state = this._calcStateMain();
     let delta = state - sum;
 
     return [state, sum, delta];
