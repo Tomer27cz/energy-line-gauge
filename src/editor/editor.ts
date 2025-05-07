@@ -82,6 +82,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "unit", required: false, selector: { text: {} } },
               { name: "precision", required: false, selector: { number: {min: 0, step: 1} }},
               { name: "cutoff", required: false, selector: { number: {} } },
+              { name: "offset", required: false, selector: { text: {} } },
             ]
           },
 
@@ -436,6 +437,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             )} (rem)`;
         case "suppress_warnings":
             return "Suppress Warnings";
+        case "offset":
+            return this.hass.localize(
+                `ui.panel.config.automation.editor.triggers.type.calendar.offset`
+            );
         default:
           return schema.name;
       }

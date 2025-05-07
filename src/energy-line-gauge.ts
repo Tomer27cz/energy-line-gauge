@@ -16,7 +16,7 @@ import { version } from '../package.json';
 import { ELGConfig, ELGEntity, ELGHistory, HassEntity, HassHistory, HassHistoryEntry } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor, parseDurationToMilliseconds } from './util';
+import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
 
 import './editor/editor';
 
@@ -410,30 +410,37 @@ export class EnergyLineGauge extends LitElement {
     return 0;
   }
   private _getHistory(): void {
-    this._calculateOffsetTime();
-    if (!this._offsetTime) {return;}
+    if (!this._config.offset) {return;}
+    const offset = Number(this._config.offset);
+
+    this._offsetTime = Date.now() - offset;
+
     if (this._entitiesHistory?.updating) {return;}
     if (this._entitiesHistory?.end_time && this._entitiesHistory.end_time - 100 > this._offsetTime) {return;}
 
+    const historyWindow = offset >= this.HISTORY_WINDOW_MS ? this.HISTORY_WINDOW_MS : offset;
+    const startTime = new Date(this._offsetTime);
+    const endTime = new Date(this._offsetTime + historyWindow);
+    const entityIDs = (this._config.entities?.map((device: ELGEntity) => device.entity) ?? []).concat(this._config.entity);
+
     if (!this._entitiesHistory) {
       this._entitiesHistory = {
-        start_time: this._offsetTime,
-        end_time: this._offsetTime + this.HISTORY_WINDOW_MS,
+        start_time: startTime.valueOf(),
+        end_time: endTime.valueOf(),
         history: {},
-        updating: true
-      }
+        updating: true,
+      };
     }
     this._entitiesHistory.updating = true;
 
-    const startTime = new Date(this._offsetTime);
-    const endTime = new Date(this._offsetTime + this.HISTORY_WINDOW_MS);
-    const entityIDs = (this._config.entities?.map((device: ELGEntity) => device.entity) ?? []).concat(this._config.entity);
-
-    this._fetchHistory(entityIDs, startTime, endTime, true).then((history: HassHistory[]) => {
+    this._fetchHistory(entityIDs, startTime, endTime).then((history: HassHistory[]) => {
       if (!history || history.length === 0) {
-        if (this._entitiesHistory) {
-          this._entitiesHistory.updating = false;
-        }
+        this._entitiesHistory = {
+          start_time: startTime.valueOf(),
+          end_time: endTime.valueOf(),
+          history: {},
+          updating: false,
+        };
         return;
       }
 
@@ -454,19 +461,11 @@ export class EnergyLineGauge extends LitElement {
       };
     });
   }
-  private async _fetchHistory(entityIDs: string[], start: Date, end: Date, skipInitialState: boolean,): Promise<HassHistory[]> {
+  private async _fetchHistory(entityIDs: string[], start: Date, end: Date): Promise<HassHistory[]> {
     let url = `history/period/${start.toISOString()}?filter_entity_id=${entityIDs.join(',')}&end_time=${end.toISOString()}`;
-    if (skipInitialState) url += '&skip_initial_state';
-    url += '&significant_changes_only=0';
+    // "&skip_initial_state" (initial step is needed when state has not updated in historyWindow)
+    url += '&significant_changes_only&minimal_response&no_attributes';
     return this.hass?.callApi('GET', url);
-  }
-  private _calculateOffsetTime() {
-    if (!this._config.offset) {return;}
-
-    const offset = parseDurationToMilliseconds(this._config.offset);
-    if (offset === null) {throw new Error(`Invalid offset: ${this._config.offset}`);}
-
-    this._offsetTime = Date.now() - offset;
   }
 
   private _calculateMainWidth(): number {

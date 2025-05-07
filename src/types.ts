@@ -14,7 +14,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   precision?: number;
   unit?: string;
   cutoff?: number;
-  offset?: string;
+  offset?: string | number;
   corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
   position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right';
 

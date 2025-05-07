@@ -177,6 +177,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     // max: config.max ?? config.entity,
     precision: config.precision ?? 0,
     cutoff: config.cutoff ?? 5,
+    offset: config.offset ? parseDurationToMilliseconds(config.offset) : undefined,
     corner: config.corner ?? "square",
     position: config.position ?? "left",
 
@@ -222,9 +223,10 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
   });
 };
 
-export function parseDurationToMilliseconds(durationStr: string) {
+function parseDurationToMilliseconds(durationStr: string | number) {
+  if (typeof durationStr === "number") {return;} // If passed number directly, return undefined (when typing number but not adding unit - prevents error)
   const match = durationStr.match(/^(\d+)([hmsd])$/i); // Case-insensitive for unit
-  if (!match) return null;
+  if (!match) return;
 
   const value = parseInt(match[1]);
   const unit = match[2].toLowerCase();
@@ -239,6 +241,6 @@ export function parseDurationToMilliseconds(durationStr: string) {
     case 'd':
       return value * 24 * 60 * 60 * 1000;
     default:
-      return null;
+      return;
   }
 }
