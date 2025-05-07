@@ -8,7 +8,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   header?: string;
 
   min?: number;
-  max?: number;
+  max?: number | string;
 
   precision?: number;
   unit?: string;
@@ -150,6 +150,11 @@ export type ELGHistory = {
   start_time: number;
   end_time: number;
   updating: boolean;
-  history: Record<string,HassHistory>;
+  history: Record<string,ELGHistoryEntry[]>;
+}
+
+export type ELGHistoryEntry = {
+  state: string;
+  last_changed: string;
 }
 

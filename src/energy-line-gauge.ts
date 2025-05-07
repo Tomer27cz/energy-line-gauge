@@ -13,7 +13,7 @@ import {
 
 import { version } from '../package.json';
 
-import { ELGConfig, ELGEntity, ELGHistory, HassEntity, HassHistory, HassHistoryEntry } from './types';
+import { ELGConfig, ELGEntity, ELGHistory, ELGHistoryEntry, HassEntity, HassHistory, HassHistoryEntry } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
 import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
@@ -167,7 +167,7 @@ export class EnergyLineGauge extends LitElement {
           if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
 
           const stateObj: HassEntity = this.hass.states[device.entity];
-          const state = this._calcState(stateObj, device);
+          const state = this._calcState(stateObj, device.multiplier);
 
           if (state < (device.cutoff ?? this._config.cutoff ?? 0) && !this._config.legend_all) {
             return html``;
@@ -205,7 +205,7 @@ export class EnergyLineGauge extends LitElement {
           if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
           
           const stateObj: HassEntity = this.hass.states[device.entity];
-          const state = this._calcState(stateObj, device);
+          const state = this._calcState(stateObj, device.multiplier);
 
           this._entitiesWidth[device.entity] = (state <= (device.cutoff ?? this._config.cutoff ?? 0)) ? 0 : this._calculateDeviceWidth(state);
 
@@ -375,9 +375,9 @@ export class EnergyLineGauge extends LitElement {
   private _calcStateMain(): number {
     return (this._config.offset) ? this._getHistoryState(this._config.entity) : parseFloat(this.hass.states[this._config.entity].state)
   }
-  private _calcState(stateObj: HassEntity, device: ELGEntity): number {
-    const value = (this._config.offset) ? this._getHistoryState(device.entity) : parseFloat(stateObj?.state);
-    return isNaN(value) ? 0 : value * (device.multiplier ?? 1);
+  private _calcState(stateObj: HassEntity, multiplier?: number): number {
+    const value = (this._config.offset) ? this._getHistoryState(stateObj.entity_id) : parseFloat(stateObj?.state);
+    return isNaN(value) ? 0 : value * (multiplier ?? 1);
   }
 
   private _getHistoryState(entityID: string): number {
@@ -385,14 +385,14 @@ export class EnergyLineGauge extends LitElement {
     if (!this._entitiesHistory) {return 0;}
     if (!this._entitiesHistory.history) {return 0;}
 
-    const history: HassHistory = this._entitiesHistory.history[entityID];
+    const history: ELGHistoryEntry[] = this._entitiesHistory.history[entityID];
     if (!history || history.length === 0) {return 0;}
 
     for (let i = history.length - 1; i >= 0; i--) {
-      const entry: HassHistoryEntry = history[i];
-      const lastUpdatedTime: number = new Date(entry.last_updated).getTime();
+      const entry: ELGHistoryEntry = history[i];
+      const lastChangedTime: number = new Date(entry.last_changed).getTime();
 
-      if (lastUpdatedTime <= this._offsetTime) {
+      if (lastChangedTime <= this._offsetTime) {
         // Found the state at or before the requested time
         const stateValue = parseFloat(entry.state);
         return isNaN(stateValue) ? 0 : stateValue;
@@ -400,7 +400,7 @@ export class EnergyLineGauge extends LitElement {
     }
 
     // If no entry is found before the offsetTime, return the earliest state
-    const earliestEntry: HassHistoryEntry = history[0];
+    const earliestEntry: ELGHistoryEntry = history[0];
     if (earliestEntry) {
       const stateValue: number = parseFloat(earliestEntry.state);
       return isNaN(stateValue) ? 0 : stateValue;
@@ -421,6 +421,12 @@ export class EnergyLineGauge extends LitElement {
     const startTime = new Date(this._offsetTime);
     const endTime = new Date(this._offsetTime + historyWindow);
     const entityIDs = (this._config.entities?.map((device: ELGEntity) => device.entity) ?? []).concat(this._config.entity);
+
+    // check if max is an entityId and add it to the list
+    if (this._config.max && this._config.max !== this._config.entity && typeof this._config.max === 'string') {
+      const maxEntity = this._validateEntityState(this._config.max);
+      if (!maxEntity) {entityIDs.push(this._config.max);}
+    }
 
     if (!this._entitiesHistory) {
       this._entitiesHistory = {
@@ -443,11 +449,15 @@ export class EnergyLineGauge extends LitElement {
         return;
       }
 
-      const transformedData = history.reduce((acc, innerArray) => {
+      const transformedData: Record<string, ELGHistoryEntry[]> = history.reduce((acc, innerArray: HassHistory) => {
+        const entityId: string = innerArray[0].entity_id;
+        if (!acc[entityId]) {acc[entityId] = [];}
+
         innerArray.forEach(item => {
-          const entityId = item.entity_id;
-          acc[entityId] = acc[entityId] || [];
-          acc[entityId].push(item);
+          acc[entityId].push({
+            state: item.state,
+            last_changed: item.last_changed,
+          });
         });
         return acc;
       }, {});
@@ -470,8 +480,8 @@ export class EnergyLineGauge extends LitElement {
   private _calculateMainWidth(): number {
     if (!this._config.max) {return 100;}
 
+    const max = typeof this._config.max === 'string' ? this._calcState(this.hass.states[this._config.max]) : this._config.max;
     const min: number = this._config.min??0;
-    const max: number = this._config.max;
     const value: number = this._calcStateMain();
 
     const clampValue = Math.min(Math.max(value, min), max);
@@ -480,8 +490,13 @@ export class EnergyLineGauge extends LitElement {
   private _calculateDeviceWidth(value: number): number {
     const mainWidth: number = this._calculateMainWidth();
 
+    // Check if max is undefined then use the main entity as max, if it is a string then get the state, else use the value
+    const max: number = this._config.max ?
+      typeof this._config.max === 'string' ?
+        this._calcState(this.hass.states[this._config.max])
+        : this._config.max
+      : this._calcStateMain();
     const min: number = this._config.min??0;
-    const max: number = this._config.max??this._calcStateMain();
 
     const clampValue = Math.min(Math.max(value, min), max);
     return ((clampValue - min) / (max - min)) * mainWidth;
@@ -491,7 +506,7 @@ export class EnergyLineGauge extends LitElement {
     return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
       const validationResult = this._validateEntityState(device.entity);
       if (validationResult) {return sum;}
-      return sum + this._calcState(this.hass.states[device.entity], device);
+      return sum + this._calcState(this.hass.states[device.entity], device.multiplier);
     }, 0);
   }
   private _delta(): [number, number, number] | undefined {
