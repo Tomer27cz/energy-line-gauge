@@ -5,7 +5,7 @@ import {
   mdiPalette,
   mdiLightningBolt,
   mdiGestureTap,
-  mdiListBox,
+  mdiListBox, mdiSortVariant,
 } from '@mdi/js';
 
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
@@ -250,15 +250,111 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "untracked_legend", required: false, selector: { boolean: {} } },
               { name: "untracked_legend_label", required: false, selector: { text: {} } },
               { name: "untracked_legend_icon", required: false, selector: { icon: {} } },
+            ],
+          },
+          {
+            name: "",
+            type: "grid",
+            schema: [
               {
                 type: "multi_select",
                 options: [
                   ["name", this.hass.localize("ui.components.state-content-picker.name")],
                   ["state", this.hass.localize("ui.components.state-content-picker.state")],
+                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"],
                 ],
                 name: "untracked_state_content",
                 required: false,
                 default: ["name"],
+              },
+              {
+                type: "multi_select",
+                options: [
+                  ["name", this.hass.localize("ui.components.state-content-picker.name")],
+                  ["state", this.hass.localize("ui.components.state-content-picker.state")],
+                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"],
+                ],
+                name: "untracked_line_state_content",
+                required: false,
+                default: [],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "expandable",
+        iconPath: mdiSortVariant,
+        title: this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.picked_statistic`),
+        flatten: true,
+        schema: [
+          {
+            name: "",
+            type: "grid",
+            schema: [
+              { name: "statistics", required: false, selector: { boolean: {} } },
+              { name: "statistics_day_offset", required: false, selector: { number: { min: 1, step: 1} } },
+              { name: "statistics_period", required: false, selector:
+                  {
+                    select: {
+                      mode: "dropdown",
+                      options: [
+                        {
+                          value: "5minute",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.5minute"),
+                        },
+                        {
+                          value: "hour",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.hour"),
+                        },
+                        {
+                          value: "day",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day"),
+                        },
+                        {
+                          value: "week",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.week"),
+                        },
+                        {
+                          value: "month",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.month"),
+                        },
+                      ]
+                    }
+                  }
+              },
+              { name: "statistics_function", required: false, selector:
+                  {
+                    select: {
+                      mode: "dropdown",
+                      options: [
+                        {
+                          value: "change",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.change"),
+                        },
+                        {
+                          value: "max",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.max"),
+                        },
+                        {
+                          value: "mean",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.mean"),
+                        },
+                        {
+                          value: "min",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.min"),
+                        },
+                        {
+                          value: "state",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.state"),
+                        },
+                        {
+                          value: "sum",
+                          label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.sum"),
+                        },
+                      ]
+                    }
+                  }
               },
             ],
           },
@@ -407,6 +503,12 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
             );
+        case "untracked_line_state_content":
+          return `${this.hass.localize(
+            `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
+          )} (${this.hass.localize(
+            "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"
+          )})`;
         case "interactions":
             return this.hass.localize(
                 `ui.panel.lovelace.editor.card.generic.interactions`
@@ -445,6 +547,24 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         case "offset":
             return this.hass.localize(
                 `ui.panel.config.automation.editor.triggers.type.calendar.offset`
+            );
+        case "statistics":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.statistics-graph.picked_statistic`
+            );
+        case "statistics_day_offset":
+            return `${this.hass.localize(
+              "ui.panel.config.automation.editor.triggers.type.calendar.offset"
+            )} (${this.hass.localize(
+              "ui.panel.lovelace.editor.card.statistics-graph.periods.day"
+            )})`;
+        case "statistics_period":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.statistics-graph.period`
+            );
+        case "statistics_function":
+            return this.hass.localize(
+                `ui.panel.lovelace.editor.card.statistics-graph.stat_types`
             );
         default:
           return schema.name;

@@ -55,6 +55,8 @@ export class EnergyLineGauge extends LitElement {
 
   @property() private _card!: LovelaceCard;
 
+  private _deltaValue: [number, number, number] | undefined = undefined;
+
   private _entitiesWidth: Record<string, number> = {};
 
   private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
@@ -146,9 +148,8 @@ export class EnergyLineGauge extends LitElement {
   }
 
   _createDelta() {
-    const delta = this._delta();
-    if (!delta) {return this._config.suppress_warnings ? html`` : html`<hui-warning>Delta could not be calculated</hui-warning>`;}
-    const [state, sum, deltaValue] = delta;
+    if (!this._deltaValue) {return this._config.suppress_warnings ? html`` : html`<hui-warning>Delta could not be calculated</hui-warning>`;}
+    const [state, sum, deltaValue] = this._deltaValue;
     return html`
       <div class="gauge-delta">
         <div class="gauge-delta-item">State: <span>${this._formatValueMain(state)}</span></div>
@@ -171,7 +172,7 @@ export class EnergyLineGauge extends LitElement {
       </li>`
   }
   _createLegend() {
-    if (!this._config.entities || this._config.legend_hide) {return html``;}
+    if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
 
     return html`
     <div class="chart-legend">
@@ -249,6 +250,11 @@ export class EnergyLineGauge extends LitElement {
               ` : html``}
             </div>`;
         }) : ''}
+        <div class="untracked-line" style="width: ${100 - (Object.values(this._entitiesWidth).reduce((acc, val) => acc + val, 0))}%">
+          <div class="untracked-line-label line-text-position-${this._config.line_text_position??"left"}" style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size??1}rem;">
+            ${this._untrackedLabel(true)}
+          </div>
+        </div>
       </div>`;
   }
   _createInnerHtml() {
@@ -257,6 +263,10 @@ export class EnergyLineGauge extends LitElement {
 
     if (this._config.offset) {this._getOffsetHistory();}
     if (this._config.statistics) {this._getStatisticsHistory();}
+
+    if (this._config.show_delta || this._config.untracked_state_content?.includes("state")) {
+      this._deltaValue = this._delta();
+    }
 
     const value = String(this._calcStateMain());
     this._entitiesWidth = {};
@@ -345,27 +355,28 @@ export class EnergyLineGauge extends LitElement {
       })
     }`;
   }
-  private _untrackedLabel() {
-    if (!this._config.untracked_state_content || this._config.untracked_state_content.length === 0) {
+  private _untrackedLabel(line?: boolean) {
+    const state_content = line ? this._config.untracked_line_state_content : this._config.untracked_state_content;
+    if (!state_content || state_content.length === 0) {
+      if (line) {return;}
       return this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption");
     }
     return html`
-      ${this._config.untracked_state_content?.map((value, i, arr) => {
+      ${state_content?.map((value, i, arr) => {
         const dot = i < arr.length - 1 ? " ⸱ " : '';
-
+        
+        const [state, sum, deltaValue] = this._deltaValue ?? [0, 0, undefined];
         switch (value) {
           case "name": return html`${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}${dot}`;
-          case "state": {
-            const [, , delta] = this._delta() ?? [0, 0, undefined];
-            return delta === undefined ? html`` : html`${this._formatValueMain(delta)}${dot}`;
-          }
+          case "state": return deltaValue === undefined ? html`` : html`${this._formatValueMain(deltaValue)}${dot}`;
+          case "percentage": return html`${(100 - (Object.values(this._entitiesWidth).reduce((acc, val) => acc + val, 0))).toFixed(0)}%${dot}`;
           default: return html`${value}${dot}`;
         }
       })}`;
   }
 
   private _formatValue(value: any, precision?: number, unit?: string): string {
-    if (!value) return '';
+    if (!value && value !== 0) return '';
     return `${parseFloat(value).toFixed(precision??0)}${unit ? ` ${unit}` : ''}`;
   }
   private _formatValueMain(value: any): string {
@@ -507,14 +518,7 @@ export class EnergyLineGauge extends LitElement {
     if (!this._entitiesHistoryStatistics.buckets[entityID]) {return 0;}
 
     const buckets: ELGHistoryStatisticsBucket[] = this._entitiesHistoryStatistics.buckets[entityID];
-
-    const today = new Date();
-    const offsetDate = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() - Number(this._config.statistics.day_offset)
-    );
-    const currentTimestamp = offsetDate.getTime();
+    const currentTimestamp = Date.now() - Number(this._config.statistics_day_offset) * 24 * 60 * 60 * 1000;
 
     const currentBucket: ELGHistoryStatisticsBucket | undefined = buckets.find((bucket: ELGHistoryStatisticsBucket) => {
       return (
@@ -525,7 +529,7 @@ export class EnergyLineGauge extends LitElement {
 
     if (!currentBucket) {return 0;}
 
-    switch (this._config.statistics?.function) {
+    switch (this._config.statistics_function) {
       case "mean":
         return currentBucket.mean;
       case "max":
@@ -551,7 +555,7 @@ export class EnergyLineGauge extends LitElement {
     const offsetDate = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate() - Number(this._config.statistics.day_offset)
+      today.getDate() - Number(this._config.statistics_day_offset)
     );
 
     if (this._entitiesHistoryStatistics?.date && this._entitiesHistoryStatistics?.date.getTime() === offsetDate.getTime()) {return;}
@@ -571,48 +575,7 @@ export class EnergyLineGauge extends LitElement {
     }
     this._entitiesHistoryStatistics.updating = true;
 
-    // this._tryALL().then((result) => {
-    //   let setOfAllKeys = new Set();
-    //
-    //   const entities = Object.keys(result);
-    //   for (const entityid of entities) {
-    //     const array = result[entityid];
-    //
-    //     console.info("-----------------------------------------------------------------------------------------------");
-    //     console.info("entityid", entityid);
-    //
-    //     for (const entry in array) {
-    //       const keys = Object.keys(array[entry]);
-    //       console.info("entry", array[entry]);
-    //       console.info("keys", keys);
-    //       for (const key of keys) {
-    //         setOfAllKeys.add(key);
-    //       }
-    //       if (array[entry].last_reset !== null) {
-    //         console.info("last_reset NOT NULL = ", array[entry].last_reset);
-    //       }
-    //       // @ts-ignore
-    //       if (array[entry].state !== null) {
-    //         // @ts-ignore
-    //         console.info("state NOT NULL = ", array[entry].state);
-    //       }
-    //       // @ts-ignore
-    //       if (array[entry].sum !== null) {
-    //         // @ts-ignore
-    //         console.info("sum NOT NULL = ", array[entry].sum);
-    //       }
-    //       // @ts-ignore
-    //       if (array[entry].change !== null) {
-    //         // @ts-ignore
-    //         console.info("change NOT NULL = ", array[entry].change);
-    //       }
-    //     }
-    //   }
-    //
-    //   console.info("setOfAllKeys", setOfAllKeys);
-    // });
-
-    this._fetchStatistics(this._allConfigEntities(), startTime, endTime, this._config.statistics.period).then((statistics: HassStatistics) => {
+    this._fetchStatistics(this._allConfigEntities(), startTime, endTime, this._config.statistics_period).then((statistics: HassStatistics) => {
       if (!statistics) {
         this._entitiesHistoryStatistics = {
           updating: false,
@@ -622,8 +585,6 @@ export class EnergyLineGauge extends LitElement {
         return;
       }
 
-      console.info(statistics);
-
       this._entitiesHistoryStatistics = {
         updating: false,
         date: offsetDate,
@@ -632,155 +593,7 @@ export class EnergyLineGauge extends LitElement {
     });
   }
 
-
-  // Spent a lot of time on this, but it doesn't work as well as the native Home Assistant history (will be removed in next version - just wanted to keep it in git)
-  // private _getStatisticsHistory(): void {
-  //   if (!this._config.statistics) {return;}
-  //   if (this._entitiesHistoryStatistics?.updating) {return;}
-  //
-  //   const today = new Date();
-  //   const offsetDate = new Date(
-  //     today.getFullYear(),
-  //     today.getMonth(),
-  //     today.getDate() - Number(this._config.statistics_day_offset)
-  //   );
-  //
-  //   if (this._entitiesHistoryStatistics?.date && this._entitiesHistoryStatistics?.date.getTime() === offsetDate.getTime()) {return;}
-  //
-  //   const startTime = new Date(offsetDate);
-  //   startTime.setHours(0, 0, 0, 0);
-  //
-  //   const endTime = new Date(offsetDate);
-  //   endTime.setHours(23, 59, 59, 999);
-  //
-  //   if (!this._entitiesHistoryStatistics) {
-  //     this._entitiesHistoryStatistics = {
-  //       updating: true,
-  //       date: offsetDate,
-  //       buckets: {},
-  //     };
-  //   }
-  //   this._entitiesHistoryStatistics.updating = true;
-  //
-  //   this._fetchStatistics(startTime, endTime).then((statistics) => {
-  //     console.info("statistics", statistics);
-  //   });
-  //
-  //   // this._fetchHistoryNew(this._allConfigEntities(), startTime, endTime).then((history: HassHistory[]) => {
-  //   //   console.info("new history", history);
-  //   // });
-  //
-  //   this._fetchHistory(this._allConfigEntities(), startTime, endTime).then((history: HassHistory[]) => {
-  //     if (!history || history.length === 0) {
-  //       this._entitiesHistoryStatistics = {
-  //         updating: false,
-  //         date: offsetDate,
-  //         buckets: {},
-  //       };
-  //       return;
-  //     }
-  //
-  //     this._entitiesHistoryStatistics = {
-  //       updating: false,
-  //       date: offsetDate,
-  //       buckets: this._transformStatisticsHistory(history),
-  //     };
-  //   });
-  // }
-  // private _transformStatisticsHistory(history: HassHistory[]): ELGHistoryStatisticsBuckets {
-  //   const buckets: ELGHistoryStatisticsBuckets = {};
-  //   const bucket_size: number = Number(this._config.statistics_bucket_size);
-  //
-  //   console.info("bucket_size", bucket_size);
-  //   console.info("history", history);
-  //
-  //   for (const entityHistory of history) {
-  //     console.info('entityHistory', entityHistory);
-  //
-  //     if (entityHistory.length === 0) continue;
-  //
-  //     const entity_id = entityHistory[0].entity_id;
-  //     buckets[entity_id] = [];
-  //
-  //     console.info('entity_id', entity_id);
-  //
-  //     const startTime = new Date(entityHistory[0].last_changed).getTime();
-  //     const bucketCount = Math.ceil(86400000 / bucket_size); // 24 hours in milliseconds
-  //
-  //     let lastValue = Number(entityHistory[0].state);
-  //     for (let i = 0; i < bucketCount; i++) {
-  //       const bucketStart = startTime + i * bucket_size;
-  //       const bucketEnd = bucketStart + bucket_size;
-  //
-  //       const valuesInBucket: HassHistoryEntry[] = entityHistory.filter(
-  //         (entry) => {
-  //           const entryTime = new Date(entry.last_changed).getTime();
-  //           return entryTime >= bucketStart && entryTime < bucketEnd;
-  //         },
-  //       );
-  //
-  //       const computedValue: number = ((): number => {
-  //         if (valuesInBucket.length === 0) {return lastValue;}
-  //         return this._calculateValueOfFunction(valuesInBucket, this._config.statistics_function);
-  //       })();
-  //       lastValue = computedValue;
-  //
-  //       buckets[entity_id].push({
-  //         start_time: bucketStart,
-  //         end_time: bucketEnd,
-  //         value: computedValue,
-  //       });
-  //     }
-  //   }
-  //
-  //   console.info("new buckets", buckets);
-  //   const better = this.processHassHistoryToBuckets(history, Number(this._config.statistics_bucket_size));
-  //   console.info("better buckets", better);
-  //
-  //   return buckets;
-  // }
-  // private _calculateValueOfFunction(values: HassHistoryEntry[], functionName: string='avg'): number {
-  //   const valuesArray: number[] = values.map((entry) => parseFloat(entry.state)).filter((value) => !isNaN(value));
-  //
-  //   switch (functionName) {
-  //     case "avg":
-  //       return valuesArray.reduce((sum, value) => sum + value, 0) / valuesArray.length;
-  //     case "min":
-  //       return Math.min(...valuesArray);
-  //     case "max":
-  //       return Math.max(...valuesArray);
-  //     case "sum":
-  //       return valuesArray.reduce((sum, value) => sum + value, 0);
-  //     default:
-  //       return 0;
-  //   }
-  // }
-
-
-  private async _tryALL(): Promise<HassStatistics> {
-
-    const allIdsList: any = await this.hass.callWS({ type: 'recorder/list_statistic_ids' });
-    const allIds = allIdsList.map((item: any) => item.statistic_id);
-
-    console.info("allIds", allIds);
-
-    const payload = {
-      type: 'recorder/statistics_during_period',
-      start_time: "2025-05-06T22:00:00.000Z",
-      end_time: "2025-05-07T21:59:59.999Z",
-      statistic_ids: allIds,
-      period: "hour",
-    }
-
-    console.log("Payload", payload);
-
-    return this.hass?.callWS(payload);
-  }
-
-
-
   private async _fetchStatistics(entityIds: string[], start: Date | undefined, end: Date | undefined, period: string='hour'): Promise<HassStatistics> {
-    console.info("fetchStatistics", start, end, period);
     const payload = {
       type: 'recorder/statistics_during_period',
       start_time: start?.toISOString(),
@@ -788,9 +601,6 @@ export class EnergyLineGauge extends LitElement {
       statistic_ids: entityIds,
       period: period,
     }
-
-    console.log("Payload", payload);
-
     return this.hass?.callWS(payload);
   }
   private async _fetchHistory(entityIDs: string[], start: Date | string, end: Date | string): Promise<HassHistory[]> {
@@ -804,7 +614,6 @@ export class EnergyLineGauge extends LitElement {
       `&minimal_response` +
       `&no_attributes`;
 
-    console.info("fetching history", url);
     return this.hass?.callApi('GET', url);
   }
   private _allConfigEntities(): string[] {

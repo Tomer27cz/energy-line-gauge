@@ -37,11 +37,15 @@ export interface ELGConfig extends LovelaceCardConfig {
   untracked_legend?: boolean;
   untracked_legend_label?: string;
   untracked_legend_icon?: string;
-  untracked_state_content?: string[];
+  untracked_state_content?: UntrackedStateContent;
+  untracked_line_state_content?: UntrackedStateContent;
 
   suppress_warnings?: boolean;
 
-  statistics?: ELGStatistics;
+  statistics?: boolean;
+  statistics_day_offset?: number;
+  statistics_period?: '5minute' | 'hour' | 'day' | 'week' | 'month';
+  statistics_function?: 'change' | 'last_reset' | 'max' | 'mean' | 'min' | 'state' | 'sum';
 
   entities: ELGEntity[];
 }
@@ -58,20 +62,18 @@ export interface ELGEntity {
   multiplier?: number;
   precision?: number;
 
-  state_content?: string[];
-  line_state_content?: string[];
+  state_content?: StateContent;
+  line_state_content?: StateContent;
 
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
 }
 
-export interface ELGStatistics {
-  day_offset: number;
-  period: "5minute" | "hour" | "day" | "week" | "month";
-  function: "change" | "last_reset" | "max" | "mean" | "min" | "state" | "sum";
-}
+// State Content Types -------------------------------------------------------------------------------------------------
 
+export type StateContent = Array<'name' | 'state' | 'last_changed' | 'last_updated' | 'percentage'>;
+export type UntrackedStateContent = Array<'name' | 'state' | 'percentage'>;
 
 // EDITOR---------------------------------------------------------------------------------------------------------------
 

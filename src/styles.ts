@@ -217,6 +217,25 @@ export const styles = css`
         width: 100%;
     }
     
+    
+    /* Untracked line --------------------------------------------*/
+  
+    .untracked-line {
+        float: right;
+        height: 100%;
+        transition: width 1s ease-out;
+        display: flex;
+    }
+    .untracked-line-label {
+        white-space: nowrap;
+        overflow: hidden;
+        width: 100%;
+        min-width: 0;
+        z-index: 1;
+        pointer-events: none;
+        padding: 2px;
+    }
+    
     /* Device line --------------------------------------------*/
 
     .device-line {
@@ -232,6 +251,7 @@ export const styles = css`
         min-width: 0;
         z-index: 1;
         pointer-events: none;
+        padding: 2px;
     }
     
     /* Device line label position --------------------------------------------*/
