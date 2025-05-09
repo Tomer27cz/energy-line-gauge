@@ -25,40 +25,33 @@ export class ItemEditor extends LitElement {
         selector: {entity: {domain: "sensor"}},
       },
 
+      { name: "name", required: false, selector: {text: {}}},
+
       {
         name: "",
         type: "grid",
         schema: [
-          {name: "name", required: false, selector: {text: {}}},
-          {name: "icon", required: false, selector: {icon: {}}},
-
+          { name: "color", required: false, selector: {color_rgb: {}}},
+          { name: "icon", required: false, selector: {icon: {}}},
         ]
       },
       {
-        name: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"),
+        name: "state_content",
         type: "expandable",
         flatten: true,
         iconPath: mdiTextShort,
         schema: [
-          {
-            name: "",
-            type: "grid",
-            schema: [
-              {name: "color", required: false, selector: {color_rgb: {}}},
-              {name: "cutoff", required: false, selector: {number: {}}},
-            ]
-          },
           {
             type: "grid",
             schema: [
               {
                 type: "multi_select",
                 options: [
-                  ["name", this.hass.localize("ui.components.state-content-picker.name")],
-                  ["state", this.hass.localize("ui.components.state-content-picker.state")],
-                  ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")],
-                  ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")],
-                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"],
+                  ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
+                  ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
+                  ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
+                  ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
+                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
                 ],
                 name: "state_content",
                 required: false,
@@ -67,11 +60,11 @@ export class ItemEditor extends LitElement {
               {
                 type: "multi_select",
                 options: [
-                  ["name", this.hass.localize("ui.components.state-content-picker.name")],
-                  ["state", this.hass.localize("ui.components.state-content-picker.state")],
-                  ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")],
-                  ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")],
-                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"],
+                  ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
+                  ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
+                  ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
+                  ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
+                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
                 ],
                 name: "line_state_content",
                 required: false,
@@ -79,13 +72,12 @@ export class ItemEditor extends LitElement {
               },
             ]
           },
-
         ],
       },
 
 
       {
-        name: this.hass.localize(`ui.panel.lovelace.editor.card.generic.unit`),
+        name: "unit",
         type: "expandable",
         flatten: true,
         iconPath: mdiRuler,
@@ -94,7 +86,7 @@ export class ItemEditor extends LitElement {
             name: "",
             type: "grid",
             schema: [
-              {name: "unit", required: false, selector: {text: {}}},
+              { name: "unit", required: false, selector: {text: {}}},
               { name: "multiplier", required: false, selector:
                 {
                   select: {
@@ -140,7 +132,8 @@ export class ItemEditor extends LitElement {
                   }
                 }
               },
-              {name: "precision", required: false, selector: {number: {}}},
+              { name: "precision", required: false, selector: {number: {}}},
+              { name: "cutoff", required: false, selector: {number: {}}},
             ]
           }
         ],
@@ -199,70 +192,34 @@ export class ItemEditor extends LitElement {
   private _computeLabelCallback = (schema: any) => {
     if (this.hass) {
       switch (schema.name) {
-        case "entity":
-          return `${this.hass.localize(
-              "ui.panel.lovelace.editor.card.generic.entity"
-          )} (${this.hass.localize(
-              "ui.panel.lovelace.editor.card.config.required"
-          )})`;
-        case "name":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.name`
-          );
-        case "color":
-            return this.hass.localize(
-                `ui.components.selectors.selector.types.color_rgb`
-            );
-        case "icon":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.icon`
-          );
-        case "content":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.markdown.content`
-          );
-        case "cutoff":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.sensor.limit_min`
-          );
-        case "interactions":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.interactions`
-          );
-        case "tap_action":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.tap_action`
-          );
-        case "hold_action":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.hold_action`
-          );
-        case "double_tap_action":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.double_tap_action`
-          );
-        case "state_content":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
-          );
-        case "line_state_content":
-          return `${this.hass.localize(
-            `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
-          )} (${this.hass.localize(
-            "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"
-          )})`;
-        case "unit":
-          return this.hass.localize(
-              `ui.panel.lovelace.editor.card.generic.unit`
-          );
-        case "multiplier":
-          return this.hass.localize(
-              `ui.panel.config.core.section.core.core_config.unit_system`
-          );
-        case "precision":
-          return this.hass.localize(
-            `ui.dialogs.entity_registry.editor.precision`
-          );
+        case "entity": // Entity (required)
+          return `${this.hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${this.hass.localize("ui.panel.lovelace.editor.card.config.required")})`;
+        case "name": // Name
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.name`);
+        case "color": // RGB Color
+            return this.hass.localize(`ui.components.selectors.selector.types.color_rgb`);
+        case "icon": // Icon
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.icon`);
+        case "cutoff": // Lower Limit
+          return this.hass.localize(`ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit`);
+        case "interactions": // Interactions
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.interactions`);
+        case "tap_action": // Tap Action
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.tap_action`);
+        case "hold_action": // Hold Action
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.hold_action`);
+        case "double_tap_action": // Double Tap Action
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.double_tap_action`);
+        case "state_content": // State Content
+          return this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`);
+        case "line_state_content": // State Content (Line)
+          return `${this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`)} (${this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`;
+        case "unit": // Unit
+          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.unit`);
+        case "multiplier": // Unit system
+          return this.hass.localize(`ui.panel.config.core.section.core.core_config.unit_system`);
+        case "precision": // Precision
+          return this.hass.localize(`ui.dialogs.entity_registry.editor.precision`);
         default:
           return schema.name;
       }

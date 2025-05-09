@@ -1,15 +1,15 @@
 import {LitElement, html, css, CSSResultGroup, nothing} from 'lit';
 
 import { HomeAssistant } from 'custom-card-helpers';
-import { EditorTarget, ELGConfig, ELGEntity, HTMLElementValue } from '../types';
+import { EditorTarget, ELGEntity, HTMLElementValue } from '../types';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { mdiDelete, mdiPencil, mdiPlusCircleOutline } from '@mdi/js';
-import { fireEvent, setEntitiesDefaults } from '../util';
+import { fireEvent } from '../util';
 
 import { configElementStyle } from '../styles'
 import Sortable from 'sortablejs';
-import SortableCore, { OnSpill, AutoScroll, SortableEvent } from 'sortablejs/modular/sortable.core.esm';
+import SortableCore, { OnSpill, AutoScroll, SortableEvent } from "sortablejs/modular/sortable.core.esm";
 
 SortableCore.mount(OnSpill, new AutoScroll());
 

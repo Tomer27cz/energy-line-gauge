@@ -3,18 +3,22 @@ import { ActionConfig, LovelaceCardConfig } from 'custom-card-helpers';
 export interface ELGConfig extends LovelaceCardConfig {
   entity: string;
 
+  // Title
   title?: string;
   subtitle?: string;
   header?: string;
 
+  // MIN/MAX
   min?: number | string;
   max?: number | string;
 
-  precision?: number;
-  unit?: string;
-  cutoff?: number;
-  offset?: string | number;
+  // Value
+  precision?: number; // Decimal precision for the value
+  unit?: string; // String appended to the value
+  cutoff?: number; // Cutoff value for the entity state
+  offset?: string | number; // Offset values into the past - duration string (e.g., "1h", "30m", "15s")
 
+  // Styling
   corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
   position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right';
   text_size?: number;
@@ -25,23 +29,29 @@ export interface ELGConfig extends LovelaceCardConfig {
   color?: [number, number, number] | string;
   color_bg?: [number, number, number] | string;
 
+  // Actions
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
 
+  // Legend
   legend_hide?: boolean;
   legend_all?: boolean;
 
+  // Show Delta
   show_delta?: boolean;
 
+  // Untracked Legend
   untracked_legend?: boolean;
   untracked_legend_label?: string;
   untracked_legend_icon?: string;
   untracked_state_content?: UntrackedStateContent;
   untracked_line_state_content?: UntrackedStateContent;
 
+  // Suppress Warnings
   suppress_warnings?: boolean;
 
+  // Statistics
   statistics?: boolean;
   statistics_day_offset?: number;
   statistics_period?: '5minute' | 'hour' | 'day' | 'week' | 'month';
@@ -51,20 +61,24 @@ export interface ELGConfig extends LovelaceCardConfig {
 }
 
 export interface ELGEntity {
-  attribute?: string;
   entity: string;
+
+  // Title
   name?: string;
   icon?: string;
   color?: [number, number, number] | string;
 
+  // Value
   cutoff?: number;
   unit?: string;
   multiplier?: number;
   precision?: number;
 
+  // State Content
   state_content?: StateContent;
   line_state_content?: StateContent;
 
+  // Actions
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;

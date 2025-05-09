@@ -22,11 +22,11 @@ import {
   ELGHistoryOffsetEntry,
 
   ELGHistoryStatistics,
-  ELGHistoryStatisticsBuckets,
   ELGHistoryStatisticsBucket,
 
   HassEntity,
-  HassHistory, HassHistoryEntry, HassStatistics,
+  HassHistory,
+  HassStatistics,
 } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
@@ -365,7 +365,7 @@ export class EnergyLineGauge extends LitElement {
       ${state_content?.map((value, i, arr) => {
         const dot = i < arr.length - 1 ? " ⸱ " : '';
         
-        const [state, sum, deltaValue] = this._deltaValue ?? [0, 0, undefined];
+        const [, , deltaValue] = this._deltaValue ?? [0, 0, undefined];
         switch (value) {
           case "name": return html`${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}${dot}`;
           case "state": return deltaValue === undefined ? html`` : html`${this._formatValueMain(deltaValue)}${dot}`;
