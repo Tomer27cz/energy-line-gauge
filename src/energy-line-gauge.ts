@@ -13,7 +13,21 @@ import {
 
 import { version } from '../package.json';
 
-import { ELGConfig, ELGEntity, ELGHistory, ELGHistoryEntry, HassEntity, HassHistory, HassHistoryEntry } from './types';
+import {
+  ELGConfig,
+  ELGEntity,
+
+  ELGHistoryOffset,
+  ELGHistoryOffsetEntities,
+  ELGHistoryOffsetEntry,
+
+  ELGHistoryStatistics,
+  ELGHistoryStatisticsBuckets,
+  ELGHistoryStatisticsBucket,
+
+  HassEntity,
+  HassHistory, HassHistoryEntry, HassStatistics,
+} from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
 import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
@@ -41,13 +55,13 @@ export class EnergyLineGauge extends LitElement {
 
   @property() private _card!: LovelaceCard;
 
-  @property() private _entitiesWidth: Record<string, number> = {};
+  private _entitiesWidth: Record<string, number> = {};
 
-  @property() private _entitiesHistory: ELGHistory | undefined = undefined;
+  private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
 
-  @property() private _offsetTime: number | undefined = undefined;
-
-  private readonly HISTORY_WINDOW_MS = 60000;
+  private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
+  private _offsetTime: number | undefined = undefined;
+  private _historyWindow: number = 60000;
 
   // noinspection JSUnusedGlobalSymbols
   public async setConfig(config: ELGConfig): Promise<void> {
@@ -241,7 +255,8 @@ export class EnergyLineGauge extends LitElement {
     const validationResult = this._validateEntityState(this._config.entity);
     if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
 
-    if (this._config.offset) {this._getHistory();}
+    if (this._config.offset) {this._getOffsetHistory();}
+    if (this._config.statistics) {this._getStatisticsHistory();}
 
     const value = String(this._calcStateMain());
     this._entitiesWidth = {};
@@ -373,23 +388,44 @@ export class EnergyLineGauge extends LitElement {
   }
 
   private _calcStateMain(): number {
-    return (this._config.offset) ? this._getHistoryState(this._config.entity) : parseFloat(this.hass.states[this._config.entity].state)
+    if (this._config.offset) {return this._getOffsetState(this._config.entity);}
+    if (this._config.statistics) {
+      const state = this._getStatisticsState(this._config.entity);
+      if (state === null) {
+        console.warn(`Energy Line Gauge: No statistics found for entity ${this._config.entity}`);
+        return 0;
+      }
+      return state;
+    }
+
+    return parseFloat(this.hass.states[this._config.entity].state);
   }
   private _calcState(stateObj: HassEntity, multiplier?: number): number {
-    const value = (this._config.offset) ? this._getHistoryState(stateObj.entity_id) : parseFloat(stateObj?.state);
+    const value: number = ((): number => {
+      if (this._config.offset) {return this._getOffsetState(stateObj.entity_id);}
+      if (this._config.statistics) {
+        const state = this._getStatisticsState(stateObj.entity_id);
+        if (state === null) {
+          console.warn(`Energy Line Gauge: No statistics found for entity ${stateObj.entity_id}`);
+          return 0;
+        }
+        return state;
+      }
+      return parseFloat(stateObj?.state);
+    })()
     return isNaN(value) ? 0 : value * (multiplier ?? 1);
   }
 
-  private _getHistoryState(entityID: string): number {
+  private _getOffsetState(entityID: string): number {
     if (!this._offsetTime) {return 0;}
-    if (!this._entitiesHistory) {return 0;}
-    if (!this._entitiesHistory.history) {return 0;}
+    if (!this._entitiesHistoryOffset) {return 0;}
+    if (!this._entitiesHistoryOffset.history) {return 0;}
 
-    const history: ELGHistoryEntry[] = this._entitiesHistory.history[entityID];
+    const history: ELGHistoryOffsetEntry[] = this._entitiesHistoryOffset.history[entityID];
     if (!history || history.length === 0) {return 0;}
 
     for (let i = history.length - 1; i >= 0; i--) {
-      const entry: ELGHistoryEntry = history[i];
+      const entry: ELGHistoryOffsetEntry = history[i];
       const lastChangedTime: number = new Date(entry.last_changed).getTime();
 
       if (lastChangedTime <= this._offsetTime) {
@@ -398,9 +434,8 @@ export class EnergyLineGauge extends LitElement {
         return isNaN(stateValue) ? 0 : stateValue;
       }
     }
-
     // If no entry is found before the offsetTime, return the earliest state
-    const earliestEntry: ELGHistoryEntry = history[0];
+    const earliestEntry: ELGHistoryOffsetEntry = history[0];
     if (earliestEntry) {
       const stateValue: number = parseFloat(earliestEntry.state);
       return isNaN(stateValue) ? 0 : stateValue;
@@ -408,39 +443,32 @@ export class EnergyLineGauge extends LitElement {
 
     return 0;
   }
-  private _getHistory(): void {
+  private _getOffsetHistory(): void {
     if (!this._config.offset) {return;}
     const offset = Number(this._config.offset);
 
     this._offsetTime = Date.now() - offset;
 
-    if (this._entitiesHistory?.updating) {return;}
-    if (this._entitiesHistory?.end_time && this._entitiesHistory.end_time - 100 > this._offsetTime) {return;}
+    if (this._entitiesHistoryOffset?.updating) {return;}
+    if (this._entitiesHistoryOffset?.end_time && this._entitiesHistoryOffset.end_time - 100 > this._offsetTime) {return;}
 
-    const historyWindow = offset >= this.HISTORY_WINDOW_MS ? this.HISTORY_WINDOW_MS : offset;
+    const historyWindow: number = offset >= this._historyWindow ? this._historyWindow : offset;
     const startTime = new Date(this._offsetTime);
     const endTime = new Date(this._offsetTime + historyWindow);
-    const entityIDs = (this._config.entities?.map((device: ELGEntity) => device.entity) ?? []).concat(this._config.entity);
 
-    // check if max is an entityId and add it to the list
-    if (this._config.max && this._config.max !== this._config.entity && typeof this._config.max === 'string') {
-      const maxEntity = this._validateEntityState(this._config.max);
-      if (!maxEntity) {entityIDs.push(this._config.max);}
-    }
-
-    if (!this._entitiesHistory) {
-      this._entitiesHistory = {
+    if (!this._entitiesHistoryOffset) {
+      this._entitiesHistoryOffset = {
         start_time: startTime.valueOf(),
         end_time: endTime.valueOf(),
         history: {},
         updating: true,
       };
     }
-    this._entitiesHistory.updating = true;
+    this._entitiesHistoryOffset.updating = true;
 
-    this._fetchHistory(entityIDs, startTime, endTime).then((history: HassHistory[]) => {
+    this._fetchHistory(this._allConfigEntities(), startTime, endTime).then((history: HassHistory[]) => {
       if (!history || history.length === 0) {
-        this._entitiesHistory = {
+        this._entitiesHistoryOffset = {
           start_time: startTime.valueOf(),
           end_time: endTime.valueOf(),
           history: {},
@@ -449,57 +477,384 @@ export class EnergyLineGauge extends LitElement {
         return;
       }
 
-      const transformedData: Record<string, ELGHistoryEntry[]> = history.reduce((acc, innerArray: HassHistory) => {
-        const entityId: string = innerArray[0].entity_id;
-        if (!acc[entityId]) {acc[entityId] = [];}
-
-        innerArray.forEach(item => {
-          acc[entityId].push({
-            state: item.state,
-            last_changed: item.last_changed,
-          });
-        });
-        return acc;
-      }, {});
-
-      this._entitiesHistory = {
+      this._entitiesHistoryOffset = {
         start_time: startTime.valueOf(),
         end_time: endTime.valueOf(),
-        history: transformedData,
+        history: this._transformOffsetHistory(history),
         updating: false,
       };
     });
   }
-  private async _fetchHistory(entityIDs: string[], start: Date, end: Date): Promise<HassHistory[]> {
-    let url = `history/period/${start.toISOString()}?filter_entity_id=${entityIDs.join(',')}&end_time=${end.toISOString()}`;
-    // "&skip_initial_state" (initial step is needed when state has not updated in historyWindow)
-    url += '&significant_changes_only&minimal_response&no_attributes';
+  private _transformOffsetHistory(history: HassHistory[]): ELGHistoryOffsetEntities {
+    return history.reduce((acc, innerArray: HassHistory) => {
+      const entityId: string = innerArray[0].entity_id;
+      if (!acc[entityId]) {acc[entityId] = [];}
+
+      innerArray.forEach(item => {
+        acc[entityId].push({
+          state: item.state,
+          last_changed: item.last_changed,
+        });
+      });
+      return acc;
+    }, {});
+  }
+
+  private _getStatisticsState(entityID: string): number | null {
+    if (!this._config.statistics) {return 0;}
+    if (!this._entitiesHistoryStatistics) {return 0;}
+    if (!this._entitiesHistoryStatistics.buckets) {return 0;}
+    if (!this._entitiesHistoryStatistics.buckets[entityID]) {return 0;}
+
+    const buckets: ELGHistoryStatisticsBucket[] = this._entitiesHistoryStatistics.buckets[entityID];
+
+    const today = new Date();
+    const offsetDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - Number(this._config.statistics.day_offset)
+    );
+    const currentTimestamp = offsetDate.getTime();
+
+    const currentBucket: ELGHistoryStatisticsBucket | undefined = buckets.find((bucket: ELGHistoryStatisticsBucket) => {
+      return (
+        currentTimestamp >= bucket.start &&
+        currentTimestamp <= bucket.end
+      );
+    });
+
+    if (!currentBucket) {return 0;}
+
+    switch (this._config.statistics?.function) {
+      case "mean":
+        return currentBucket.mean;
+      case "max":
+        return currentBucket.max;
+      case "min":
+        return currentBucket.min;
+      case "sum":
+        return currentBucket.sum;
+      case "state":
+        return currentBucket.state;
+      case "change":
+        return currentBucket.change;
+      default:
+        return currentBucket.mean;
+    }
+  }
+
+  private _getStatisticsHistory(): void {
+    if (!this._config.statistics) {return;}
+    if (this._entitiesHistoryStatistics?.updating) {return;}
+
+    const today = new Date();
+    const offsetDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - Number(this._config.statistics.day_offset)
+    );
+
+    if (this._entitiesHistoryStatistics?.date && this._entitiesHistoryStatistics?.date.getTime() === offsetDate.getTime()) {return;}
+
+    const startTime = new Date(offsetDate);
+    startTime.setHours(0, 0, 0, 0);
+
+    const endTime = new Date(offsetDate);
+    endTime.setHours(23, 59, 59, 999);
+
+    if (!this._entitiesHistoryStatistics) {
+      this._entitiesHistoryStatistics = {
+        updating: true,
+        date: offsetDate,
+        buckets: {},
+      };
+    }
+    this._entitiesHistoryStatistics.updating = true;
+
+    // this._tryALL().then((result) => {
+    //   let setOfAllKeys = new Set();
+    //
+    //   const entities = Object.keys(result);
+    //   for (const entityid of entities) {
+    //     const array = result[entityid];
+    //
+    //     console.info("-----------------------------------------------------------------------------------------------");
+    //     console.info("entityid", entityid);
+    //
+    //     for (const entry in array) {
+    //       const keys = Object.keys(array[entry]);
+    //       console.info("entry", array[entry]);
+    //       console.info("keys", keys);
+    //       for (const key of keys) {
+    //         setOfAllKeys.add(key);
+    //       }
+    //       if (array[entry].last_reset !== null) {
+    //         console.info("last_reset NOT NULL = ", array[entry].last_reset);
+    //       }
+    //       // @ts-ignore
+    //       if (array[entry].state !== null) {
+    //         // @ts-ignore
+    //         console.info("state NOT NULL = ", array[entry].state);
+    //       }
+    //       // @ts-ignore
+    //       if (array[entry].sum !== null) {
+    //         // @ts-ignore
+    //         console.info("sum NOT NULL = ", array[entry].sum);
+    //       }
+    //       // @ts-ignore
+    //       if (array[entry].change !== null) {
+    //         // @ts-ignore
+    //         console.info("change NOT NULL = ", array[entry].change);
+    //       }
+    //     }
+    //   }
+    //
+    //   console.info("setOfAllKeys", setOfAllKeys);
+    // });
+
+    this._fetchStatistics(this._allConfigEntities(), startTime, endTime, this._config.statistics.period).then((statistics: HassStatistics) => {
+      if (!statistics) {
+        this._entitiesHistoryStatistics = {
+          updating: false,
+          date: offsetDate,
+          buckets: {},
+        };
+        return;
+      }
+
+      console.info(statistics);
+
+      this._entitiesHistoryStatistics = {
+        updating: false,
+        date: offsetDate,
+        buckets: statistics,
+      };
+    });
+  }
+
+
+  // Spent a lot of time on this, but it doesn't work as well as the native Home Assistant history (will be removed in next version - just wanted to keep it in git)
+  // private _getStatisticsHistory(): void {
+  //   if (!this._config.statistics) {return;}
+  //   if (this._entitiesHistoryStatistics?.updating) {return;}
+  //
+  //   const today = new Date();
+  //   const offsetDate = new Date(
+  //     today.getFullYear(),
+  //     today.getMonth(),
+  //     today.getDate() - Number(this._config.statistics_day_offset)
+  //   );
+  //
+  //   if (this._entitiesHistoryStatistics?.date && this._entitiesHistoryStatistics?.date.getTime() === offsetDate.getTime()) {return;}
+  //
+  //   const startTime = new Date(offsetDate);
+  //   startTime.setHours(0, 0, 0, 0);
+  //
+  //   const endTime = new Date(offsetDate);
+  //   endTime.setHours(23, 59, 59, 999);
+  //
+  //   if (!this._entitiesHistoryStatistics) {
+  //     this._entitiesHistoryStatistics = {
+  //       updating: true,
+  //       date: offsetDate,
+  //       buckets: {},
+  //     };
+  //   }
+  //   this._entitiesHistoryStatistics.updating = true;
+  //
+  //   this._fetchStatistics(startTime, endTime).then((statistics) => {
+  //     console.info("statistics", statistics);
+  //   });
+  //
+  //   // this._fetchHistoryNew(this._allConfigEntities(), startTime, endTime).then((history: HassHistory[]) => {
+  //   //   console.info("new history", history);
+  //   // });
+  //
+  //   this._fetchHistory(this._allConfigEntities(), startTime, endTime).then((history: HassHistory[]) => {
+  //     if (!history || history.length === 0) {
+  //       this._entitiesHistoryStatistics = {
+  //         updating: false,
+  //         date: offsetDate,
+  //         buckets: {},
+  //       };
+  //       return;
+  //     }
+  //
+  //     this._entitiesHistoryStatistics = {
+  //       updating: false,
+  //       date: offsetDate,
+  //       buckets: this._transformStatisticsHistory(history),
+  //     };
+  //   });
+  // }
+  // private _transformStatisticsHistory(history: HassHistory[]): ELGHistoryStatisticsBuckets {
+  //   const buckets: ELGHistoryStatisticsBuckets = {};
+  //   const bucket_size: number = Number(this._config.statistics_bucket_size);
+  //
+  //   console.info("bucket_size", bucket_size);
+  //   console.info("history", history);
+  //
+  //   for (const entityHistory of history) {
+  //     console.info('entityHistory', entityHistory);
+  //
+  //     if (entityHistory.length === 0) continue;
+  //
+  //     const entity_id = entityHistory[0].entity_id;
+  //     buckets[entity_id] = [];
+  //
+  //     console.info('entity_id', entity_id);
+  //
+  //     const startTime = new Date(entityHistory[0].last_changed).getTime();
+  //     const bucketCount = Math.ceil(86400000 / bucket_size); // 24 hours in milliseconds
+  //
+  //     let lastValue = Number(entityHistory[0].state);
+  //     for (let i = 0; i < bucketCount; i++) {
+  //       const bucketStart = startTime + i * bucket_size;
+  //       const bucketEnd = bucketStart + bucket_size;
+  //
+  //       const valuesInBucket: HassHistoryEntry[] = entityHistory.filter(
+  //         (entry) => {
+  //           const entryTime = new Date(entry.last_changed).getTime();
+  //           return entryTime >= bucketStart && entryTime < bucketEnd;
+  //         },
+  //       );
+  //
+  //       const computedValue: number = ((): number => {
+  //         if (valuesInBucket.length === 0) {return lastValue;}
+  //         return this._calculateValueOfFunction(valuesInBucket, this._config.statistics_function);
+  //       })();
+  //       lastValue = computedValue;
+  //
+  //       buckets[entity_id].push({
+  //         start_time: bucketStart,
+  //         end_time: bucketEnd,
+  //         value: computedValue,
+  //       });
+  //     }
+  //   }
+  //
+  //   console.info("new buckets", buckets);
+  //   const better = this.processHassHistoryToBuckets(history, Number(this._config.statistics_bucket_size));
+  //   console.info("better buckets", better);
+  //
+  //   return buckets;
+  // }
+  // private _calculateValueOfFunction(values: HassHistoryEntry[], functionName: string='avg'): number {
+  //   const valuesArray: number[] = values.map((entry) => parseFloat(entry.state)).filter((value) => !isNaN(value));
+  //
+  //   switch (functionName) {
+  //     case "avg":
+  //       return valuesArray.reduce((sum, value) => sum + value, 0) / valuesArray.length;
+  //     case "min":
+  //       return Math.min(...valuesArray);
+  //     case "max":
+  //       return Math.max(...valuesArray);
+  //     case "sum":
+  //       return valuesArray.reduce((sum, value) => sum + value, 0);
+  //     default:
+  //       return 0;
+  //   }
+  // }
+
+
+  private async _tryALL(): Promise<HassStatistics> {
+
+    const allIdsList: any = await this.hass.callWS({ type: 'recorder/list_statistic_ids' });
+    const allIds = allIdsList.map((item: any) => item.statistic_id);
+
+    console.info("allIds", allIds);
+
+    const payload = {
+      type: 'recorder/statistics_during_period',
+      start_time: "2025-05-06T22:00:00.000Z",
+      end_time: "2025-05-07T21:59:59.999Z",
+      statistic_ids: allIds,
+      period: "hour",
+    }
+
+    console.log("Payload", payload);
+
+    return this.hass?.callWS(payload);
+  }
+
+
+
+  private async _fetchStatistics(entityIds: string[], start: Date | undefined, end: Date | undefined, period: string='hour'): Promise<HassStatistics> {
+    console.info("fetchStatistics", start, end, period);
+    const payload = {
+      type: 'recorder/statistics_during_period',
+      start_time: start?.toISOString(),
+      end_time: end?.toISOString(),
+      statistic_ids: entityIds,
+      period: period,
+    }
+
+    console.log("Payload", payload);
+
+    return this.hass?.callWS(payload);
+  }
+  private async _fetchHistory(entityIDs: string[], start: Date | string, end: Date | string): Promise<HassHistory[]> {
+    const startTime = typeof start === 'string' ? start : start.toISOString();
+    const endTime = typeof end === 'string' ? end : end.toISOString();
+
+    let url = `history/period/${startTime}?` +
+      `filter_entity_id=${entityIDs.join(',')}` +
+      `&end_time=${endTime}` +
+      `&significant_changes_only` +
+      `&minimal_response` +
+      `&no_attributes`;
+
+    console.info("fetching history", url);
     return this.hass?.callApi('GET', url);
+  }
+  private _allConfigEntities(): string[] {
+    const entityIDs = [this._config.entity].concat(this._config.entities?.map((device: ELGEntity) => device.entity) ?? []);
+
+    // add max, min if they are an entityId - technically not all-config entities, but all allowed entities
+    const otherEntities = [
+      this._config.min,
+      this._config.max,
+    ]
+
+    for (const entity of otherEntities) {
+      if (entity && entity !== this._config.entity && typeof entity === 'string') {
+        const validationResult = this._validateEntityState(entity);
+        if (!validationResult) {entityIDs.push(entity);}
+      }
+    }
+
+    return entityIDs;
   }
 
   private _calculateMainWidth(): number {
-    if (!this._config.max) {return 100;}
-
-    const max = typeof this._config.max === 'string' ? this._calcState(this.hass.states[this._config.max]) : this._config.max;
-    const min: number = this._config.min??0;
-    const value: number = this._calcStateMain();
-
-    const clampValue = Math.min(Math.max(value, min), max);
-    return ((clampValue - min) / (max - min)) * 100;
+    return this._calculateWidth(this._calcStateMain());
   }
   private _calculateDeviceWidth(value: number): number {
-    const mainWidth: number = this._calculateMainWidth();
+    return this._calculateWidth(value, this._calculateMainWidth(), this._calcStateMain())
+  }
+  private _calculateWidth(value: number, multiplier: number=100, maxDefault: number=100): number {
+    const max: number = ((): number => {
+      if (!this._config.max) {return maxDefault;}
 
-    // Check if max is undefined then use the main entity as max, if it is a string then get the state, else use the value
-    const max: number = this._config.max ?
-      typeof this._config.max === 'string' ?
-        this._calcState(this.hass.states[this._config.max])
-        : this._config.max
-      : this._calcStateMain();
-    const min: number = this._config.min??0;
+      if (typeof this._config.max === 'string') {
+        return this._calcState(this.hass.states[this._config.max])
+      }
+
+      return this._config.max
+    })()
+
+    const min: number = ((): number => {
+      if (!this._config.min) {return 0}
+
+      if (typeof this._config.min === 'string') {
+        return this._calcState(this.hass.states[this._config.min])
+      }
+
+      return this._config.min
+    })()
 
     const clampValue = Math.min(Math.max(value, min), max);
-    return ((clampValue - min) / (max - min)) * mainWidth;
+    return ((clampValue - min) / (max - min)) * multiplier;
   }
 
   private _devicesSum(): number {

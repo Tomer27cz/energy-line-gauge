@@ -7,7 +7,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   subtitle?: string;
   header?: string;
 
-  min?: number;
+  min?: number | string;
   max?: number | string;
 
   precision?: number;
@@ -41,6 +41,8 @@ export interface ELGConfig extends LovelaceCardConfig {
 
   suppress_warnings?: boolean;
 
+  statistics?: ELGStatistics;
+
   entities: ELGEntity[];
 }
 
@@ -63,6 +65,15 @@ export interface ELGEntity {
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
 }
+
+export interface ELGStatistics {
+  day_offset: number;
+  period: "5minute" | "hour" | "day" | "week" | "month";
+  function: "change" | "last_reset" | "max" | "mean" | "min" | "state" | "sum";
+}
+
+
+// EDITOR---------------------------------------------------------------------------------------------------------------
 
 export const DEFAULT_ACTIONS = [
   "more-info",
@@ -102,7 +113,7 @@ export interface HassCustomElement extends CustomElementConstructor {
   getConfigElement(): Promise<unknown>;
 }
 
-// Types from home-assistant-js-websocket
+// Types from home-assistant-js-websocket ------------------------------------------------------------------------------
 export declare type Context = {
   id: string;
   user_id: string | null;
@@ -146,15 +157,52 @@ export interface HassHistoryEntry {
 
 export type HassHistory = Array<HassHistoryEntry>;
 
-export type ELGHistory = {
+// Statistic Own Observations ------------------------------------------------------------------------------------------
+
+export declare type HassStatistics = {
+  [entity_id: string]: HassStatisticEntry[];
+};
+
+export interface HassStatisticEntry {
+  start: number;
+  end: number;
+  last_reset: number | null;
+  max: number | null;
+  mean: number | null;
+  min: number | null;
+  sum: number | null;
+  state: number | null;
+  change: number | null;
+}
+
+// Energy Line Gauge History -------------------------------------------------------------------------------------------
+
+export declare type ELGHistoryOffsetEntities = {
+  [entity_id: string]: ELGHistoryOffsetEntry[];
+};
+
+export type ELGHistoryOffset = {
   start_time: number;
   end_time: number;
   updating: boolean;
-  history: Record<string,ELGHistoryEntry[]>;
+  history: ELGHistoryOffsetEntities;
 }
 
-export type ELGHistoryEntry = {
+export type ELGHistoryOffsetEntry = {
   state: string;
   last_changed: string;
 }
 
+// Energy Line Gauge History Statistics --------------------------------------------------------------------------------
+
+export declare type ELGHistoryStatisticsBuckets = {
+  [entity_id: string]: ELGHistoryStatisticsBucket[];
+};
+
+export type ELGHistoryStatistics = {
+  updating: boolean;
+  date: Date;
+  buckets: ELGHistoryStatisticsBuckets;
+}
+
+export type ELGHistoryStatisticsBucket = HassStatisticEntry

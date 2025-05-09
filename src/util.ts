@@ -197,6 +197,12 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
     suppress_warnings: config.suppress_warnings ?? false,
 
+    statistics: (config.statistics ? {
+      day_offset: config.statistics.day_offset ?? 1,
+      period: config.statistics.period ?? 'hour',
+      function: config.statistics.function ?? 'mean',
+    } : undefined),
+
     entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities,
   };
 };
