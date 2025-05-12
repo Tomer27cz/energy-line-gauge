@@ -7,7 +7,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   title?: string;
   subtitle?: string;
   header?: string;
-  title_position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
+  title_position?: PositionType;
   title_text_size?: number;
 
   // MIN/MAX
@@ -21,11 +21,11 @@ export interface ELGConfig extends LovelaceCardConfig {
   offset?: string | number; // Offset values into the past - duration string (e.g., "1h", "30m", "15s")
 
   // Styling
-  corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
-  position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
+  corner?: CornerType;
+  position?: PositionType;
   text_size?: number;
 
-  line_text_position?: 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center';
+  line_text_position?: LinePositionType;
   line_text_size?: number;
 
   color?: [number, number, number] | string;
@@ -39,18 +39,18 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Legend
   legend_hide?: boolean;
   legend_all?: boolean;
-  legend_position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
+  legend_position?: PositionType;
 
   // Show Delta
   show_delta?: boolean;
-  delta_position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
+  delta_position?: PositionType;
 
   // Untracked Legend
   untracked_legend?: boolean;
   untracked_legend_label?: string;
   untracked_legend_icon?: string;
-  untracked_state_content?: UntrackedStateContent;
-  untracked_line_state_content?: UntrackedStateContent;
+  untracked_state_content?: UntrackedStateContentType;
+  untracked_line_state_content?: UntrackedStateContentType;
 
   // Suppress Warnings
   suppress_warnings?: boolean;
@@ -58,8 +58,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Statistics
   statistics?: boolean;
   statistics_day_offset?: number;
-  statistics_period?: '5minute' | 'hour' | 'day' | 'week' | 'month';
-  statistics_function?: 'change' | 'last_reset' | 'max' | 'mean' | 'min' | 'state' | 'sum';
+  statistics_period?: StatisticsPeriodType;
+  statistics_function?: StatisticsFunctionType;
 
   entities: ELGEntity[];
 }
@@ -79,8 +79,8 @@ export interface ELGEntity {
   precision?: number;
 
   // State Content
-  state_content?: StateContent;
-  line_state_content?: StateContent;
+  state_content?: StateContentType;
+  line_state_content?: StateContentType;
 
   // Actions
   tap_action?: ActionConfig;
@@ -90,8 +90,25 @@ export interface ELGEntity {
 
 // State Content Types -------------------------------------------------------------------------------------------------
 
-export type StateContent = Array<'name' | 'state' | 'last_changed' | 'last_updated' | 'percentage'>;
-export type UntrackedStateContent = Array<'name' | 'state' | 'percentage'>;
+export const CORNER_TYPES = ['square', 'lite_rounded', 'medium_rounded', 'rounded', 'circular'] as const;
+export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
+export const LINE_POSITION_TYPES = ['left', 'right', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
+
+export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage'] as const;
+export const UNTRACKED_STATE_CONTENT_TYPES = ['name', 'state', 'percentage'] as const;
+
+export const STATISTICS_PERIOD_TYPES = ['5minute', 'hour', 'day', 'week', 'month'] as const;
+export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean', 'min', 'state', 'sum'] as const;
+
+export type CornerType = typeof CORNER_TYPES[number];
+export type PositionType = typeof POSITION_TYPES[number];
+export type LinePositionType = typeof LINE_POSITION_TYPES[number];
+
+export type StateContentType = typeof STATE_CONTENT_TYPES[number][];
+export type UntrackedStateContentType = typeof UNTRACKED_STATE_CONTENT_TYPES[number][];
+
+export type StatisticsPeriodType = typeof STATISTICS_PERIOD_TYPES[number];
+export type StatisticsFunctionType = typeof STATISTICS_FUNCTION_TYPES[number];
 
 // EDITOR---------------------------------------------------------------------------------------------------------------
 

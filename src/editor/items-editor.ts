@@ -5,7 +5,6 @@ import { EditorTarget, ELGEntity, HTMLElementValue } from '../types';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { mdiDelete, mdiPencil, mdiPlusCircleOutline } from '@mdi/js';
-import { fireEvent } from '../util';
 
 import { configElementStyle } from '../styles'
 import Sortable from 'sortablejs';
@@ -130,7 +129,7 @@ export class ItemsEditor extends LitElement {
     if (index != undefined) {
       const entities = this.entities!.concat();
       entities.splice(index, 1);
-      fireEvent<ELGEntity[]>(this, 'config-changed', entities);
+      fireEvent(this, 'config-changed', entities);
     }
   }
 
@@ -328,4 +327,9 @@ export class ItemsEditor extends LitElement {
         `
     ];
   }
+}
+
+export function fireEvent<T>(node: HTMLElement | Window, type: string, detail: T): void {
+  const event = new CustomEvent(type, { bubbles: false, composed: false, detail: detail });
+  node.dispatchEvent(event);
 }

@@ -1,9 +1,8 @@
 import { LitElement, TemplateResult, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { HomeAssistant } from 'custom-card-helpers';
+import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 
-import { fireEvent } from '../util';
 import { ELGEntity, DEFAULT_ACTIONS } from '../types';
 import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 

@@ -30,7 +30,9 @@ import {
 } from './types';
 import { styles } from './styles';
 import { actionHandler } from './action-handler';
-import { findEntities, setConfigDefaults, COLORS, toRGB, toHEX, textColor } from './util';
+import { findEntities } from './find-entities';
+import { setConfigDefaults } from './defaults';
+import { COLORS, toRGB, toHEX, textColor } from './color';
 
 import './editor/editor';
 
@@ -59,6 +61,8 @@ export class EnergyLineGauge extends LitElement {
   private _deltaValue: [number, number, number] | undefined = undefined;
 
   private _entitiesWidth: Record<string, number> = {};
+  private _entitiesTotalWidth: number = 0;
+
   private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
   private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
   private _offsetTime: number | undefined = undefined;
@@ -212,50 +216,61 @@ export class EnergyLineGauge extends LitElement {
     </div>`
   }
   _createDeviceLines() {
-    if (!this._config.entities) {return html``;}
+    if (!this._config.entities) return html``;
+
+    this._entitiesTotalWidth = 0;
+    const deviceLines = this._config.entities.map((device: ELGEntity) => {
+      if (!this._validate(device.entity)) return html``;
+
+      const stateObj: HassEntity = this.hass.states[device.entity];
+      const state = this._calcState(stateObj, device.multiplier);
+      const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
+
+      // Determine width based on cutoff
+      const width = state <= cutoff ? 0 : this._calculateDeviceWidth(state);
+      this._entitiesWidth[device.entity] = width;
+
+      if (width > 0) {this._entitiesTotalWidth += width;}
+
+      // noinspection HtmlUnknownAttribute
+      return html`
+      <div 
+        id="line-${device.entity.replace(".", "-")}" 
+        class="device-line" 
+        style="background-color: ${toHEX(device.color)}; width: ${width}%;"
+        @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
+        .actionHandler=${actionHandler({
+        hasHold: hasAction(device.hold_action),
+        hasDoubleClick: hasAction(device.double_tap_action),
+      })}
+      >
+        ${width > 0 ? html`
+          <div 
+            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
+            style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
+          >
+            ${this._entityLabel(device, stateObj, true, state)}
+          </div>
+        ` : html``}
+      </div>
+    `;
+    });
+
+    const untrackedWidth = Math.max(0, 100 - this._entitiesTotalWidth);
 
     return html`
-      <div class="device-line-container">
-        ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
-          if (!this._validate(device.entity)) {return html``;}
-          
-          const stateObj: HassEntity = this.hass.states[device.entity];
-          const state = this._calcState(stateObj, device.multiplier);
-
-          this._entitiesWidth[device.entity] = (state <= (device.cutoff ?? this._config.cutoff ?? 0)) ? 0 : this._calculateDeviceWidth(state);
-
-          // The div is still created even if the width is 0,
-          // so when the width is suddenly more than 0, the transition is smooth from 0 to the new width
-          // (not just appearing without transition)
-  
-          // noinspection HtmlUnknownAttribute
-          return html`
-            <div 
-              id="line-${device.entity.replace(".", "-")}" 
-              class="device-line" 
-              style="background-color: ${toHEX(device.color)}; width: ${this._entitiesWidth[device.entity]}%;"
-              @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
-              .actionHandler=${actionHandler({ 
-                hasHold: hasAction(device.hold_action), 
-                hasDoubleClick: hasAction(device.double_tap_action), 
-              })}
-            >
-              ${this._entitiesWidth[device.entity] > 0 ? html`
-                <div 
-                  class="device-line-label line-text-position-${this._config.line_text_position??"left"}" 
-                  style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size??1}rem;"
-                >
-                  ${this._entityLabel(device, stateObj, true, state)}
-                </div>
-              ` : html``}
-            </div>`;
-        }) : ''}
-        <div class="untracked-line" style="width: ${100 - (Object.values(this._entitiesWidth).reduce((acc, val) => acc + val, 0))}%">
-          <div class="untracked-line-label line-text-position-${this._config.line_text_position??"left"}" style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size??1}rem;">
-            ${this._untrackedLabel(true)}
-          </div>
+    <div class="device-line-container">
+      ${deviceLines}
+      <div class="untracked-line" style="width: ${untrackedWidth}%">
+        <div 
+          class="untracked-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
+          style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
+        >
+          ${this._untrackedLabel(true)}
         </div>
-      </div>`;
+      </div>
+    </div>
+  `;
   }
   _createInnerHtml() {
     this._entitiesWidth = {};
@@ -270,26 +285,34 @@ export class EnergyLineGauge extends LitElement {
       this._deltaValue = this._delta();
     }
 
+    const titlePosition = this._config.title_position ?? "top-left";
+    const legendPosition = this._config.legend_position ?? "bottom-center";
+    const deltaPosition = this._config.delta_position ?? "bottom-center";
+    const valuePosition = this._config.position ?? "left";
+    const cornerStyle = this._config.corner ?? "square";
+    const textSize = this._config.text_size ?? 2.5;
+    const titleTextSize = this._config.title_text_size ?? 2;
+
     // gauge-position-frame - First div is moved around the second div based on the position-* class
     // delta is currently always at the bottom of the line
     return html`
-      <div class="gauge-position-frame position-${this._config.title_position??"top-left"}">
-        ${(this._config.title || this._config.subtitle) && this._config.title_position !== 'none' ? html`
+      <div class="gauge-position-frame position-${titlePosition}">
+        ${(this._config.title || this._config.subtitle) && titlePosition !== 'none' ? html`
           <div>
-            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${this._config.title_text_size??2}">${this._config.title}</div>` : ''}
-            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${(this._config.title_text_size??2)/2}">${this._config.subtitle}</div>` : ''}
+            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem;">${this._config.title}</div>` : ''}
+            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem;">${this._config.subtitle}</div>` : ''}
           </div>
         ` : ''}
-        <div class="gauge-position-frame position-${this._config.legend_position??"bottom-center"}">
+        <div class="gauge-position-frame position-${legendPosition}">
           ${this._config.entities ? this._createLegend() : ''}
-          <div class="gauge-position-frame position-${this._config.delta_position??"bottom-center"}">
-            ${this._config.show_delta ? this._createDelta() : ''}   
-            <div class="gauge-position-frame position-${this._config.position??"left"}">
-              <div class="gauge-value" style="font-size: ${this._config.text_size??2.5}rem; height: ${this._config.text_size??2.5}rem">
+          <div class="gauge-position-frame position-${deltaPosition}">
+            ${this._config.show_delta ? this._createDelta() : ''}
+            <div class="gauge-position-frame position-${valuePosition}">
+              <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem;">
                 ${this._calcStateMain().toFixed(this._config.precision)}
-                ${this._config.unit ? html`<span class="unit" style="font-size: ${(this._config.text_size??2.5)/2}rem;">${this._config.unit}</span>` : ''}
+                ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
               </div>
-              <div class="gauge-line line-corner-${this._config.corner??"square"}">
+              <div class="gauge-line line-corner-${cornerStyle}">
                 <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
                 ${this._createDeviceLines()}
               </div>
@@ -371,7 +394,7 @@ export class EnergyLineGauge extends LitElement {
         switch (value) {
           case "name": return html`${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}${dot}`;
           case "state": return deltaValue === undefined ? html`` : html`${this._formatValueMain(deltaValue)}${dot}`;
-          case "percentage": return html`${(100 - (Object.values(this._entitiesWidth).reduce((acc, val) => acc + val, 0))).toFixed(0)}%${dot}`;
+          case "percentage": return html`${(100 - this._entitiesTotalWidth).toFixed(0)}%${dot}`;
           default: return html`${value}${dot}`;
         }
       })}`;
