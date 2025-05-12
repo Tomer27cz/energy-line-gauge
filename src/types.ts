@@ -7,6 +7,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   title?: string;
   subtitle?: string;
   header?: string;
+  title_position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
+  title_text_size?: number;
 
   // MIN/MAX
   min?: number | string;
@@ -37,9 +39,11 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Legend
   legend_hide?: boolean;
   legend_all?: boolean;
+  legend_position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
 
   // Show Delta
   show_delta?: boolean;
+  delta_position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
 
   // Untracked Legend
   untracked_legend?: boolean;

@@ -173,6 +173,9 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
   return {
     ...config,
+    title_position: config.title_position ?? "top-left",
+    title_text_size: config.title_text_size ?? 2,
+
     min: config.min ?? 0,
     max: config.max ?? config.entity,
 
@@ -196,7 +199,10 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
     legend_hide: config.legend_hide ?? false,
     legend_all: config.legend_all ?? false,
+    legend_position: config.legend_position ?? "bottom-center",
+
     show_delta: config.show_delta ?? false,
+    delta_position: config.delta_position ?? "bottom-center",
 
     suppress_warnings: config.suppress_warnings ?? false,
 

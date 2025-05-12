@@ -83,50 +83,77 @@ export const styles = css`
         box-sizing:border-box
     }
 
-    .gauge-frame {
+    .gauge-position-frame {
         width: 100%;
         display: flex;
         flex-wrap: nowrap;
         flex-grow: 1;
+        gap: 0.5rem;
     }
-    .gauge-header {
-        margin-bottom: 1rem;
-    }
+  
+    /* Gauge Title -------------------------------------------*/
+  
     .gauge-title {
         font-size: 2rem;
         text-align: left;
-        flex-wrap: nowrap;
         white-space: nowrap;
         margin-bottom: 0.5rem;
     }
     .gauge-subtitle {
         font-size: 1rem;
         text-align: left;
-        flex-wrap: nowrap;
         white-space: nowrap;
-        color: gray;
+        color: var(--secondary-text-color);
+    }
+  
+    /* Gauge Title Position Adjustments */
+    /* Left aligned */
+    .position-left .gauge-title,
+    .position-left .gauge-subtitle,
+    .position-top-left .gauge-title,
+    .position-top-left .gauge-subtitle,
+    .position-bottom-left .gauge-title,
+    .position-bottom-left .gauge-subtitle {
+      text-align: left;
+    }
+  
+    /* Center aligned */
+    .position-top-middle .gauge-title,
+    .position-top-middle .gauge-subtitle,
+    .position-top-center .gauge-title,
+    .position-top-center .gauge-subtitle,
+    .position-bottom-middle .gauge-title,
+    .position-bottom-middle .gauge-subtitle,
+    .position-bottom-center .gauge-title,
+    .position-bottom-center .gauge-subtitle {
+      text-align: center;
+    }
+  
+    /* Right aligned */
+    .position-right .gauge-title,
+    .position-right .gauge-subtitle,
+    .position-top-right .gauge-title,
+    .position-top-right .gauge-subtitle,
+    .position-bottom-right .gauge-title,
+    .position-bottom-right .gauge-subtitle {
+      text-align: right;
     }
     
     /* Gauge Value -------------------------------------------*/
-
+  
     .gauge-value {
         font-size: 2.5rem;
-        text-align: center;
-        flex-wrap: nowrap;
+        align-content: center;
         white-space: nowrap;
     }
     .unit {
-        font-size: 1.5rem;
-        text-align: center;
-        flex-wrap: nowrap;
-        white-space: nowrap;
-        height: 100%;
+        font-size: 1.25rem;
         color: var(--secondary-text-color);
     }
     
-    /* MAIN Label Position -------------------------------------------------- */
-    
+    /* MAIN Label Position / Title position -------------------------------------------------- */
     /* 'left' | 'right' | 'none' | 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'; */
+  
     .position-left {
         flex-direction: row;
         align-items: center;
@@ -166,33 +193,6 @@ export const styles = css`
     .position-top-right,
     .position-bottom-right {
         align-items: flex-end;
-    }
-
-    /* Gauge value positioning adjustments */
-    .position-left .gauge-value {
-        margin-right: 1rem;
-    }
-
-    .position-right .gauge-value {
-        margin-left: 1rem;
-    }
-
-    .position-none .gauge-value {
-        display: none;
-    }
-
-    .position-top-left .gauge-value,
-    .position-top-middle .gauge-value,
-    .position-top-center .gauge-value,
-    .position-top-right .gauge-value {
-        margin: 0.5rem 0 1rem 0;
-    }
-
-    .position-bottom-left .gauge-value,
-    .position-bottom-middle .gauge-value,
-    .position-bottom-center .gauge-value,
-    .position-bottom-right .gauge-value {
-        margin: 1rem 0 0.5rem 0;
     }
     
     /*Gauge line -------------------------------------------*/
@@ -362,6 +362,7 @@ export const styles = css`
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        width: 100%;
     }
     .gauge-delta-item {
         text-align: center;

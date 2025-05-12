@@ -270,26 +270,33 @@ export class EnergyLineGauge extends LitElement {
       this._deltaValue = this._delta();
     }
 
-    const value = String(this._calcStateMain());
-
+    // gauge-position-frame - First div is moved around the second div based on the position-* class
+    // delta is currently always at the bottom of the line
     return html`
-      ${this._config.title || this._config.subtitle ? html`
-        <div class="gauge-header">
-          ${this._config.title ? html`<div class="gauge-title">${this._config.title}</div>` : ''}
-          ${this._config.subtitle ? html`<div class="gauge-subtitle">${this._config.subtitle}</div>` : ''}
-        </div>` : ''}
-      <div class="gauge-frame position-${this._config.position??"left"}">
-        <div class="gauge-value" style="font-size: ${this._config.text_size??2.5}rem;">
-          ${parseFloat(value).toFixed(this._config.precision)}
-          ${this._config.unit ? html`<span class="unit" style="font-size: ${(this._config.text_size??2.5)/2}rem;">${this._config.unit}</span>` : ''}
-        </div>
-        <div class="gauge-line line-corner-${this._config.corner??"square"}">
-          <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
-          ${this._createDeviceLines()}
+      <div class="gauge-position-frame position-${this._config.title_position??"top-left"}">
+        ${(this._config.title || this._config.subtitle) && this._config.title_position !== 'none' ? html`
+          <div>
+            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${this._config.title_text_size??2}">${this._config.title}</div>` : ''}
+            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${(this._config.title_text_size??2)/2}">${this._config.subtitle}</div>` : ''}
+          </div>
+        ` : ''}
+        <div class="gauge-position-frame position-${this._config.legend_position??"bottom-center"}">
+          ${this._config.entities ? this._createLegend() : ''}
+          <div class="gauge-position-frame position-${this._config.delta_position??"bottom-center"}">
+            ${this._config.show_delta ? this._createDelta() : ''}   
+            <div class="gauge-position-frame position-${this._config.position??"left"}">
+              <div class="gauge-value" style="font-size: ${this._config.text_size??2.5}rem; height: ${this._config.text_size??2.5}rem">
+                ${this._calcStateMain().toFixed(this._config.precision)}
+                ${this._config.unit ? html`<span class="unit" style="font-size: ${(this._config.text_size??2.5)/2}rem;">${this._config.unit}</span>` : ''}
+              </div>
+              <div class="gauge-line line-corner-${this._config.corner??"square"}">
+                <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
+                ${this._createDeviceLines()}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      ${this._config.show_delta ? this._createDelta() : ''}
-      ${this._config.entities ? this._createLegend() : ''}
       ${this._renderWarnings()}
     `;
   }
@@ -561,7 +568,6 @@ export class EnergyLineGauge extends LitElement {
         return currentBucket.mean;
     }
   }
-
   private _getStatisticsHistory(): void {
     if (!this._config.statistics) {return;}
     if (this._entitiesHistoryStatistics?.updating) {return;}
