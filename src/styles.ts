@@ -367,7 +367,7 @@ export const styles = css`
         text-align: center;
         vertical-align: middle;
         flex-wrap: nowrap;
-        white-space: nowrap;
+        overflow: hidden;
         font-size: 0.75rem;
         line-height: 1.5rem;
         color: var(--secondary-text-color);

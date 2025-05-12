@@ -486,7 +486,7 @@ Added in [v2.1.7](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2
 
 Home Assistant calculates the statistical data. The `statistics-graph` card uses the same API, hence why this card has similar configuration. The statistics will be displayed instead of the current state.  The `start_time` is 00:00:00 of the day. The `end_time` is 23:59:59 of the day.
 
-The statistics only support `sensors` with `state_class` of `measurement`, `total` or `total_increasing`.
+The statistics only support `sensors` with state_class of `measurement`, `total` or `total_increasing`.
 
 - `statistics` is a boolean. If set to true, the card will display the statistics instead of the current state.
 

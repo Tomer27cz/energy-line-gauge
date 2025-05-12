@@ -657,9 +657,12 @@ export class EnergyLineGauge extends LitElement {
   private _calculateDeviceWidth(value: number): number {
     return this._calculateWidth(value, this._calculateMainWidth(), this._calcStateMain())
   }
-  private _calculateWidth(value: number, multiplier: number=100, maxDefault: number=100): number {
+  private _calculateWidth(value: number, multiplier: number=100, maxDefault?: number): number {
     const max: number = ((): number => {
-      if (!this._config.max) {return maxDefault;}
+      if (!this._config.max) {
+        if (maxDefault === undefined) {return value;} // if no max is set, return the value (should only happen if Main width)
+        return maxDefault;
+      }
 
       if (typeof this._config.max === 'string') {
         return this._calcState(this.hass.states[this._config.max])

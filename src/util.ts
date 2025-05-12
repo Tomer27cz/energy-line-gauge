@@ -174,7 +174,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
   return {
     ...config,
     min: config.min ?? 0,
-    // max: config.max ?? config.entity,
+    max: config.max ?? config.entity,
 
     precision: config.precision ?? 0,
     cutoff: config.cutoff ?? 5,
