@@ -175,11 +175,14 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     ...config,
     min: config.min ?? 0,
     // max: config.max ?? config.entity,
+
     precision: config.precision ?? 0,
     cutoff: config.cutoff ?? 5,
     offset: config.offset ? parseDurationToMilliseconds(config.offset) : undefined,
+
     corner: config.corner ?? "square",
     position: config.position ?? "left",
+    text_size: config.text_size ?? 2.5,
 
     line_text_position: config.line_text_position ?? "left",
     line_text_size: config.line_text_size ?? 1,

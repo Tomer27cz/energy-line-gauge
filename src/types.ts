@@ -20,7 +20,7 @@ export interface ELGConfig extends LovelaceCardConfig {
 
   // Styling
   corner?: 'square' | 'lite_rounded' | 'medium_rounded' | 'rounded' | 'circular';
-  position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-right';
+  position?: 'left' | 'right' | 'none' | 'top-left' | 'top-middle' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-middle' | 'bottom-center' | 'bottom-right'; // -middle & -center are equivalent
   text_size?: number;
 
   line_text_position?: 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center';
@@ -66,7 +66,7 @@ export interface ELGEntity {
   // Title
   name?: string;
   icon?: string;
-  color?: [number, number, number] | string;
+  color?: [number, number, number] | 'auto';
 
   // Value
   cutoff?: number;

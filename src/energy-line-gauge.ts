@@ -55,12 +55,11 @@ export class EnergyLineGauge extends LitElement {
 
   @property() private _card!: LovelaceCard;
 
+  private _warnings: string[] = [];
   private _deltaValue: [number, number, number] | undefined = undefined;
 
   private _entitiesWidth: Record<string, number> = {};
-
   private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
-
   private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
   private _offsetTime: number | undefined = undefined;
   private _historyWindow: number = 60000;
@@ -148,7 +147,10 @@ export class EnergyLineGauge extends LitElement {
   }
 
   _createDelta() {
-    if (!this._deltaValue) {return this._config.suppress_warnings ? html`` : html`<hui-warning>Delta could not be calculated</hui-warning>`;}
+    if (!this._deltaValue) {
+      if (!this._config.suppress_warnings) {this._addWarning("Delta could not be calculated");}
+      return html``;
+    }
     const [state, sum, deltaValue] = this._deltaValue;
     return html`
       <div class="gauge-delta">
@@ -178,8 +180,7 @@ export class EnergyLineGauge extends LitElement {
     <div class="chart-legend">
       <ul>
         ${this._config.entities.map((device: ELGEntity) => {
-          const validationResult = this._validateEntityState(device.entity);
-          if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
+          if (!this._validate(device.entity)) {return html``;}
 
           const stateObj: HassEntity = this.hass.states[device.entity];
           const state = this._calcState(stateObj, device.multiplier);
@@ -216,8 +217,7 @@ export class EnergyLineGauge extends LitElement {
     return html`
       <div class="device-line-container">
         ${this._config.entities ? this._config.entities.map((device: ELGEntity) => {
-          const validationResult = this._validateEntityState(device.entity);
-          if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
+          if (!this._validate(device.entity)) {return html``;}
           
           const stateObj: HassEntity = this.hass.states[device.entity];
           const state = this._calcState(stateObj, device.multiplier);
@@ -258,8 +258,10 @@ export class EnergyLineGauge extends LitElement {
       </div>`;
   }
   _createInnerHtml() {
-    const validationResult = this._validateEntityState(this._config.entity);
-    if (validationResult) {return this._config.suppress_warnings ? html`` : validationResult;}
+    this._entitiesWidth = {};
+    this._warnings = [];
+
+    if (!this._validate(this._config.entity)) {return this._renderWarnings();}
 
     if (this._config.offset) {this._getOffsetHistory();}
     if (this._config.statistics) {this._getStatisticsHistory();}
@@ -269,7 +271,6 @@ export class EnergyLineGauge extends LitElement {
     }
 
     const value = String(this._calcStateMain());
-    this._entitiesWidth = {};
 
     return html`
       ${this._config.title || this._config.subtitle ? html`
@@ -289,6 +290,7 @@ export class EnergyLineGauge extends LitElement {
       </div>
       ${this._config.show_delta ? this._createDelta() : ''}
       ${this._config.entities ? this._createLegend() : ''}
+      ${this._renderWarnings()}
     `;
   }
 
@@ -296,30 +298,23 @@ export class EnergyLineGauge extends LitElement {
     if (!this.hass) {throw new Error("Invalid configuration (no hass)");}
     throw new Error(this.hass.localize("ui.panel.lovelace.editor.condition-editor.invalid_config_title"));
   }
-  private _entityNotFound(entity: string): TemplateResult {
-    return html`<hui-warning>
-      ${this.hass.localize("ui.panel.lovelace.warning.entity_not_found", { 
-        entity: entity || "[empty]", 
-      })}
-    </hui-warning>`;
+  private _entityNotFound(entity: string): string {
+    return this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
+      entity: entity || "[empty]"
+    });
   }
-  private _entityUnavailable(stateObj: HassEntity): TemplateResult {
-    return html`
-      <hui-warning>
-        ${this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
-          entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`,
-        })}
-      </ha-card>
-    `;
+  private _entityUnavailable(stateObj: HassEntity): string {
+    return this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
+      entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`
+    });
   }
-  private _entityNotNumeric(stateObj: HassEntity): TemplateResult {
-    return html`
-      <hui-warning>
-        ${this.hass.localize("ui.panel.lovelace.warning.entity_non_numeric", {
-          entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`,
-        })}
-      </hui-warning>
-    `;
+  private _entityNotNumeric(stateObj: HassEntity): string {
+    return this.hass.localize("ui.panel.lovelace.warning.entity_non_numeric", {
+      entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`
+    });
+  }
+  private _entityNoStatistics(entityId: string): string {
+    return this.hass.localize("ui.components.statistics_charts.no_statistics_found") + `(${entityId}), change function / see docs`;
   }
 
   private _entityName(device: ELGEntity, stateObj: HassEntity): string {
@@ -386,7 +381,14 @@ export class EnergyLineGauge extends LitElement {
     return this._formatValue(value, device.precision ?? this._config.precision, device.unit);
   }
 
-  private _validateEntityState(entityId: string ): TemplateResult | undefined {
+  private _validate(entityId: string): boolean {
+    const validationResult = this._validateEntityState(entityId);
+    if (!validationResult) {return true;}
+
+    this._addWarning(validationResult);
+    return false;
+  }
+  private _validateEntityState(entityId: string ): string | undefined {
     if (!entityId) {return this._entityNotFound(entityId);}
 
     const stateObj: HassEntity | undefined = this.hass.states[entityId];
@@ -397,13 +399,26 @@ export class EnergyLineGauge extends LitElement {
 
     return undefined; // Return undefined if all checks pass
   }
+  private _renderWarnings(): TemplateResult | undefined {
+    if (this._config.suppress_warnings) {return html``;}
+    if (this._warnings.length === 0) {return html``;}
+
+    return html`
+      <div class="warnings">
+        ${this._warnings.map((warning: string) => html`<hui-warning>${warning}</hui-warning>`)}
+      </div>`;
+  }
+  private _addWarning(warning: string): void {
+    if (this._warnings.includes(warning)) {return;}
+    this._warnings.push(warning);
+  }
 
   private _calcStateMain(): number {
     if (this._config.offset) {return this._getOffsetState(this._config.entity);}
     if (this._config.statistics) {
       const state = this._getStatisticsState(this._config.entity);
-      if (state === null) {
-        console.warn(`Energy Line Gauge: No statistics found for entity ${this._config.entity}`);
+      if (state === null || state === undefined) {
+        this._addWarning(this._entityNoStatistics(this._config.entity));
         return 0;
       }
       return state;
@@ -416,8 +431,8 @@ export class EnergyLineGauge extends LitElement {
       if (this._config.offset) {return this._getOffsetState(stateObj.entity_id);}
       if (this._config.statistics) {
         const state = this._getStatisticsState(stateObj.entity_id);
-        if (state === null) {
-          console.warn(`Energy Line Gauge: No statistics found for entity ${stateObj.entity_id}`);
+        if (state === null || state === undefined) {
+          this._addWarning(this._entityNoStatistics(stateObj.entity_id));
           return 0;
         }
         return state;
@@ -511,7 +526,7 @@ export class EnergyLineGauge extends LitElement {
     }, {});
   }
 
-  private _getStatisticsState(entityID: string): number | null {
+  private _getStatisticsState(entityID: string): number | null | undefined {
     if (!this._config.statistics) {return 0;}
     if (!this._entitiesHistoryStatistics) {return 0;}
     if (!this._entitiesHistoryStatistics.buckets) {return 0;}
@@ -627,8 +642,9 @@ export class EnergyLineGauge extends LitElement {
 
     for (const entity of otherEntities) {
       if (entity && entity !== this._config.entity && typeof entity === 'string') {
-        const validationResult = this._validateEntityState(entity);
-        if (!validationResult) {entityIDs.push(entity);}
+        if (!this._validate(entity)) {continue;}
+        if (entityIDs.includes(entity)) {continue;}
+        entityIDs.push(entity);
       }
     }
 
@@ -668,8 +684,7 @@ export class EnergyLineGauge extends LitElement {
 
   private _devicesSum(): number {
     return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
-      const validationResult = this._validateEntityState(device.entity);
-      if (validationResult) {return sum;}
+      if (!this._validate(device.entity)) {return sum;}
       return sum + this._calcState(this.hass.states[device.entity], device.multiplier);
     }, 0);
   }

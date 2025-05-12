@@ -103,6 +103,7 @@ max: sensor.glow_power_consumption
 precision: 0
 unit: W
 cutoff: 5
+offset: 1d
 corner: 'square'
 position: 'left'
 line_text_position: 'bottom-right'
@@ -128,70 +129,75 @@ untracked_legend_icon: mdi:flash
 untracked_state_content:
   - name
   - state
+untracked_line_state_content:
+  - percentage
+suppress_warnings: false
+statistics: false
+statistics_day_offset: 1
+statistics_period: 'hour'
+statistics_function: 'mean'
 entities:
   - entity: sensor.plug_0_power
     name: Plug 0
+    icon: mdi:flash
     color: "auto"
     cutoff: 5
-    icon: mdi:flash
+    unit: W
+    multiplier: 1
+    precision: 0
+    state_content:
+      - name
+      - state
+      - percentage 
+    line_state_content:
+      - percentage
   - entity: sensor.plug_1_power
     name: Plug 1
     color:
       - 244
       - 189
       - 74
-    state_content: 
-      - name
-      - state
-  - entity: sensor.plug_2_power
-    name: Plug 2
-    color:
-      - 255
-      - 114
-      - 92
-    line_state_content:
-      - percentage
-  - entity: sensor.plug_3_power
-    name: Plug 3
-    state_content:
-      - name
-      - state
-      - last_changed
 ```
 
 ## Main Options
 
 There are a lot of settings you can customize your sensors with:
 
-| Setting                   |       type       |           default            |                                         example                                          | description                                                                                                                                                                                       |
-|---------------------------|:----------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`                  |      string      |          ! required          |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                                                                                       | 
-| `title`                   |      string      |            [...]             |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                                                                                                                           |
-| `subtitle`                |      string      |            [...]             |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                                                                                                                    |
-| `min`                     |      number      |              0               |                                           100                                            | The minimum value of the gauge.                                                                                                                                                                   |
-| `max`                     | number or string |           [entity]           |                                       sensor.power                                       | The maximum value of the gauge. Can be an entity_id.                                                                                                                                              |
-| `precision`               |      number      |              0               |                                            2                                             | The number of decimals to display.                                                                                                                                                                |
-| `unit`                    |      string      |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                                                                                                                             |
-| `cutoff`                  |      number      |              5               |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                                                                         |
-| `offset`                  |      string      |            [...]             |                                            1d                                            | Offset state into history. Recommended minimum is 60 seconds, use lower number at own risk. (could spam ha with too many requests)(Max is your recorder purge_keep_days)(example: 1d, 80s, 60m or 2h - NO MINUS) |
-| `corner`                  |      string      |            square            |                                         circular                                         | The theme (shape) of the gauge [see more](#theme)                                                                                                                                                 |
-| `position`                |      string      |             left             |                                           none                                           | Position of the main label [see more](#position)                                                                                                                                                  |
-| `line_text_position`      |      string      |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']                                                                                                    |
-| `line_text_size`          |      number      |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                                                                               |
-| `color`                   |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                                                                                 |                                                                 
-| `color_bg`                |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                                                                                       |
-| `tap_action`              |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                                                                       |
-| `hold_action`             |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                                                             |
-| `double_tap_action`       |  Action Config   |             none             | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                                                                       |
-| `legend_hide`             |       bool       |            false             |                                           true                                           | This will hide the legend under the gauge.                                                                                                                                                        |
-| `legend_all`              |       bool       |            false             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge)                                                                                                                        |
-| `show_delta`              |       bool       |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity.                                                                                                                   |
-| `untracked_legend`        |       bool       |             true             |                                          false                                           | Show the legend for untracked consumption.                                                                                                                                                        |
-| `untracked_legend_label`  |      string      |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                                                                                                                       |
-| `untracked_legend_icon`   |      string      |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                                                                                        |
-| `untracked_state_content` |     string[]     |           ['name']           |                                        ['state']                                         | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot.                                                                                                 |
-| `suppress_warnings`       |       bool       |            false             |                                           true                                           | Do not show the warnings, such as "Entity unavailable" or "Entity not found"                                                                                                                      |
-| `entities`                |     Entities     |            [...]             |                                    (Example in yaml)                                     | The list of entities. Config [here.](#entities)                                                                                                                                                   |
+| Setting                        |       type       |           default            |                                         example                                          | description                                                                                                                                                                                                                          |
+|--------------------------------|:----------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`                       |      string      |          ! required          |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                                                                                                                          | 
+| `title`                        |      string      |            [...]             |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                                                                                                                                                              |
+| `subtitle`                     |      string      |            [...]             |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                                                                                                                                                       |
+| `min`                          | number or string |              0               |                                           100                                            | The minimum value of the gauge. Can be an entity_id.                                                                                                                                                                                 |
+| `max`                          | number or string |           [entity]           |                                       sensor.power                                       | The maximum value of the gauge. Can be an entity_id.                                                                                                                                                                                 |
+| `precision`                    |      number      |              0               |                                            2                                             | The number of decimals to display.                                                                                                                                                                                                   |
+| `unit`                         |      string      |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                                                                                                                                                                |
+| `cutoff`                       |      number      |              5               |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                                                                                                            |
+| `offset`                       |      string      |            [...]             |                                            1d                                            | Offset state into the past [see more](#offset).                                                                                                                                                                                      |
+| `corner`                       |      string      |            square            |                                         circular                                         | The theme (shape) of the gauge [see more](#theme)                                                                                                                                                                                    |
+| `position`                     |      string      |             left             |                                           none                                           | Position of the main label [see more](#position)                                                                                                                                                                                     |
+| `text_size`                    |      number      |             2.5              |                                            2                                             | Font size of the main value (in rem).                                                                                                                                                                                                |
+| `line_text_position`           |      string      |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']                                                                                                                                       |
+| `line_text_size`               |      number      |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                                                                                                                  |
+| `color`                        |  string or rgb   |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                                                                                                                    |                                                                 
+| `color_bg`                     |  string or rgb   | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                                                                                                                          |
+| `tap_action`                   |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                                                                                                          |
+| `hold_action`                  |  Action Config   |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                                                                                                |
+| `double_tap_action`            |  Action Config   |             none             | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                                                                                                          |
+| `legend_hide`                  |       bool       |            false             |                                           true                                           | This will hide the legend = only line visible. [example](#legend_hide)                                                                                                                                                               |
+| `legend_all`                   |       bool       |            false             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge) [example](#legend_all)                                                                                                                                    |
+| `show_delta`                   |       bool       |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity. [example](#delta)                                                                                                                                    |
+| `untracked_legend`             |       bool       |             true             |                                          false                                           | Show the legend for untracked consumption.                                                                                                                                                                                           |
+| `untracked_legend_label`       |      string      |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                                                                                                                                                          |
+| `untracked_legend_icon`        |      string      |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                                                                                                                           |
+| `untracked_state_content`      |     string[]     |           ['name']           |                                        ['state']                                         | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot. Options: `name`,`state`,`percentage`                                                                                               |
+| `untracked_line_state_content` |     string[]     |            [...]             |                                      ['percentage']                                      | Info will be shown in the line. Order matters. Info will be separated by a dot. Options: `name`,`state`,`percentage`                                                                                                                 |
+| `suppress_warnings`            |       bool       |            false             |                                           true                                           | Do not show the warnings, such as "Entity unavailable" or "Entity not found"                                                                                                                                                         |
+| `statistics`                   |       bool       |            false             |                                           true                                           | Enable the statistic data. Data from statistic will be displayed instead of current state [see more](#statistics).                                                                                                                   |
+| `statistics_day_offset`        |      number      |              1               |                                            7                                             | Whole number of days into the past.                                                                                                                                                                                                  |
+| `statistics_period`            |      string      |             hour             |                                           day                                            | Statistical period [see more](#statistics). Options: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                       |
+| `statistics_function`          |      string      |             mean             |                                           max                                            | Statistical function [see more](#statistics). Options: `change`, `max`, `mean`, `min`, `state`, `sum`                                                                                                                                |
+| `entities`                     |     Entities     |            [...]             |                                    (Example in yaml)                                     | The list of entities. Config [here.](#entities)                                                                                                                                                                                      |
 <p> 
 
 ## Entities
@@ -206,21 +212,21 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 
 #### Each entity has its own settings:
 
-| Setting              |     type      |                                         example                                          | description                                                                                                    |
-|----------------------|:-------------:|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------|
-| `entity`             |    string     |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                    | 
-| `name`               |    string     |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                          |
-| `icon`               |    string     |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                     |
-| `cutoff`             |    number     |                                            10                                            | Any entity with a value below this will not be displayed.                                                      |
-| `unit`               |    string     |                                            kW                                            | String that is added to the end of entity state.                                                               |
-| `multiplier`         |    number     |                                          0.001                                           | Entity state will be multiplied by this number. Useful when you have entities in kW and W.                     |
-| `precision`          |    number     |                                            1                                             | Will override main precision pre entity.                                                                       |
-| `color`              | string or rgb |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                        |                                                                 
-| `state_content`      |   string[]    |                                    ['name', 'state']                                     | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot. |
-| `line_state_content` |   string[]    |                                 ['percentage', 'state']                                  | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot. |
-| `tap_action`         | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                    |
-| `hold_action`        | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                          |
-| `double_tap_action`  | Action Config | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                    |
+| Setting              |     type      |    default    |                                         example                                          | description                                                                                                                                          |
+|----------------------|:-------------:|:-------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`             |    string     |  ! required   |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                          | 
+| `name`               |    string     |     [...]     |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                                                                |
+| `icon`               |    string     |     [...]     |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored) [example](#icon)                                                          |
+| `color`              | string or rgb |     auto      |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                              |
+| `cutoff`             |    number     |  [main = 5]   |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                            |
+| `unit`               |    string     | [entity unit] |                                            kW                                            | String that is added to the end of entity state.                                                                                                     |
+| `multiplier`         |    number     |       1       |                                          0.001                                           | Entity state will be multiplied by this number. Useful when you have entities in kW and W. Automatically set (adjusts to be the same as main entity) |
+| `precision`          |    number     |  [main = 0]   |                                            1                                             | Will override main precision pre entity.                                                                                                             |
+| `state_content`      |   string[]    |   ['name']    |                                    ['name', 'state']                                     | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot.                                       |
+| `line_state_content` |   string[]    |     [...]     |                                 ['percentage', 'state']                                  | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot.                                       |
+| `tap_action`         | Action Config |   more-info   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                          |
+| `hold_action`        | Action Config |   more-info   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                |
+| `double_tap_action`  | Action Config |     none      | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                          |
 <p> 
 
 </div>
@@ -235,6 +241,7 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 
 ### Icons in the legend
 
+<div id="icon">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/icons.png">
 
 ```yaml
@@ -252,9 +259,11 @@ untracked_state_content:
   - name
   - state
 ```
+</div>
 
 ### Only Line
 
+<div id="legend_hide">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_line_entities.png">
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_line_max.png">
@@ -266,9 +275,11 @@ position: none
 legend_hide: true
 corner: square
 ```
+</div>
 
 ### Delta
 
+<div id="delta">
 Shows the difference between the main entity and the sum of all the entities.
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/delta.png">
@@ -283,9 +294,11 @@ position: left
 entities:
   ...
 ```
+</div>
 
 ### Legend with all entities
 
+<div id="legend_all">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_all.png">
 
 ```yaml
@@ -297,6 +310,7 @@ position: left
 entities:
   ...
 ```
+</div>
 
 ### Normal usage ( how I use it )
 
@@ -381,6 +395,111 @@ untracked_legend_label: Untracked
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png">
 
 </div>
+
+## State Content
+
+<div id="state_content">
+The state content is the text displayed in the legend and the line. You can choose what to display and in which order.  The order in the config matters. The text will be separated by a dot.
+
+The position of the text in the line is set by `line_text_position`. Options are `left`, `right`, `center`, `top-left`, `top-right`, `top-center`, `bottom-left`, `bottom-right`, `bottom-center`.
+
+| Option         | description                                                  |    Example    |
+|----------------|--------------------------------------------------------------|:-------------:|
+| `name`         | Specified in config or if not the `friendly_name` attribute. |    Plug 1     |
+| `state`        | The state of the entity, with the `unit` added at the end.   |     158 W     |
+| `last_changed` | The last time the entity changed state.                      | 6 seconds ago |
+| `last_updated` | The last time the entity was updated.                        | 6 seconds ago |
+| `percentage`   | The percentage of the entity in respect to the main entity.  |      55%      |
+
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/state_content.png">
+
+```yaml
+type: custom:energy-line-gauge
+entity: input_number.test_num_2
+min: 0
+max: 100
+entities:
+  - entity: input_number.test_num
+    color: auto
+    state_content:
+      - name
+      - state
+      - percentage
+    line_state_content:
+      - state
+      - percentage
+line_text_position: left
+line_text_size: 1
+untracked_legend: false
+```
+</div>
+
+### Untracked State Content
+
+<div id="untracked_state_content">
+
+| Option         | description                                                                                       |  Example  |
+|----------------|---------------------------------------------------------------------------------------------------|:---------:|
+| `name`         | Specified in config or `Untracked consumption`(translated).                                       | Untracked |
+| `state`        | Main entity state minus sum of device states, with the `unit` added at the end. (can be negative) |   -15 W   |
+| `percentage`   | One hundred minus the sum of device widths                                                        |    3%     |
+
+
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/untracked_state_content.png">
+
+```yaml
+type: custom:energy-line-gauge
+entity: input_number.test_num_2
+min: 0
+max: 100
+entities:
+  - entity: input_number.test_num
+    color: auto
+    line_state_content:
+      - percentage
+line_text_position: center
+line_text_size: 2
+legend_hide: true
+untracked_legend: false
+untracked_line_state_content:
+  - percentage
+```
+</div>
+
+## Offset
+
+<div id="offset">
+
+Added in [v2.1.6](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.1.6). Feature request [#3](https://github.com/Tomer27cz/energy-line-gauge/issues/3) (see for more info).
+
+The offset is the time into the past that the state will be displayed. The offset is in seconds, minutes or days. It has to be a **whole positive number**. Examples `1d`, `80s`, `60m` or `2h`.
+
+The recommended *minimum* is 60 seconds, use a lower number at your own risk. Lower numbers mean more requests to the recorder. The maximum offset depends on your recorder settings. The default is 10 days. If you want to use a higher number, you have to change the `purge_keep_days` setting in your recorder settings.
+
+</div>
+
+## Statistics
+
+<div id="statistics">
+
+Added in [v2.1.7](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.1.7). Feature request [#3](https://github.com/Tomer27cz/energy-line-gauge/issues/3) (see for more info).
+
+Home Assistant calculates the statistical data. The `statistics-graph` card uses the same API, hence why this card has similar configuration. The statistics will be displayed instead of the current state.  The `start_time` is 00:00:00 of the day. The `end_time` is 23:59:59 of the day.
+
+The statistics only support `sensors` with `state_class` of `measurement`, `total` or `total_increasing`.
+
+- `statistics` is a boolean. If set to true, the card will display the statistics instead of the current state.
+
+- `statistics_day_offset` is the number of days into the past. It has to be a whole positive integer. The default is 1 day.
+
+- `statistics_period` is the period on which the statistics are calculated (the average of the whole day or each hour). The default is `hour`. The options are `5minute`, `hour`, `day`, `week`, `month`.
+
+- `statistics_function` is the function used to calculate the statistics. The default is `mean`. The options are `change`, `max`, `mean`, `min`, `state`, `sum`.
+
+Some entities only support `mean`, `min` and `max` (For example `sensor.plug_1_power` - state_class: measurement). And some entities only support `change`, `state` and `sum` (For example `sensor.plug_1_summitation_delivered` - state_class: total). A warning will be shown if the entity does not support the selected function: `No statistics found.`.
+
+</div>
+
 </div>
 
 ### Some things that should be added in the future:
