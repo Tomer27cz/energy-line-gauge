@@ -40,6 +40,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   legend_hide?: boolean;
   legend_all?: boolean;
   legend_position?: PositionType;
+  legend_alignment?: LegendAlignmentType
 
   // Show Delta
   show_delta?: boolean;
@@ -93,6 +94,7 @@ export interface ELGEntity {
 export const CORNER_TYPES = ['square', 'lite_rounded', 'medium_rounded', 'rounded', 'circular'] as const;
 export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
 export const LINE_POSITION_TYPES = ['left', 'right', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
+export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 
 export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage'] as const;
 export const UNTRACKED_STATE_CONTENT_TYPES = ['name', 'state', 'percentage'] as const;
@@ -103,6 +105,7 @@ export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean',
 export type CornerType = typeof CORNER_TYPES[number];
 export type PositionType = typeof POSITION_TYPES[number];
 export type LinePositionType = typeof LINE_POSITION_TYPES[number];
+export type LegendAlignmentType = typeof LEGEND_ALIGNMENT_TYPES[number];
 
 export type StateContentType = typeof STATE_CONTENT_TYPES[number][];
 export type UntrackedStateContentType = typeof UNTRACKED_STATE_CONTENT_TYPES[number][];

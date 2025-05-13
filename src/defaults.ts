@@ -5,6 +5,7 @@ import {
   CORNER_TYPES,
   POSITION_TYPES,
   LINE_POSITION_TYPES,
+  LEGEND_ALIGNMENT_TYPES,
   STATE_CONTENT_TYPES,
   UNTRACKED_STATE_CONTENT_TYPES,
   STATISTICS_PERIOD_TYPES,
@@ -13,6 +14,7 @@ import {
   CornerType,
   PositionType,
   LinePositionType,
+  LegendAlignmentType,
 
   StateContentType,
   UntrackedStateContentType,
@@ -65,6 +67,7 @@ const DEFAULTS = {
   legend_hide: false,
   legend_all: false,
   legend_position: 'bottom-center' as PositionType,
+  legend_alignment: 'center' as LegendAlignmentType,
 
   // Show Delta
   show_delta: false,
@@ -158,6 +161,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     legend_hide: config.legend_hide ?? DEFAULTS.legend_hide,
     legend_all: config.legend_all ?? DEFAULTS.legend_all,
     legend_position: validatedValue(config.legend_position, POSITION_TYPES, DEFAULTS.legend_position),
+    legend_alignment: validatedValue(config.legend_alignment, LEGEND_ALIGNMENT_TYPES, DEFAULTS.legend_alignment),
 
     // Show Delta
     show_delta: config.show_delta ?? DEFAULTS.show_delta,

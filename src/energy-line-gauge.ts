@@ -182,7 +182,7 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
     <div class="chart-legend">
-      <ul>
+      <ul style="justify-content: ${this._config.legend_alignment ?? "center"}">
         ${this._config.entities.map((device: ELGEntity) => {
           if (!this._validate(device.entity)) {return html``;}
 
@@ -289,29 +289,38 @@ export class EnergyLineGauge extends LitElement {
     const legendPosition = this._config.legend_position ?? "bottom-center";
     const deltaPosition = this._config.delta_position ?? "bottom-center";
     const valuePosition = this._config.position ?? "left";
+
     const cornerStyle = this._config.corner ?? "square";
+
     const textSize = this._config.text_size ?? 2.5;
     const titleTextSize = this._config.title_text_size ?? 2;
+
+    const displayTitle: boolean = !!((this._config.title || this._config.subtitle) && titlePosition !== 'none');
+    const displayLegend: boolean = (this._config.entities && this._config.entities.length > 0 && legendPosition !== 'none');
+    const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
+    const displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
 
     // gauge-position-frame - First div is moved around the second div based on the position-* class
     // delta is currently always at the bottom of the line
     return html`
       <div class="gauge-position-frame position-${titlePosition}">
-        ${(this._config.title || this._config.subtitle) && titlePosition !== 'none' ? html`
+        ${displayTitle ? html`
           <div>
             ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem;">${this._config.title}</div>` : ''}
             ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem;">${this._config.subtitle}</div>` : ''}
           </div>
         ` : ''}
         <div class="gauge-position-frame position-${legendPosition}">
-          ${this._config.entities ? this._createLegend() : ''}
+          ${displayLegend ? this._createLegend() : ''}
           <div class="gauge-position-frame position-${deltaPosition}">
-            ${this._config.show_delta ? this._createDelta() : ''}
+            ${displayDelta ? this._createDelta() : ''}
             <div class="gauge-position-frame position-${valuePosition}">
-              <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem;">
-                ${this._calcStateMain().toFixed(this._config.precision)}
-                ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
-              </div>
+              ${displayValue ? html`
+                <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem;">
+                  ${this._calcStateMain().toFixed(this._config.precision)}
+                  ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
+                </div>
+              ` : ''}
               <div class="gauge-line line-corner-${cornerStyle}">
                 <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
                 ${this._createDeviceLines()}

@@ -54,7 +54,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       },
 
       {
-        name: "",
         type: "grid",
         schema: [
           { name: "title", required: false, selector: { text: {} } },
@@ -63,7 +62,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       },
 
       {
-        name: "",
         type: "grid",
         schema: [
           { name: "min", required: false, selector: { number: {} }},
@@ -85,9 +83,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "suppress_warnings", required: false, selector: { boolean: {} } },
             ]
           },
-
           {
-            name: "",
             type: "grid",
             schema: [
               { name: "corner", required: false, selector:
@@ -104,11 +100,24 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                   }
                 }
               },
+              { name: "legend_alignment", required: false, selector:
+                {
+                  select: {
+                    mode: "dropdown",
+                    options: [
+                      { value: "left", label: "Left" },
+                      { value: "right", label: "Right" },
+                      { value: "center", label: "Center (default)" },
+                      { value: "space-around", label: "Space Around" },
+                      { value: "space-between", label: "Space Between" },
+                      { value: "space-evenly", label: "Space Evenly" },
+                    ]
+                  }
+                }
+              },
             ],
           },
-
           {
-            name: "",
             type: "grid",
             schema: [
               { name: "color", required: false, selector: { color_rgb: {} } },
@@ -118,7 +127,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
 
           {
             type: "expandable",
-            title: this.hass.localize(`ui.panel.config.zwave_js.node_config.value`),
+            title: this.hass.localize(`ui.panel.lovelace.editor.card.entities.secondary_info_values.position`), // Position
             flatten: true,
             schema: [
               {
@@ -129,62 +138,119 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                       select: {
                         mode: "dropdown",
                         options: [
-                          { value: "left", label: "Left (default)" },
-                          { value: "right", label: "Right" },
-                          { value: "none", label: "Not Displayed" },
-                          { value: "top-left", label: "Top Left" },
-                          { value: "top-center", label: "Top Center" },
-                          { value: "top-right", label: "Top Right" },
-                          { value: "bottom-left", label: "Bottom Left" },
-                          { value: "bottom-center", label: "Bottom Center" },
-                          { value: "bottom-right", label: "Bottom Right" },
+                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
+                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
+                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
+                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
+                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
                         ]
                       }
                     }
                   },
-                  { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box"} } },
+                  { name: "title_position", required: false, selector:
+                    {
+                      select: {
+                        mode: "dropdown",
+                        options: [
+                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
+                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
+                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") + " (default)" },
+                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
+                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+                        ]
+                      }
+                    }
+                  },
                 ],
+              },
+              {
+                type: "grid",
+                schema: [
+                  { name: "legend_position", required: false, selector:
+                    {
+                      select: {
+                        mode: "dropdown",
+                        options: [
+                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
+                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
+                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
+                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") + " (default)" },
+                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+                        ]
+                      }
+                    }
+                  },
+                  { name: "delta_position", required: false, selector:
+                    {
+                      select: {
+                        mode: "dropdown",
+                        options: [
+                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
+                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
+                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
+                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") + " (default)" },
+                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+                        ]
+                      }
+                    }
+                  },
+                ],
+              },
+              { name: "line_text_position", required: false, selector:
+                {
+                  select: {
+                    mode: "dropdown",
+                    options: [
+                      { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
+                      { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+                      { value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") },
+                      { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
+                      { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+                      { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+                      { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+                      { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
+                      { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+                    ]
+                  }
+                }
               },
             ]
           },
+
           {
             type: "expandable",
-            title: `${this.hass.localize(
-              `ui.panel.lovelace.editor.card.heading.entity_config.state_content`
-            )} (${this.hass.localize(
-              "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line"
-            )})`, // State content (Line)
+            title: `Text ${this.hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`, // Text Size (rem)
             flatten: true,
             schema: [
               {
                 type: "grid",
                 schema: [
-                  { name: "line_text_position", required: false, selector:
-                    {
-                      select: {
-                        mode: "dropdown",
-                        options: [
-                          { value: "left", label: "Left (default)" },
-                          { value: "right", label: "Right" },
-                          { value: "center", label: "Center" },
-                          { value: "top-left", label: "Top Left" },
-                          { value: "top-center", label: "Top Center" },
-                          { value: "top-right", label: "Top Right" },
-                          { value: "bottom-left", label: "Bottom Left" },
-                          { value: "bottom-center", label: "Bottom Center" },
-                          { value: "bottom-right", label: "Bottom Right" },
-                        ]
-                      }
-                    }
-                  },
-                  { name: "line_text_size", required: false, selector: { number: { min: 0.2, max: 4, step: 0.1, mode: "box"} } },
+                  { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box"} } },
+                  { name: "title_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box"} } },
                 ],
               },
+              { name: "line_text_size", required: false, selector: { number: { min: 0.2, max: 4, step: 0.1, mode: "box"} } },
             ]
           },
-
         ],
       },
+
       {
         type: "expandable",
         iconPath: mdiChartAreaspline,
@@ -199,7 +265,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             ],
           },
           {
-            name: "",
             type: "grid",
             schema: [
               { name: "cutoff", required: false, selector: { number: {} } },
@@ -208,6 +273,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           },
         ],
       },
+
       {
         type: "expandable",
         iconPath: mdiLightningBolt,
@@ -216,7 +282,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         schema: [
           { name: "untracked_legend", required: false, selector: { boolean: {} } },
           {
-            name: "",
             type: "grid",
             schema: [
               { name: "untracked_legend_label", required: false, selector: { text: {} } },
@@ -224,7 +289,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             ],
           },
           {
-            name: "",
             type: "grid",
             schema: [
               {
@@ -253,6 +317,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           },
         ],
       },
+
       {
         type: "expandable",
         iconPath: mdiChartBar,
@@ -298,11 +363,12 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           },
         ],
       },
+
       {
-        name: "interactions",
         type: "expandable",
-        flatten: true,
         iconPath: mdiGestureTap,
+        title: this.hass.localize(`ui.panel.lovelace.editor.card.generic.interactions`), // Interactions
+        flatten: true,
         schema: [
           {
             name: "tap_action",
@@ -350,15 +416,15 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       <ha-expansion-panel outlined>
         <div slot="header" role="heading" aria-level="3">
           <ha-svg-icon slot="leading-icon" .path=${mdiListBox}></ha-svg-icon>
-          ${this.hass!.localize("ui.panel.lovelace.editor.card.heading.entities")}
+          ${this.hass.localize("ui.panel.lovelace.editor.card.heading.entities")}
         </div>
         <div class="content">
-          <energy-line-gauge-items-editor
-              .hass=${this.hass}
-              .entities=${this._config.entities}
-              .entity_id=${this._config.entity}
-              @edit-item=${this._edit_item}
-              @config-changed=${this._entitiesChanged}
+          <energy-line-gauge-items-editor 
+            .hass=${this.hass}
+            .entities=${this._config.entities}
+            .entity_id=${this._config.entity}
+            @edit-item=${this._edit_item}
+            @config-changed=${this._entitiesChanged}
           ></energy-line-gauge-items-editor>
         </div>  
       </ha-expansion-panel>
@@ -367,82 +433,137 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
   }
 
   private _computeLabelCallback = (schema: any) => {
-    if (this.hass) {
-      switch (schema.name) {
-        case "title": // Title
-            return this.hass.localize(`ui.panel.lovelace.editor.card.heading.heading_style_options.title`);
-        case "subtitle": // Subtitle
-            return this.hass.localize(`ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle`);
-        case "entity": // Entity (required)
-            return `${this.hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${this.hass.localize("ui.panel.lovelace.editor.card.config.required")})`;
-        case "name":
-        case "untracked_legend_label": // Name
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.name`);
-        case "unit": // Unit
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.unit`);
-        case "icon":
-        case "untracked_legend_icon": // Icon
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.icon`);
-        case "color": // Line
-            return this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line`);
-        case "color_bg": // Background
-            return this.hass.localize(`ui.panel.lovelace.editor.edit_view.tab_background`);
-        case "precision": // Display Precision
-            return this.hass.localize(`ui.dialogs.entity_registry.editor.precision`);
-        case "min": // Minimum
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.minimum`);
-        case "max": // Maximum
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.maximum`);
-        case "cutoff": // Lower limit
-            return this.hass.localize(`ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit`);
-        case "legend_hide": // Hide legend
-            return this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.hide_legend`);
-        case "legend_all": // Select all
-            return this.hass.localize(`ui.components.subpage-data-table.select_all`);
-        case "untracked_consumption": // Untracked consumption
-            return this.hass.localize(`ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption`);
-        case "untracked_legend": // Untracked consumption
-            return this.hass.localize(`ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption`);
-        case "untracked_state_content": // State content
-            return this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`);
-        case "untracked_line_state_content": // State content (Line)
-          return `${this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`)} (${this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`;
-        case "interactions": // Interactions
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.interactions`);
-        case "tap_action": // Tap action
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.tap_action`);
-        case "hold_action": // Hold action
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.hold_action`);
-        case "double_tap_action": // Double tap action
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.double_tap_action`);
-        case "corner": // Theme
-            return this.hass.localize(`ui.panel.lovelace.editor.card.generic.theme`);
-        case "position":
-        case "line_text_position": // Position
-            return this.hass.localize(`ui.panel.lovelace.editor.card.entities.secondary_info_values.position`);
-        case "show_delta": // Show stat
-            return this.hass.localize(`ui.panel.lovelace.editor.card.statistic.stat_types`);
-        case "text_size":
-        case "line_text_size": // Text Size (rem)
-            return `Text ${this.hass.localize(`ui.panel.config.zwave_js.node_config.size`)} (rem)`;
-        case "suppress_warnings":
-            return "Suppress Warnings";
-        case "offset": // Offset (optional)
-            return this.hass.localize(`ui.panel.config.automation.editor.triggers.type.calendar.offset`);
-        case "statistics": // Statistic
-            return this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.picked_statistic`);
-        case "statistics_day_offset": // Offset (optional) (Day)
-            return `${this.hass.localize("ui.panel.config.automation.editor.triggers.type.calendar.offset")} (${this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day")})`;
-        case "statistics_period": // Period
-            return this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.period`);
-        case "statistics_function": // Show stat types
-            return this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.stat_types`);
-        default:
-          return schema.name;
-      }
-    } else {
-      return "";
-    }
+    if (!this.hass) return "";
+
+    const labelMap: Record<string, string | ((hass: any) => string)> = {
+      // Entity (required)
+      entity: (hass) =>
+        `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
+
+      // Title
+      title: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+      // Subtitle
+      subtitle: "ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle",
+
+      // Minimum
+      min: "ui.panel.lovelace.editor.card.generic.minimum",
+      // Maximum
+      max: "ui.panel.lovelace.editor.card.generic.maximum",
+
+      // ------------------------------------------- Appearance --------------------------------------------------------
+      // Hide legend
+      legend_hide: "ui.panel.lovelace.editor.card.statistics-graph.hide_legend",
+      // Select all
+      legend_all: "ui.components.subpage-data-table.select_all",
+      // Show stat
+      show_delta: "ui.panel.lovelace.editor.card.statistic.stat_types",
+      // Suppress Warnings
+      suppress_warnings: () => "Suppress Warnings",
+
+      // Theme
+      corner: "ui.panel.lovelace.editor.card.generic.theme",
+      // Legend Alignment
+      legend_alignment: () => "Legend Alignment",
+
+      // Line
+      color: "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line",
+      // Background
+      color_bg: "ui.panel.lovelace.editor.edit_view.tab_background",
+
+      // ----------------------------------------------- Position ------------------------------------------------------
+
+      // Value
+      position: "ui.panel.config.zwave_js.node_config.value",
+      // Title
+      title_position: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+
+      // Legend
+      legend_position: () => "Legend",
+      // Show stat
+      delta_position: "ui.panel.lovelace.editor.card.statistic.stat_types",
+
+      // State content (Line)
+      line_text_position: (hass) =>
+        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // -------------------------------------------- Text Size (rem) --------------------------------------------------
+
+      // Value
+      text_size: "ui.panel.config.zwave_js.node_config.value",
+      // Title
+      title_text_size: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+
+      // State content (Line)
+      line_text_size: (hass) =>
+        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+
+      // ---------------------------------------------------------------------------------------------------------------
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // ----------------------------------------------- Value ---------------------------------------------------------
+
+      // Unit
+      unit: "ui.panel.lovelace.editor.card.generic.unit",
+      // Display Precision
+      precision: "ui.dialogs.entity_registry.editor.precision",
+
+      // Lower limit
+      cutoff: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
+      // Offset (optional)
+      offset: "ui.panel.config.automation.editor.triggers.type.calendar.offset",
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // ----------------------------------------- Untracked consumption -----------------------------------------------
+
+      // Untracked consumption
+      untracked_legend: "ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption",
+
+      // Name
+      untracked_legend_label: "ui.panel.lovelace.editor.card.generic.name",
+      // Icon
+      untracked_legend_icon: "ui.panel.lovelace.editor.card.generic.icon",
+
+      // State content
+      untracked_state_content: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
+      // State content (Line)
+      untracked_line_state_content: (hass) =>
+        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // ------------------------------------------------ Statistic ----------------------------------------------------
+
+      // Statistic
+      statistics: "ui.panel.lovelace.editor.card.statistics-graph.picked_statistic",
+      // Offset (optional) (Day)
+      statistics_day_offset: (hass) =>
+        `${hass.localize("ui.panel.config.automation.editor.triggers.type.calendar.offset")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day")})`,
+      // Period
+      statistics_period: "ui.panel.lovelace.editor.card.statistics-graph.period",
+      // Show stat types
+      statistics_function: "ui.panel.lovelace.editor.card.statistics-graph.stat_types",
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // ----------------------------------------------- Interactions --------------------------------------------------
+
+      // Tap action
+      tap_action: "ui.panel.lovelace.editor.card.generic.tap_action",
+      // Hold action
+      hold_action: "ui.panel.lovelace.editor.card.generic.hold_action",
+      // Double tap action
+      double_tap_action: "ui.panel.lovelace.editor.card.generic.double_tap_action",
+
+      // ---------------------------------------------------------------------------------------------------------------
+    };
+
+    const entry = labelMap[schema.name];
+    if (!entry) return schema.name;
+
+    return typeof entry === "function" ? entry(this.hass) : this.hass.localize(entry);
   };
 
   private _entitiesChanged(ev: CustomEvent<ELGEntity[]>): void {

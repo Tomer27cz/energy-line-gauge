@@ -34,6 +34,7 @@ export class ItemEditor extends LitElement {
           { name: "icon", required: false, selector: {icon: {}}},
         ]
       },
+
       {
         name: "state_content",
         type: "expandable",
@@ -74,7 +75,6 @@ export class ItemEditor extends LitElement {
         ],
       },
 
-
       {
         name: "unit",
         type: "expandable",
@@ -91,42 +91,15 @@ export class ItemEditor extends LitElement {
                   select: {
                     mode: "dropdown",
                     options: [
-                      {
-                        value: 1000000000000,
-                        label: "10^12 (Tera)",
-                      },
-                      {
-                        value: 1000000000,
-                        label: "10^9 (Giga)",
-                      },
-                      {
-                        value: 1000000,
-                        label: "10^6 (Mega)",
-                      },
-                      {
-                        value: 1000,
-                        label: "10^3 (Kilo)",
-                      },
-                      {
-                        value: 1,
-                        label: "1 (Same as Main)",
-                      },
-                      {
-                        value: 0.001,
-                        label: "10^-3 (Milli)",
-                      },
-                      {
-                        value: 0.000001,
-                        label: "10^-6 (Micro)",
-                      },
-                      {
-                        value: 0.000000001,
-                        label: "10^-9 (Nano)",
-                      },
-                      {
-                        value: 0.000000000001,
-                        label: "10^-12 (Pico)",
-                      },
+                      { value: 1000000000000, label: "10^12 (Tera)" },
+                      { value: 1000000000, label: "10^9 (Giga)" },
+                      { value: 1000000, label: "10^6 (Mega)" },
+                      { value: 1000, label: "10^3 (Kilo)" },
+                      { value: 1, label: "1 (Same as Main)" },
+                      { value: 0.001, label: "10^-3 (Milli)" },
+                      { value: 0.000001, label: "10^-6 (Micro)"},
+                      { value: 0.000000001, label: "10^-9 (Nano)" },
+                      { value: 0.000000000001, label: "10^-12 (Pico)" },
                     ]
                   }
                 }
@@ -189,42 +162,63 @@ export class ItemEditor extends LitElement {
   }
 
   private _computeLabelCallback = (schema: any) => {
-    if (this.hass) {
-      switch (schema.name) {
-        case "entity": // Entity (required)
-          return `${this.hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${this.hass.localize("ui.panel.lovelace.editor.card.config.required")})`;
-        case "name": // Name
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.name`);
-        case "color": // RGB Color
-            return this.hass.localize(`ui.components.selectors.selector.types.color_rgb`);
-        case "icon": // Icon
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.icon`);
-        case "cutoff": // Lower Limit
-          return this.hass.localize(`ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit`);
-        case "interactions": // Interactions
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.interactions`);
-        case "tap_action": // Tap Action
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.tap_action`);
-        case "hold_action": // Hold Action
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.hold_action`);
-        case "double_tap_action": // Double Tap Action
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.double_tap_action`);
-        case "state_content": // State Content
-          return this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`);
-        case "line_state_content": // State Content (Line)
-          return `${this.hass.localize(`ui.panel.lovelace.editor.card.heading.entity_config.state_content`)} (${this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`;
-        case "unit": // Unit
-          return this.hass.localize(`ui.panel.lovelace.editor.card.generic.unit`);
-        case "multiplier": // Unit system
-          return this.hass.localize(`ui.panel.config.core.section.core.core_config.unit_system`);
-        case "precision": // Precision
-          return this.hass.localize(`ui.dialogs.entity_registry.editor.precision`);
-        default:
-          return schema.name;
-      }
-    } else {
-      return "";
-    }
+    if (!this.hass) return "";
+
+    const labelMap: Record<string, string | ((hass: any) => string)> = {
+      // Entity (required)
+      entity: (hass) =>
+        `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
+
+      // Name
+      name: "ui.panel.lovelace.editor.card.generic.name",
+
+      // RGB Color
+      color: "ui.components.selectors.selector.types.color_rgb",
+      // Icon
+      icon: "ui.panel.lovelace.editor.card.generic.icon",
+
+      // ------------------------------------------------ State Content ------------------------------------------------
+
+      // State Content
+      state_content: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
+
+      // State Content (Line)
+      line_state_content: (hass) =>
+        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // ---------------------------------------------------- Unit -----------------------------------------------------
+
+      // Unit
+      unit: "ui.panel.lovelace.editor.card.generic.unit",
+      // Unit system
+      multiplier: "ui.panel.config.core.section.core.core_config.unit_system",
+      // Precision
+      precision: "ui.dialogs.entity_registry.editor.precision",
+      // Lower Limit
+      cutoff: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // -------------------------------------------------- Interactions -----------------------------------------------
+
+      // Interactions
+      interactions: "ui.panel.lovelace.editor.card.generic.interactions",
+      // Tap Action
+      tap_action: "ui.panel.lovelace.editor.card.generic.tap_action",
+      // Hold Action
+      hold_action: "ui.panel.lovelace.editor.card.generic.hold_action",
+      // Double Tap Action
+      double_tap_action: "ui.panel.lovelace.editor.card.generic.double_tap_action",
+
+      // ---------------------------------------------------------------------------------------------------------------
+    };
+
+    const entry = labelMap[schema.name];
+    if (!entry) return schema.name;
+
+    return typeof entry === "function" ? entry(this.hass) : this.hass.localize(entry);
   };
 
   private _valueChanged(ev: any): void {
