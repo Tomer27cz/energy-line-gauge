@@ -93,7 +93,7 @@ export interface ELGEntity {
 
 export const CORNER_TYPES = ['square', 'lite_rounded', 'medium_rounded', 'rounded', 'circular'] as const;
 export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
-export const LINE_POSITION_TYPES = ['left', 'right', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
+export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
 export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 
 export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage'] as const;

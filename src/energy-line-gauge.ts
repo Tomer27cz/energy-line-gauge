@@ -232,6 +232,8 @@ export class EnergyLineGauge extends LitElement {
 
       if (width > 0) {this._entitiesTotalWidth += width;}
 
+      const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
+
       // noinspection HtmlUnknownAttribute
       return html`
       <div 
@@ -244,7 +246,7 @@ export class EnergyLineGauge extends LitElement {
         hasDoubleClick: hasAction(device.double_tap_action),
       })}
       >
-        ${width > 0 ? html`
+        ${displayLineState ? html`
           <div 
             class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
             style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
@@ -263,7 +265,7 @@ export class EnergyLineGauge extends LitElement {
       ${deviceLines}
       <div class="untracked-line" style="width: ${untrackedWidth}%">
         <div 
-          class="untracked-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
+          class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
           style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
         >
           ${this._untrackedLabel(true)}

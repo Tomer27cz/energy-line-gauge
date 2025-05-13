@@ -24,7 +24,6 @@ import {
 } from './types';
 
 import { toRGB, toHEX, COLORS } from './color';
-import { ActionConfig } from 'custom-card-helpers';
 
 // Some values are undefined but set programmatically in the code - comment
 const DEFAULTS = {
@@ -149,8 +148,8 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, DEFAULTS.line_text_position),
     line_text_size: config.line_text_size ?? DEFAULTS.line_text_size,
 
-    color: toRGB(config.color) ?? defaultColor, // --primary-color
-    color_bg: toRGB(config.color_bg) ?? defaultBgColor, // --secondary-background-color
+    color: validateColor(config.color, defaultColor), // --primary-color
+    color_bg: validateColor(config.color_bg, defaultBgColor), // --secondary-background-color
 
     // Actions
     tap_action: config.tap_action ?? DEFAULTS.tap_action,
@@ -264,4 +263,14 @@ function validateArray<T extends readonly string[]>(
 ): T[number][] | undefined {
   if (!Array.isArray(values)) return undefined;
   return values.filter((item): item is T[number] => allowed.includes(item as T[number]));
+}
+
+function validateColor(
+  color: string | [number, number, number] | undefined,
+  defaultValue: [number, number, number] | undefined
+): [number, number, number] | undefined {
+  if (!color) return defaultValue;
+  if (color === "auto") return defaultValue;
+  if (Array.isArray(color)) return color as [number, number, number];
+  return toRGB(color);
 }

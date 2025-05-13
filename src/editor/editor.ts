@@ -219,6 +219,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     options: [
                       { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
                       { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+                      { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
                       { value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") },
                       { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
                       { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
