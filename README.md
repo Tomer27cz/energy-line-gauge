@@ -1,8 +1,13 @@
 # Energy Line Gauge
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/Tomer27cz/energy-line-gauge)](https://github.com/Tomer27cz/energy-line-gauge/blob/master/package.json)
-[![Validate HACS](https://github.com/Tomer27cz/energy-line-gauge/actions/workflows/validate-hacs.yaml/badge.svg)](https://github.com/Tomer27cz/energy-line-gauge/actions/workflows/validate-hacs.yaml)
+![Validate HACS](https://img.shields.io/github/actions/workflow/status/Tomer27cz/energy-line-gauge/.github/workflows/validate-hacs.yaml?label=Validate%20HACS)
 [![GitHub license](https://img.shields.io/github/license/Tomer27cz/energy-line-gauge)](https://img.shields.io/github/license/Tomer27cz/energy-line-gauge/blob/master/LICENSE)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
+![GitHub Repo stars](https://img.shields.io/github/stars/Tomer27cz/energy-line-gauge?style=flat)
+![GitHub issues](https://img.shields.io/github/issues/Tomer27cz/energy-line-gauge?style=flat)
+![GitHub last commit](https://img.shields.io/github/last-commit/Tomer27cz/energy-line-gauge)
+![GitHub commits since](https://img.shields.io/github/commits-since/Tomer27cz/energy-line-gauge/latest)
+![GitHub release date](https://img.shields.io/github/release-date/Tomer27cz/energy-line-gauge)
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
