@@ -5,9 +5,6 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Tomer27cz/energy-line-gauge?style=flat)
 ![GitHub issues](https://img.shields.io/github/issues/Tomer27cz/energy-line-gauge?style=flat)
-![GitHub last commit](https://img.shields.io/github/last-commit/Tomer27cz/energy-line-gauge)
-![GitHub commits since](https://img.shields.io/github/commits-since/Tomer27cz/energy-line-gauge/latest)
-![GitHub release date](https://img.shields.io/github/release-date/Tomer27cz/energy-line-gauge)
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
