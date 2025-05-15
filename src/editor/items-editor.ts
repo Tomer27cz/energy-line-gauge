@@ -173,7 +173,6 @@ export class ItemsEditor extends LitElement {
 
     let entity: ELGEntity = {
       entity: entity_id,
-      color: "auto",
       state_content: ['name'],
       multiplier: multiplier,
       unit: unit_of_measurement,

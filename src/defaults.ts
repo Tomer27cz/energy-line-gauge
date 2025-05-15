@@ -43,7 +43,7 @@ const DEFAULTS = {
   // Value
   precision: 0,
   unit: undefined,
-  cutoff: 5,
+  cutoff: 0,
   offset: undefined, // parsed
 
   // Styling

@@ -86,9 +86,11 @@ export class EnergyLineGauge extends LitElement {
     entities: string[],
     entitiesFallback: string[]
   ): ELGConfig {
-    const includeDomains = ["counter", "input_number", "number", "sensor"];
+    const includeDomains = ["sensor"];
     const maxEntities = 4;
-    const entityFilter = (stateObj: HassEntity): boolean => !isNaN(Number(stateObj.state));
+    const entityFilter = (stateObj: HassEntity): boolean => !isNaN(Number(stateObj.state))
+      && stateObj.state !== "unavailable" && stateObj.state !== "unknown"
+      && (stateObj.attributes.state_class === "total_increasing" || stateObj.attributes.state_class === "total" || stateObj.attributes.state_class === "measurement");
 
     const foundEntities = findEntities(
       hass,
@@ -99,18 +101,31 @@ export class EnergyLineGauge extends LitElement {
       entityFilter
     );
 
-    return setConfigDefaults({
+    const rootStyle = getComputedStyle(document.documentElement);
+    const defaultColor = toRGB(rootStyle.getPropertyValue('--primary-color').trim());
+    const defaultBgColor = toRGB(rootStyle.getPropertyValue('--secondary-background-color').trim());
+
+
+    return {
       type: "custom:energy-line-gauge",
       entity: foundEntities[0],
       title: "Energy Line Gauge",
+
       min: 0,
       max: 100,
+
+      color: defaultColor,
+      color_bg: defaultBgColor,
+
+      untracked_legend: true,
+      untracked_state_content: ["name"],
+
       entities: [
-        { entity: foundEntities[1], color: toRGB(COLORS[0]) },
-        { entity: foundEntities[2], color: toRGB(COLORS[1]) },
-        { entity: foundEntities[3], color: toRGB(COLORS[2]) },
+        { entity: foundEntities[1], state_content: ["name"] },
+        { entity: foundEntities[2], state_content: ["name"] },
+        { entity: foundEntities[3], state_content: ["name"] },
       ],
-    });
+    };
   }
 
   protected updated(changedProps: PropertyValues): void {
@@ -130,6 +145,18 @@ export class EnergyLineGauge extends LitElement {
   protected render(): TemplateResult | void {
     if (!this._config || !this.hass) {
       this._invalidConfig()
+    }
+
+    this._entitiesWidth = {};
+    this._warnings = [];
+
+    if (!this._validate(this._config.entity)) {return this._renderWarnings();}
+
+    if (this._config.offset) {this._getOffsetHistory();}
+    if (this._config.statistics) {this._getStatisticsHistory();}
+
+    if (this._config.show_delta || this._config.untracked_state_content?.includes("state") || this._config.untracked_line_state_content?.includes("state")) {
+      this._deltaValue = this._delta();
     }
 
     return html`
@@ -184,12 +211,13 @@ export class EnergyLineGauge extends LitElement {
     <div class="chart-legend">
       <ul style="justify-content: ${this._config.legend_alignment ?? "center"}">
         ${this._config.entities.map((device: ELGEntity) => {
-          if (!this._validate(device.entity)) {return html``;}
+          if (!this._validate(device.entity)) return html``;
 
           const stateObj: HassEntity = this.hass.states[device.entity];
           const state = this._calcState(stateObj, device.multiplier);
-
-          if (state < (device.cutoff ?? this._config.cutoff ?? 0) && !this._config.legend_all) {
+          const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
+          
+          if (state <= cutoff && !this._config.legend_all) {
             return html``;
           }
 
@@ -226,7 +254,6 @@ export class EnergyLineGauge extends LitElement {
       const state = this._calcState(stateObj, device.multiplier);
       const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
 
-      // Determine width based on cutoff
       const width = state <= cutoff ? 0 : this._calculateDeviceWidth(state);
       this._entitiesWidth[device.entity] = width;
 
@@ -258,35 +285,26 @@ export class EnergyLineGauge extends LitElement {
     `;
     });
 
-    const untrackedWidth = Math.max(0, 100 - this._entitiesTotalWidth);
+    const untrackedWidth = this._calculateMainWidth() - this._entitiesTotalWidth;
+    const displayUntrackedLine: boolean = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
 
     return html`
     <div class="device-line-container">
       ${deviceLines}
-      <div class="untracked-line" style="width: ${untrackedWidth}%">
-        <div 
-          class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
-          style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
-        >
-          ${this._untrackedLabel(true)}
+      ${displayUntrackedLine ? html`
+        <div class="untracked-line" style="width: ${untrackedWidth}%">
+          <div 
+            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
+            style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
+          >
+            ${this._untrackedLabel(true, untrackedWidth)}
+          </div>
         </div>
-      </div>
+      ` : html``}
     </div>
   `;
   }
   _createInnerHtml() {
-    this._entitiesWidth = {};
-    this._warnings = [];
-
-    if (!this._validate(this._config.entity)) {return this._renderWarnings();}
-
-    if (this._config.offset) {this._getOffsetHistory();}
-    if (this._config.statistics) {this._getStatisticsHistory();}
-
-    if (this._config.show_delta || this._config.untracked_state_content?.includes("state")) {
-      this._deltaValue = this._delta();
-    }
-
     const titlePosition = this._config.title_position ?? "top-left";
     const legendPosition = this._config.legend_position ?? "bottom-center";
     const deltaPosition = this._config.delta_position ?? "bottom-center";
@@ -391,21 +409,24 @@ export class EnergyLineGauge extends LitElement {
       })
     }`;
   }
-  private _untrackedLabel(line?: boolean) {
+  private _untrackedLabel(line?: boolean, untracked_width?: number) {
     const state_content = line ? this._config.untracked_line_state_content : this._config.untracked_state_content;
     if (!state_content || state_content.length === 0) {
       if (line) {return;}
       return this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption");
     }
+
+    const [, , deltaValue] = this._deltaValue ?? [0, 0, undefined];
+    const name = this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption");
+    const percentage = untracked_width ?? this._calculateMainWidth() - this._entitiesTotalWidth;
+
     return html`
       ${state_content?.map((value, i, arr) => {
         const dot = i < arr.length - 1 ? " ⸱ " : '';
-        
-        const [, , deltaValue] = this._deltaValue ?? [0, 0, undefined];
         switch (value) {
-          case "name": return html`${this._config.untracked_legend_label ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption")}${dot}`;
-          case "state": return deltaValue === undefined ? html`` : html`${this._formatValueMain(deltaValue)}${dot}`;
-          case "percentage": return html`${(100 - this._entitiesTotalWidth).toFixed(0)}%${dot}`;
+          case "name": return html`${name}${dot}`;
+          case "state": return html`${this._formatValueMain(deltaValue)}${dot}`;
+          case "percentage": return html`${percentage.toFixed(0)}%${dot}`;
           default: return html`${value}${dot}`;
         }
       })}`;
@@ -435,7 +456,7 @@ export class EnergyLineGauge extends LitElement {
     const stateObj: HassEntity | undefined = this.hass.states[entityId];
     if (!stateObj) {return this._entityNotFound(entityId);}
 
-    if (stateObj.state === "unavailable") {return this._entityUnavailable(stateObj);}
+    if (stateObj.state === "unavailable" || stateObj.state === "unknown") {return this._entityUnavailable(stateObj);}
     if (isNaN(Number(stateObj.state))) {return this._entityNotNumeric(stateObj);}
 
     return undefined; // Return undefined if all checks pass
@@ -726,6 +747,7 @@ export class EnergyLineGauge extends LitElement {
   }
 
   private _devicesSum(): number {
+    if (!this._config.entities) {return 0;}
     return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
       if (!this._validate(device.entity)) {return sum;}
       return sum + this._calcState(this.hass.states[device.entity], device.multiplier);
