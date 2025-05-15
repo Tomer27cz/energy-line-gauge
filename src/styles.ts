@@ -96,12 +96,14 @@ export const styles = css`
     .gauge-title {
         font-size: 2rem;
         text-align: left;
+        flex-wrap: nowrap;
         white-space: nowrap;
         margin-bottom: 0.5rem;
     }
     .gauge-subtitle {
         font-size: 1rem;
         text-align: left;
+        flex-wrap: nowrap;
         white-space: nowrap;
         color: var(--secondary-text-color);
     }
@@ -142,8 +144,11 @@ export const styles = css`
     /* Gauge Value -------------------------------------------*/
   
     .gauge-value {
+        display: flex;
         font-size: 2.5rem;
-        align-content: center;
+        flex-wrap: nowrap;
+        align-items: center;
+        text-align: center;
         white-space: nowrap;
     }
     .unit {
