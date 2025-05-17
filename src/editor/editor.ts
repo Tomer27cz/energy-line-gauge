@@ -46,6 +46,36 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     if (!this.hass || !this._config) return html``;
     if (this._subElementEditor != undefined) return this._renderSubElementEditor();
 
+    const positionOptions = [
+      { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
+      { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+      { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
+      { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
+      { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+      { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+      { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+      { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
+      { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+    ];
+
+    const styleOptions = [
+      ["weight-lighter", "Lighter Weight"],
+      ["weight-bold", "Bold Weight"],
+      ["weight-bolder", "Bolder Weight"],
+      ["style-italic", "Italic"],
+      ["decoration-underline", "Underline"],
+      ["decoration-overline", "Overline"],
+      ["decoration-line-through", "Line Through"],
+      ["transform-uppercase", "Uppercase"],
+      ["transform-lowercase", "Lowercase"],
+      ["transform-capitalize", "Capitalize"],
+      ["family-monospace", "Monospace"],
+      ["shadow-shadow", "Shadow"],
+      ["shadow-neon", "Neon Shadow"],
+      ["black-outline", "Black Outline"],
+      ["white-outline", "White Outline"]
+    ]
+
     const schema = [
       {
         name: "entity",
@@ -137,17 +167,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     {
                       select: {
                         mode: "dropdown",
-                        options: [
-                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
-                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
-                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
-                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
-                        ]
+                        options: positionOptions,
                       }
                     }
                   },
@@ -155,17 +175,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     {
                       select: {
                         mode: "dropdown",
-                        options: [
-                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
-                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") + " (default)" },
-                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
-                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
-                        ]
+                        options: positionOptions,
                       }
                     }
                   },
@@ -178,17 +188,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     {
                       select: {
                         mode: "dropdown",
-                        options: [
-                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
-                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
-                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") + " (default)" },
-                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
-                        ]
+                        options: positionOptions,
                       }
                     }
                   },
@@ -196,17 +196,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     {
                       select: {
                         mode: "dropdown",
-                        options: [
-                          { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
-                          { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-                          { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-                          { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
-                          { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-                          { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-                          { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-                          { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") + " (default)" },
-                          { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
-                        ]
+                        options: positionOptions,
                       }
                     }
                   },
@@ -216,21 +206,55 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                 {
                   select: {
                     mode: "dropdown",
-                    options: [
-                      { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
-                      { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-                      { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-                      { value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") },
-                      { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
-                      { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-                      { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-                      { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-                      { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
-                      { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
-                    ]
+                    options: positionOptions.concat(
+                      { value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") }
+                    ),
                   }
                 }
               },
+            ]
+          },
+
+          {
+            type: "expandable",
+            title: this.hass.localize(`ui.panel.lovelace.editor.card.markdown.style`), // Style
+            flatten: true,
+            schema: [
+              {
+                type: "grid",
+                schema: [
+                  {
+                    type: "multi_select",
+                    name: "text_style",
+                    options: styleOptions,
+                  },
+                  {
+                    type: "multi_select",
+                    name: "title_text_style",
+                    options: styleOptions,
+                  },
+                ],
+              },
+              {
+                type: "grid",
+                schema: [
+                  {
+                    type: "multi_select",
+                    name: "legend_text_style",
+                    options: styleOptions,
+                  },
+                  {
+                    type: "multi_select",
+                    name: "delta_text_style",
+                    options: styleOptions,
+                  },
+                ],
+              },
+              {
+                type: "multi_select",
+                name: "line_text_style",
+                options: styleOptions,
+              }
             ]
           },
 
