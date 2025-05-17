@@ -28,11 +28,11 @@ import {
   HassHistory,
   HassStatistics,
 } from './types';
-import { styles } from './styles';
+import { styles, getTextStyle } from './styles';
 import { actionHandler } from './action-handler';
 import { findEntities } from './find-entities';
 import { setConfigDefaults } from './defaults';
-import { COLORS, toRGB, toHEX, textColor } from './color';
+import { toRGB, toHEX, textColor } from './color';
 
 import './editor/editor';
 
@@ -199,13 +199,15 @@ export class EnergyLineGauge extends LitElement {
           html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` :
           html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
         }
-        <div class="label">
+        <div class="label" style="${getTextStyle(this._config.legend_text_style)}">
           ${this._untrackedLabel()}
         </div>
       </li>`
   }
   _createLegend() {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
+
+    const textStyle = getTextStyle(this._config.legend_text_style);
 
     return html`
     <div class="chart-legend">
@@ -217,9 +219,7 @@ export class EnergyLineGauge extends LitElement {
           const state = this._calcState(stateObj, device.multiplier);
           const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
           
-          if (state <= cutoff && !this._config.legend_all) {
-            return html``;
-          }
+          if (state <= cutoff && !this._config.legend_all) {return html``;}
 
           // noinspection HtmlUnknownAttribute
           return html`
@@ -236,7 +236,7 @@ export class EnergyLineGauge extends LitElement {
                   html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
                   html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
-              <div class="label">${this._entityLabel(device, stateObj, false, state)}</div>
+              <div class="label" style="${textStyle}">${this._entityLabel(device, stateObj, false, state)}</div>
             </li>`;
         })}  
         ${this._createUntrackedLegend()}
@@ -260,6 +260,7 @@ export class EnergyLineGauge extends LitElement {
       if (width > 0) {this._entitiesTotalWidth += width;}
 
       const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
+      const lineTextColor = textColor(device.color);
 
       // noinspection HtmlUnknownAttribute
       return html`
@@ -276,8 +277,11 @@ export class EnergyLineGauge extends LitElement {
         ${displayLineState ? html`
           <div 
             class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
-            style="color: rgba(${textColor(device.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
-          >
+            style="
+              color: rgba(${lineTextColor}); 
+              font-size: ${this._config.line_text_size ?? 1}rem; 
+              ${getTextStyle(this._config.line_text_style, toHEX(lineTextColor))}
+          ">
             ${this._entityLabel(device, stateObj, true, state)}
           </div>
         ` : html``}
@@ -287,6 +291,7 @@ export class EnergyLineGauge extends LitElement {
 
     const untrackedWidth = this._calculateMainWidth() - this._entitiesTotalWidth;
     const displayUntrackedLine: boolean = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
+    const untrackedTextColor = textColor(this._config.color);
 
     return html`
     <div class="device-line-container">
@@ -295,8 +300,11 @@ export class EnergyLineGauge extends LitElement {
         <div class="untracked-line" style="width: ${untrackedWidth}%">
           <div 
             class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
-            style="color: rgba(${textColor(this._config.color)}, 0.6); font-size: ${this._config.line_text_size ?? 1}rem;"
-          >
+            style="
+              color: rgba(${untrackedTextColor}); 
+              font-size: ${this._config.line_text_size ?? 1}rem;
+              ${getTextStyle(this._config.line_text_style, toHEX(untrackedTextColor))}
+        ">
             ${this._untrackedLabel(true, untrackedWidth)}
           </div>
         </div>
@@ -320,14 +328,17 @@ export class EnergyLineGauge extends LitElement {
     const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
     const displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
 
+    const titleStyle = getTextStyle(this._config.title_text_style);
+    const valueStyle = getTextStyle(this._config.text_style);
+
     // gauge-position-frame - First div is moved around the second div based on the position-* class
     // delta is currently always at the bottom of the line
     return html`
       <div class="gauge-position-frame position-${titlePosition}">
         ${displayTitle ? html`
           <div>
-            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem;">${this._config.title}</div>` : ''}
-            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem;">${this._config.subtitle}</div>` : ''}
+            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}">${this._config.title}</div>` : ''}
+            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}">${this._config.subtitle}</div>` : ''}
           </div>
         ` : ''}
         <div class="gauge-position-frame position-${legendPosition}">
@@ -336,7 +347,7 @@ export class EnergyLineGauge extends LitElement {
             ${displayDelta ? this._createDelta() : ''}
             <div class="gauge-position-frame position-${valuePosition}">
               ${displayValue ? html`
-                <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem;">
+                <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}">
                   ${this._calcStateMain().toFixed(this._config.precision)}
                   ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
                 </div>

@@ -1,4 +1,5 @@
 import { css } from 'lit';
+import { TextStyleType } from './types';
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
 export const configElementStyle = css`
@@ -373,3 +374,78 @@ export const styles = css`
         color: var(--primary-text-color);
     }
 `;
+
+export function getTextStyle(style: TextStyleType | undefined, baseColor?: string | undefined): string {
+  if (!style) {return '';}
+
+  const uniqueStyles = new Set(style);
+  const styleMap: Record<string, string> = {};
+
+  // Font weight
+  if (uniqueStyles.has('weight-bolder')) {
+    styleMap['font-weight'] = 'bolder';
+  } else if (uniqueStyles.has('weight-bold')) {
+    styleMap['font-weight'] = 'bold';
+  } else if (uniqueStyles.has('weight-lighter')) {
+    styleMap['font-weight'] = 'lighter';
+  }
+
+  // Font style
+  if (uniqueStyles.has('style-italic')) {
+    styleMap['font-style'] = 'italic';
+  }
+
+  // Text decoration
+  const decorations: string[] = [];
+  if (uniqueStyles.has('decoration-underline')) decorations.push('underline');
+  if (uniqueStyles.has('decoration-overline')) decorations.push('overline');
+  if (uniqueStyles.has('decoration-line-through')) decorations.push('line-through');
+  if (decorations.length > 0) {
+    styleMap['text-decoration'] = decorations.join(' ');
+  }
+
+  // Text transform
+  if (uniqueStyles.has('transform-uppercase')) {
+    styleMap['text-transform'] = 'uppercase';
+  } else if (uniqueStyles.has('transform-lowercase')) {
+    styleMap['text-transform'] = 'lowercase';
+  } else if (uniqueStyles.has('transform-capitalize')) {
+    styleMap['text-transform'] = 'capitalize';
+  }
+
+  // Font family
+  if (uniqueStyles.has('family-monospace')) {
+    styleMap['font-family'] = 'monospace';
+  }
+
+  // Outlines first (they affect color)
+  if (uniqueStyles.has('black-outline')) {
+    styleMap['-webkit-text-stroke'] = '1px black';
+  } else if (uniqueStyles.has('white-outline')) {
+    styleMap['-webkit-text-stroke'] = '1px white';
+  }
+
+  // Track the color if set earlier
+  if (styleMap['color'] && styleMap['color'] !== 'transparent') {
+    baseColor = styleMap['color'];
+  }
+
+  // Shadow
+  if (uniqueStyles.has('shadow-neon')) {
+    const neonColor = baseColor || '#fff';
+    styleMap['color'] = neonColor;
+    styleMap['text-shadow'] = [
+      `0 0 5px ${neonColor}`,
+      `0 0 10px ${neonColor}`,
+      `0 0 20px ${neonColor}`,
+      `0 0 40px ${neonColor}`,
+      `0 0 80px ${neonColor}`,
+    ].join(', ');
+  } else if (uniqueStyles.has('shadow-shadow')) {
+    styleMap['text-shadow'] = '2px 2px 4px rgba(0, 0, 0, 0.3)';
+  }
+
+  return Object.entries(styleMap)
+    .map(([key, value]) => `${key}:${value}`)
+    .join('; ');
+}
