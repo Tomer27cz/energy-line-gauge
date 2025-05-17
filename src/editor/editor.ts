@@ -70,7 +70,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       ["transform-lowercase", "Lowercase"],
       ["transform-capitalize", "Capitalize"],
       ["family-monospace", "Monospace"],
-      ["shadow-shadow", "Shadow"],
+      ["shadow-light", "Light Shadow"],
+      ["shadow-medium", "Medium Shadow"],
+      ["shadow-heavy", "Heavy Shadow"],
+      ["shadow-hard", "Hard Shadow"],
       ["shadow-neon", "Neon Shadow"],
       ["black-outline", "Black Outline"],
       ["white-outline", "White Outline"]

@@ -441,8 +441,14 @@ export function getTextStyle(style: TextStyleType | undefined, baseColor?: strin
       `0 0 40px ${neonColor}`,
       `0 0 80px ${neonColor}`,
     ].join(', ');
-  } else if (uniqueStyles.has('shadow-shadow')) {
-    styleMap['text-shadow'] = '2px 2px 4px rgba(0, 0, 0, 0.3)';
+  } else if (uniqueStyles.has('shadow-hard')) {
+    styleMap['text-shadow'] = '2px 2px 0 rgba(0, 0, 0)'; // 0.9
+  } else if (uniqueStyles.has('shadow-heavy')) {
+    styleMap['text-shadow'] = '2px 2px 2px rgba(0, 0, 0)'; // 0.7
+  } else if (uniqueStyles.has('shadow-medium')) {
+    styleMap['text-shadow'] = '2px 2px 4px rgba(0, 0, 0, 0.75)'; // 0.5
+  } else if (uniqueStyles.has('shadow-light')) {
+    styleMap['text-shadow'] = '2px 2px 8px rgba(0, 0, 0, 0.5)'; // 0.2
   }
 
   return Object.entries(styleMap)
