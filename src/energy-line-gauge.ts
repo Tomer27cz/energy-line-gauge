@@ -190,7 +190,7 @@ export class EnergyLineGauge extends LitElement {
         <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(deltaValue)}</span></div>
       </div>`;
   }
-  _createUntrackedLegend() {
+  _createUntrackedLegend(style: string, size: number) {
     if (!this._config.untracked_legend) {return html``;}
 
     return html`
@@ -199,7 +199,7 @@ export class EnergyLineGauge extends LitElement {
           html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` :
           html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
         }
-        <div class="label" style="${getTextStyle(this._config.legend_text_style)}">
+        <div class="label" style="font-size: ${size}rem; ${style}">
           ${this._untrackedLabel()}
         </div>
       </li>`
@@ -207,7 +207,8 @@ export class EnergyLineGauge extends LitElement {
   _createLegend() {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
 
-    const textStyle = getTextStyle(this._config.legend_text_style);
+    const textSize = this._config.legend_text_size ?? this._config.text_size ?? 1;
+    const textStyle = getTextStyle(this._config.legend_text_style, textSize);
 
     return html`
     <div class="chart-legend">
@@ -236,10 +237,10 @@ export class EnergyLineGauge extends LitElement {
                   html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
                   html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
-              <div class="label" style="${textStyle}">${this._entityLabel(device, stateObj, false, state)}</div>
+              <div class="label" style="font-size: ${textSize}rem; ${textStyle}">${this._entityLabel(device, stateObj, false, state)}</div>
             </li>`;
         })}  
-        ${this._createUntrackedLegend()}
+        ${this._createUntrackedLegend(textStyle, textSize)}
       </ul>
     </div>`
   }
@@ -261,6 +262,7 @@ export class EnergyLineGauge extends LitElement {
 
       const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
       const lineTextColor = textColor(device.color);
+      const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
 
       // noinspection HtmlUnknownAttribute
       return html`
@@ -280,7 +282,7 @@ export class EnergyLineGauge extends LitElement {
             style="
               color: rgba(${lineTextColor}); 
               font-size: ${this._config.line_text_size ?? 1}rem; 
-              ${getTextStyle(this._config.line_text_style, toHEX(lineTextColor))}
+              ${textStyle}
           ">
             ${this._entityLabel(device, stateObj, true, state)}
           </div>
@@ -292,6 +294,7 @@ export class EnergyLineGauge extends LitElement {
     const untrackedWidth = this._calculateMainWidth() - this._entitiesTotalWidth;
     const displayUntrackedLine: boolean = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
     const untrackedTextColor = textColor(this._config.color);
+    const untrackedStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(untrackedTextColor));
 
     return html`
     <div class="device-line-container">
@@ -303,7 +306,7 @@ export class EnergyLineGauge extends LitElement {
             style="
               color: rgba(${untrackedTextColor}); 
               font-size: ${this._config.line_text_size ?? 1}rem;
-              ${getTextStyle(this._config.line_text_style, toHEX(untrackedTextColor))}
+              ${untrackedStyle}
         ">
             ${this._untrackedLabel(true, untrackedWidth)}
           </div>
@@ -320,16 +323,16 @@ export class EnergyLineGauge extends LitElement {
 
     const cornerStyle = this._config.corner ?? "square";
 
-    const textSize = this._config.text_size ?? 2.5;
     const titleTextSize = this._config.title_text_size ?? 2;
+    const textSize = this._config.text_size ?? 2.5;
 
     const displayTitle: boolean = !!((this._config.title || this._config.subtitle) && titlePosition !== 'none');
     const displayLegend: boolean = (this._config.entities && this._config.entities.length > 0 && legendPosition !== 'none');
     const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
     const displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
 
-    const titleStyle = getTextStyle(this._config.title_text_style);
-    const valueStyle = getTextStyle(this._config.text_style);
+    const titleStyle = getTextStyle(this._config.title_text_style, titleTextSize);
+    const valueStyle = getTextStyle(this._config.text_style, textSize);
 
     // gauge-position-frame - First div is moved around the second div based on the position-* class
     // delta is currently always at the bottom of the line

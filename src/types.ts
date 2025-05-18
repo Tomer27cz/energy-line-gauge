@@ -7,6 +7,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   title?: string;
   subtitle?: string;
   header?: string;
+
   title_position?: PositionType;
   title_text_size?: number;
   title_text_style?: TextStyleType;
@@ -21,18 +22,19 @@ export interface ELGConfig extends LovelaceCardConfig {
   cutoff?: number; // Cutoff value for the entity state
   offset?: string | number; // Offset values into the past - duration string (e.g., "1h", "30m", "15s")
 
-  // Styling
-  corner?: CornerType;
   position?: PositionType;
   text_size?: number;
   text_style?: TextStyleType;
 
+  // Styling
+  corner?: CornerType;
+  color?: [number, number, number] | string;
+  color_bg?: [number, number, number] | string;
+
+  // Line Text
   line_text_position?: LinePositionType;
   line_text_size?: number;
   line_text_style?: TextStyleType;
-
-  color?: [number, number, number] | string;
-  color_bg?: [number, number, number] | string;
 
   // Actions
   tap_action?: ActionConfig;
@@ -42,8 +44,10 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Legend
   legend_hide?: boolean;
   legend_all?: boolean;
+
   legend_position?: PositionType;
   legend_alignment?: LegendAlignmentType
+  legend_text_size?: number;
   legend_text_style?: TextStyleType;
 
   // Show Delta

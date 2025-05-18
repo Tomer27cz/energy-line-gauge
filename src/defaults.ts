@@ -33,8 +33,10 @@ const DEFAULTS = {
   title: undefined,
   subtitle: undefined,
   header: undefined,
+
   title_position: 'top-left' as PositionType,
   title_text_size: 2,
+  title_text_style: undefined,
 
   // MIN/MAX
   min: 0,
@@ -46,16 +48,19 @@ const DEFAULTS = {
   cutoff: 0,
   offset: undefined, // parsed
 
-  // Styling
-  corner: 'square' as CornerType,
   position: 'left' as PositionType,
   text_size: 2.5,
+  text_style: undefined,
 
-  line_text_position: 'left' as LinePositionType,
-  line_text_size: 1,
-
+  // Styling
+  corner: 'square' as CornerType,
   color: undefined, // --primary-color
   color_bg: undefined, // --secondary-background-color
+
+  // Line Text
+  line_text_position: 'left' as LinePositionType,
+  line_text_size: 1,
+  line_text_style: undefined,
 
   // Actions
   tap_action: undefined,
@@ -65,8 +70,11 @@ const DEFAULTS = {
   // Legend
   legend_hide: false,
   legend_all: false,
+
   legend_position: 'bottom-center' as PositionType,
   legend_alignment: 'center' as LegendAlignmentType,
+  legend_text_size: 1,
+  legend_text_style: undefined,
 
   // Show Delta
   show_delta: false,
@@ -76,6 +84,7 @@ const DEFAULTS = {
   untracked_legend: false,
   untracked_legend_label: undefined,
   untracked_legend_icon: undefined,
+
   untracked_state_content: ['name'] as UntrackedStateContentType,
   untracked_line_state_content: undefined,
 
@@ -127,8 +136,10 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     title: config.title ?? DEFAULTS.title,
     subtitle: config.subtitle ?? DEFAULTS.subtitle,
     header: config.header ?? DEFAULTS.header,
+
     title_position: validatedValue(config.title_position, POSITION_TYPES, DEFAULTS.title_position),
     title_text_size: config.title_text_size ?? DEFAULTS.title_text_size,
+    title_text_style: config.title_text_style ?? DEFAULTS.title_text_style,
 
     // MIN/MAX
     min: config.min ?? DEFAULTS.min,
@@ -140,16 +151,19 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     cutoff: config.cutoff ?? DEFAULTS.cutoff,
     offset: config.offset ? parseDurationToMilliseconds(config.offset) : DEFAULTS.offset,
 
-    // Styling
-    corner: validatedValue(config.corner, CORNER_TYPES, DEFAULTS.corner),
     position: validatedValue(config.position, POSITION_TYPES, DEFAULTS.position),
     text_size: config.text_size ?? DEFAULTS.text_size,
+    text_style: config.text_style ?? DEFAULTS.text_style,
 
-    line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, DEFAULTS.line_text_position),
-    line_text_size: config.line_text_size ?? DEFAULTS.line_text_size,
-
+    // Styling
+    corner: validatedValue(config.corner, CORNER_TYPES, DEFAULTS.corner),
     color: validateColor(config.color, defaultColor), // --primary-color
     color_bg: validateColor(config.color_bg, defaultBgColor), // --secondary-background-color
+
+    // Line Text
+    line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, DEFAULTS.line_text_position),
+    line_text_size: config.line_text_size ?? DEFAULTS.line_text_size,
+    line_text_style: config.line_text_style ?? DEFAULTS.line_text_style,
 
     // Actions
     tap_action: config.tap_action ?? DEFAULTS.tap_action,
@@ -159,8 +173,11 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     // Legend
     legend_hide: config.legend_hide ?? DEFAULTS.legend_hide,
     legend_all: config.legend_all ?? DEFAULTS.legend_all,
+
     legend_position: validatedValue(config.legend_position, POSITION_TYPES, DEFAULTS.legend_position),
     legend_alignment: validatedValue(config.legend_alignment, LEGEND_ALIGNMENT_TYPES, DEFAULTS.legend_alignment),
+    legend_text_size: config.legend_text_size ?? DEFAULTS.legend_text_size,
+    legend_text_style: config.legend_text_style ?? DEFAULTS.legend_text_style,
 
     // Show Delta
     show_delta: config.show_delta ?? DEFAULTS.show_delta,
@@ -173,8 +190,10 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     untracked_state_content: validateArray(config.untracked_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? DEFAULTS.untracked_state_content,
     untracked_line_state_content: validateArray(config.untracked_line_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? DEFAULTS.untracked_line_state_content,
 
+    // Suppress Warnings
     suppress_warnings: config.suppress_warnings ?? DEFAULTS.suppress_warnings,
 
+    // Statistics
     statistics: config.statistics ?? DEFAULTS.statistics,
     statistics_day_offset: config.statistics_day_offset ?? DEFAULTS.statistics_day_offset,
     statistics_period: validatedValue(config.statistics_period, STATISTICS_PERIOD_TYPES, DEFAULTS.statistics_period),

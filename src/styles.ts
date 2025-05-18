@@ -375,11 +375,13 @@ export const styles = css`
     }
 `;
 
-export function getTextStyle(style: TextStyleType | undefined, baseColor?: string | undefined): string {
+export function getTextStyle(style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: string | undefined): string {
   if (!style) {return '';}
 
   const uniqueStyles = new Set(style);
   const styleMap: Record<string, string> = {};
+
+  const s = textSize ? textSize : 1;
 
   // Font weight
   if (uniqueStyles.has('weight-bolder')) {
@@ -420,9 +422,9 @@ export function getTextStyle(style: TextStyleType | undefined, baseColor?: strin
 
   // Outlines first (they affect color)
   if (uniqueStyles.has('black-outline')) {
-    styleMap['-webkit-text-stroke'] = '1px black';
+    styleMap['-webkit-text-stroke'] = `${s*0.5}px black`;
   } else if (uniqueStyles.has('white-outline')) {
-    styleMap['-webkit-text-stroke'] = '1px white';
+    styleMap['-webkit-text-stroke'] = `${s*0.5}px white`;
   }
 
   // Track the color if set earlier
@@ -435,20 +437,20 @@ export function getTextStyle(style: TextStyleType | undefined, baseColor?: strin
     const neonColor = baseColor || '#fff';
     styleMap['color'] = neonColor;
     styleMap['text-shadow'] = [
-      `0 0 5px ${neonColor}`,
-      `0 0 10px ${neonColor}`,
-      `0 0 20px ${neonColor}`,
-      `0 0 40px ${neonColor}`,
-      `0 0 80px ${neonColor}`,
+      `0 0 ${s*5}px ${neonColor}`,
+      `0 0 ${s*10}px ${neonColor}`,
+      `0 0 ${s*20}px ${neonColor}`,
+      `0 0 ${s*40}px ${neonColor}`,
+      `0 0 ${s*80}px ${neonColor}`,
     ].join(', ');
   } else if (uniqueStyles.has('shadow-hard')) {
-    styleMap['text-shadow'] = '2px 2px 0 rgba(0, 0, 0)'; // 0.9
+    styleMap['text-shadow'] = `${s*1.25}px ${s*1.25}px 0 rgba(0, 0, 0)`; // 0.9
   } else if (uniqueStyles.has('shadow-heavy')) {
-    styleMap['text-shadow'] = '2px 2px 2px rgba(0, 0, 0)'; // 0.7
+    styleMap['text-shadow'] = `${s*1.25}px ${s*1.25}px ${s*1.25}px rgba(0, 0, 0)`; // 0.7
   } else if (uniqueStyles.has('shadow-medium')) {
-    styleMap['text-shadow'] = '2px 2px 4px rgba(0, 0, 0, 0.75)'; // 0.5
+    styleMap['text-shadow'] = `${s*1.25}px ${s*1.25}px ${s*2.5}px rgba(0, 0, 0, 0.75)`; // 0.5
   } else if (uniqueStyles.has('shadow-light')) {
-    styleMap['text-shadow'] = '2px 2px 8px rgba(0, 0, 0, 0.5)'; // 0.2
+    styleMap['text-shadow'] = `${s*1.25}px ${s*1.25}px ${s*4.5}px rgba(0, 0, 0, 0.5)`; // 0.2
   }
 
   return Object.entries(styleMap)

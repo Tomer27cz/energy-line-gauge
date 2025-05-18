@@ -58,6 +58,15 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
     ];
 
+    const alignmentOptions = [
+      { value: "left", label: 'Left' },
+      { value: "right", label: 'Right' },
+      { value: "center", label: 'Center (default)' },
+      { value: "space-around", label: 'Space Around' },
+      { value: "space-between", label: 'Space Between' },
+      { value: "space-evenly", label: 'Space Evenly' },
+    ];
+
     const styleOptions = [
       ["weight-lighter", "Lighter Weight"],
       ["weight-bold", "Bold Weight"],
@@ -104,21 +113,14 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
 
       {
         type: "expandable",
-        title: this.hass.localize(`ui.panel.lovelace.editor.card.map.appearance`), // Appearance
+        name: "expandable_appearance", // Appearance
+        flatten: true,
         iconPath: mdiPalette,
         schema: [
           {
             type: "grid",
             schema: [
-              { name: "legend_hide", required: false, selector: { boolean: {} } },
-              { name: "legend_all", required: false, selector: { boolean: {} } },
-              { name: "show_delta", required: false, selector: { boolean: {} } },
               { name: "suppress_warnings", required: false, selector: { boolean: {} } },
-            ]
-          },
-          {
-            type: "grid",
-            schema: [
               { name: "corner", required: false, selector:
                 {
                   select: {
@@ -129,21 +131,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                       { value: "medium_rounded", label: "Medium Rounded" },
                       { value: "rounded", label: "Rounded" },
                       { value: "circular", label: "Circular" },
-                    ]
-                  }
-                }
-              },
-              { name: "legend_alignment", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      { value: "left", label: "Left" },
-                      { value: "right", label: "Right" },
-                      { value: "center", label: "Center (default)" },
-                      { value: "space-around", label: "Space Around" },
-                      { value: "space-between", label: "Space Between" },
-                      { value: "space-evenly", label: "Space Evenly" },
                     ]
                   }
                 }
@@ -160,120 +147,93 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
 
           {
             type: "expandable",
-            title: this.hass.localize(`ui.panel.lovelace.editor.card.entities.secondary_info_values.position`), // Position
+            name: "expandable_appearance_value", // Value
             flatten: true,
             schema: [
               {
                 type: "grid",
                 schema: [
-                  { name: "position", required: false, selector:
-                    {
-                      select: {
-                        mode: "dropdown",
-                        options: positionOptions,
-                      }
-                    }
-                  },
-                  { name: "title_position", required: false, selector:
-                    {
-                      select: {
-                        mode: "dropdown",
-                        options: positionOptions,
-                      }
-                    }
-                  },
+                  { name: "position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                  { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                ],
+              },
+              { name: "text_style", type: "multi_select", options: styleOptions },
+            ]
+          },
+
+          {
+            type: "expandable",
+            name: "expandable_appearance_title", // Title
+            flatten: true,
+            schema: [
+              {
+                type: "grid",
+                schema: [
+                  { name: "title_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                  { name: "title_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                ],
+              },
+              { name: "title_text_style", type: "multi_select", options: styleOptions },
+            ]
+          },
+
+          {
+            type: "expandable",
+            name: "expandable_appearance_legend", // Legend
+            flatten: true,
+            schema: [
+              {
+                type: "grid",
+                schema: [
+                  { name: "legend_hide", required: false, selector: { boolean: {} } },
+                  { name: "legend_all", required: false, selector: { boolean: {} } },
                 ],
               },
               {
                 type: "grid",
                 schema: [
-                  { name: "legend_position", required: false, selector:
-                    {
-                      select: {
-                        mode: "dropdown",
-                        options: positionOptions,
-                      }
-                    }
-                  },
-                  { name: "delta_position", required: false, selector:
-                    {
-                      select: {
-                        mode: "dropdown",
-                        options: positionOptions,
-                      }
-                    }
-                  },
+                  { name: "legend_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                  { name: "legend_alignment", required: false, selector: { select: { mode: "dropdown", options: alignmentOptions } } },
                 ],
               },
-              { name: "line_text_position", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: positionOptions.concat(
-                      { value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") }
-                    ),
-                  }
-                }
+              {
+                type: "grid",
+                schema: [
+                  { name: "legend_text_style", type: "multi_select", options: styleOptions },
+                  { name: "legend_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                ],
               },
             ]
           },
 
           {
             type: "expandable",
-            title: this.hass.localize(`ui.panel.lovelace.editor.card.markdown.style`), // Style
+            name: "expandable_appearance_delta", // Delta
             flatten: true,
             schema: [
               {
                 type: "grid",
                 schema: [
-                  {
-                    type: "multi_select",
-                    name: "text_style",
-                    options: styleOptions,
-                  },
-                  {
-                    type: "multi_select",
-                    name: "title_text_style",
-                    options: styleOptions,
-                  },
+                  { name: "show_delta", required: false, selector: { boolean: {} } },
+                  { name: "delta_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
                 ],
               },
-              {
-                type: "grid",
-                schema: [
-                  {
-                    type: "multi_select",
-                    name: "legend_text_style",
-                    options: styleOptions,
-                  },
-                  {
-                    type: "multi_select",
-                    name: "delta_text_style",
-                    options: styleOptions,
-                  },
-                ],
-              },
-              {
-                type: "multi_select",
-                name: "line_text_style",
-                options: styleOptions,
-              }
             ]
           },
 
           {
             type: "expandable",
-            title: `Text ${this.hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`, // Text Size (rem)
+            name: "expandable_appearance_line_text", // State content (Line)
             flatten: true,
             schema: [
               {
                 type: "grid",
                 schema: [
-                  { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box"} } },
-                  { name: "title_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box"} } },
+                  { name: "line_text_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions.concat({ value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") }) } } },
+                  { name: "line_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
                 ],
               },
-              { name: "line_text_size", required: false, selector: { number: { min: 0.2, max: 4, step: 0.1, mode: "box"} } },
+              { name: "line_text_style", type: "multi_select", options: styleOptions },
             ]
           },
         ],
@@ -282,7 +242,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       {
         type: "expandable",
         iconPath: mdiChartAreaspline,
-        title: this.hass.localize(`ui.panel.config.zwave_js.node_config.value`), // Value
+        name: 'expandable_value', // Value
         flatten: true,
         schema: [
           {
@@ -305,7 +265,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       {
         type: "expandable",
         iconPath: mdiLightningBolt,
-        title: this.hass.localize(`ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption`), // Untracked consumption
+        name: "expandable_untracked", // Untracked consumption
         flatten: true,
         schema: [
           { name: "untracked_legend", required: false, selector: { boolean: {} } },
@@ -349,7 +309,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       {
         type: "expandable",
         iconPath: mdiChartBar,
-        title: this.hass.localize(`ui.panel.lovelace.editor.card.statistics-graph.picked_statistic`), // Statistic
+        name: "expandable_statistic", // Statistic
         flatten: true,
         schema: [
           {
@@ -395,7 +355,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       {
         type: "expandable",
         iconPath: mdiGestureTap,
-        title: this.hass.localize(`ui.panel.lovelace.editor.card.generic.interactions`), // Interactions
+        name: "expandable_interactions", // Interactions
         flatten: true,
         schema: [
           {
@@ -479,58 +439,93 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       max: "ui.panel.lovelace.editor.card.generic.maximum",
 
       // ------------------------------------------- Appearance --------------------------------------------------------
-      // Hide legend
-      legend_hide: "ui.panel.lovelace.editor.card.statistics-graph.hide_legend",
-      // Select all
-      legend_all: "ui.components.subpage-data-table.select_all",
-      // Show stat
-      show_delta: "ui.panel.lovelace.editor.card.statistic.stat_types",
+      expandable_appearance: 'ui.panel.lovelace.editor.card.map.appearance',
+
       // Suppress Warnings
       suppress_warnings: () => "Suppress Warnings",
-
       // Theme
       corner: "ui.panel.lovelace.editor.card.generic.theme",
-      // Legend Alignment
-      legend_alignment: () => "Legend Alignment",
 
       // Line
       color: "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line",
       // Background
       color_bg: "ui.panel.lovelace.editor.edit_view.tab_background",
 
-      // ----------------------------------------------- Position ------------------------------------------------------
+      // ---------------------------------------------------- Value ----------------------------------------------------
+      expandable_appearance_value: 'ui.panel.config.zwave_js.node_config.value',
 
-      // Value
-      position: "ui.panel.config.zwave_js.node_config.value",
-      // Title
-      title_position: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+      // Position
+      position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      // Size (rem)
+      text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
 
-      // Legend
-      legend_position: () => "Legend",
-      // Show stat
-      delta_position: "ui.panel.lovelace.editor.card.statistic.stat_types",
-
-      // State content (Line)
-      line_text_position: (hass) =>
-        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+      // Style
+      text_style: 'ui.panel.lovelace.editor.elements.style',
 
       // ---------------------------------------------------------------------------------------------------------------
 
-      // -------------------------------------------- Text Size (rem) --------------------------------------------------
+      // ---------------------------------------------------- Title ----------------------------------------------------
+      expandable_appearance_title: 'ui.panel.lovelace.editor.card.heading.heading_style_options.title',
 
-      // Value
-      text_size: "ui.panel.config.zwave_js.node_config.value",
-      // Title
-      title_text_size: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+      // Position
+      title_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      // Size (rem)
+      title_text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
 
-      // State content (Line)
-      line_text_size: (hass) =>
+      // Style
+      title_text_style: 'ui.panel.lovelace.editor.elements.style',
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // --------------------------------------------------- Legend ----------------------------------------------------
+      expandable_appearance_legend: () => "Legend",
+
+      // Hide legend
+      legend_hide: "ui.panel.lovelace.editor.card.statistics-graph.hide_legend",
+      // // Select all
+      // legend_all: "ui.components.subpage-data-table.select_all",
+      // Show all
+      legend_all: 'ui.panel.config.category.filter.show_all',
+
+      // Position
+      legend_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      // Legend Alignment
+      legend_alignment: () => "Legend Alignment",
+
+      // Style
+      legend_text_style: 'ui.panel.lovelace.editor.elements.style',
+      // Size (rem)
+      legend_text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // ---------------------------------------------------- Delta ----------------------------------------------------
+      expandable_appearance_delta: () => "Delta",
+
+      // Show stat
+      show_delta: "ui.panel.lovelace.editor.card.statistic.stat_types",
+      // Position
+      delta_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+
+      // ---------------------------------------------------------------------------------------------------------------
+
+      // --------------------------------------------- State content (Line) --------------------------------------------
+      expandable_appearance_line_text: (hass) =>
         `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+
+      // Position
+      line_text_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      // Size (rem)
+      line_text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+
+      // Style
+      line_text_style: 'ui.panel.lovelace.editor.elements.style',
 
       // ---------------------------------------------------------------------------------------------------------------
       // ---------------------------------------------------------------------------------------------------------------
 
       // ----------------------------------------------- Value ---------------------------------------------------------
+      expandable_value: 'ui.panel.config.zwave_js.node_config.value',
 
       // Unit
       unit: "ui.panel.lovelace.editor.card.generic.unit",
@@ -545,6 +540,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       // ---------------------------------------------------------------------------------------------------------------
 
       // ----------------------------------------- Untracked consumption -----------------------------------------------
+      expandable_untracked: 'ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption',
 
       // Untracked consumption
       untracked_legend: "ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption",
@@ -563,6 +559,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       // ---------------------------------------------------------------------------------------------------------------
 
       // ------------------------------------------------ Statistic ----------------------------------------------------
+      expandable_statistic: 'ui.panel.lovelace.editor.card.statistics-graph.picked_statistic',
 
       // Statistic
       statistics: "ui.panel.lovelace.editor.card.statistics-graph.picked_statistic",
@@ -577,6 +574,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       // ---------------------------------------------------------------------------------------------------------------
 
       // ----------------------------------------------- Interactions --------------------------------------------------
+      expandable_interactions: 'ui.panel.lovelace.editor.card.generic.interactions',
 
       // Tap action
       tap_action: "ui.panel.lovelace.editor.card.generic.tap_action",
