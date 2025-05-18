@@ -98,23 +98,37 @@ Some features are not yet available in the Visual Editor. For example the abilit
 ```yaml
 type: 'custom:energy-line-gauge'
 entity: sensor.glow_power_consumption
+
 title: Power Consumption
 subtitle: Glow
+
+title_position: top-left
+title_text_size: 2
+title_text_style: shadow-light
+
 min: 0
 max: sensor.glow_power_consumption
+
 precision: 0
 unit: W
 cutoff: 5
 offset: 1d
+
+position: left
+text_size: 2.5
+text_style: weight-bold
+
 corner: 'square'
-position: 'left'
-line_text_position: 'bottom-right'
-line_text_size: 1.5
 color: "#00aafa"
 color_bg:
     - 40
     - 40
     - 40
+
+line_text_position: 'bottom-right'
+line_text_size: 1.5
+line_text_style: shadow-medium
+
 tap_action:
   action: more-info
   entity: sensor.glow_power_consumption
@@ -122,22 +136,35 @@ hold_action:
   action: none
 double_tap_action:
   action: none
+
 legend_hide: false
 legend_all: false
+
+legend_position: bottom-center
+legend_alignment: center
+legend_text_size: 1
+legend_text_style: italic
+
 show_delta: false
+delta_position: bottom-center
+
 untracked_legend: true
 untracked_legend_label: Untracked
 untracked_legend_icon: mdi:flash
+
 untracked_state_content:
   - name
   - state
 untracked_line_state_content:
   - percentage
+
 suppress_warnings: false
+
 statistics: false
 statistics_day_offset: 1
 statistics_period: 'hour'
 statistics_function: 'mean'
+
 entities:
   - entity: sensor.plug_0_power
     name: Plug 0
@@ -172,6 +199,7 @@ There are a lot of settings you can customize your sensors with:
 | `subtitle`                     |        string         |            [...]             |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                                                         |
 | `title_position`               |     PositionType      |           top-left           |                                           left                                           | Position of the title [see examples](#position)                                                                                        |
 | `title_text_size`              |        number         |              2               |                                           1.5                                            | Font size of the title, subtitle is 2x smaller.                                                                                        |
+| `title_text_style`             |     TextStyleType     |            [...]             |                                        ['italic']                                        | Text style of the Title ans Subtitle [see examples and hierarchy](#style)                                                              |
 | `min`                          |  number or entityID   |              0               |                                           100                                            | The minimum value of the gauge. Can be an entity_id.                                                                                   |
 | `max`                          |  number or entityID   |           [entity]           |                                       sensor.power                                       | The maximum value of the gauge. Can be an entity_id.                                                                                   |
 | `precision`                    |        number         |              0               |                                            2                                             | The number of decimals to display.                                                                                                     |
@@ -181,8 +209,10 @@ There are a lot of settings you can customize your sensors with:
 | `corner`                       |      CornerType       |            square            |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                  |
 | `position`                     |     PositionType      |             left             |                                           none                                           | Position of the main label [see examples](#position)                                                                                   |
 | `text_size`                    |        number         |             2.5              |                                            2                                             | Font size of the main value (in rem).                                                                                                  |
+| `text_style`                   |     TextStyleType     |            [...]             |                                     ['weight-bold']                                      | Text style of the Value [see examples and hierarchy](#style)                                                                           |
 | `line_text_position`           |   LinePositionType    |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']                                         |
 | `line_text_size`               |        number         |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                    |
+| `line_text_style`              |     TextStyleType     |            [...]             |                                     ['shadow-hard']                                      | Text style of the State content inside the Line [see examples and hierarchy](#style)                                                   |
 | `color`                        |       ColorType       |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                      |                                                                 
 | `color_bg`                     |       ColorType       | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                            |
 | `tap_action`                   |     Action Config     |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                            |
@@ -192,8 +222,10 @@ There are a lot of settings you can customize your sensors with:
 | `legend_all`                   |         bool          |            false             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge) [example](#legend_all)                                      |
 | `legend_position`              |     PositionType      |        bottom-center         |                                          right                                           | Position of the legend [see examples](#legend)                                                                                         |
 | `legend_alignment`             |     AlignmentType     |            center            |                                      space-between                                       | Alignment of the legend items [see examples](#legend)                                                                                  |
+| `legend_text_size`             |        number         |              1               |                                           1.5                                            | Font size of the legend text (in rem) - not including icon                                                                             |
+| `legend_text_style`            |     TextStyleType     |            [...]             |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                                                         |
 | `show_delta`                   |         bool          |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity. [example](#delta)                                      |
-| `delta_position`               |     PositionType      |                              |                                                                                          |                                                                                                                                        |
+| `delta_position`               |     PositionType      |        bottom-center         |                                        top-center                                        | Position of delta around vlaue and line                                                                                                |
 | `untracked_legend`             |         bool          |             true             |                                          false                                           | Show the legend for untracked consumption.                                                                                             |
 | `untracked_legend_label`       |        string         |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                                                            |
 | `untracked_legend_icon`        |        string         |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                             |
@@ -212,22 +244,23 @@ There are a lot of settings you can customize your sensors with:
 
 The types are used in the configuration. The type is used to define what kind of data is expected.
 
-|         Type          | description                                                                                                                 |
-|:---------------------:|-----------------------------------------------------------------------------------------------------------------------------|
-|        string         | A string of characters (text)                                                                                               |
-|        number         | A number.                                                                                                                   |
-|         bool          | `true` or `false`                                                                                                           |
-|       entityID        | String containing an entity id. Example: `sensor.plug_1_power`                                                              |
-|     PositionType      | Single: `left`, `right`, `none`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`      |
-|   LinePositionType    | Single: `left`, `right`, `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`    |
-|      CornerType       | Single: `square`, `lite_rounded`, `medium_rounded`, `rounded`, `circular`                                                   |
-|     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                          |
-|       ColorType       | An array of three numbers (RGB), HEX string or `auto`.                                                                      |
-|     ActionConfig      | Event cased by an Action. See more [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) |
-| UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                 |
-|   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                           |
-|  StatisticsFunction   | Single: `max`, `mean`, `min`, `sate`, `sum`, `change`                                                                       |
-|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`                                                 |
+|         Type          | description                                                                                                                                                                                                                                                                                                                                                         |
+|:---------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|        string         | A string of characters (text)                                                                                                                                                                                                                                                                                                                                       |
+|        number         | A number.                                                                                                                                                                                                                                                                                                                                                           |
+|         bool          | `true` or `false`                                                                                                                                                                                                                                                                                                                                                   |
+|       entityID        | String containing an entity id. Example: `sensor.plug_1_power`                                                                                                                                                                                                                                                                                                      |
+|     PositionType      | Single: `left`, `right`, `none`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                              |
+|   LinePositionType    | Single: `left`, `right`, `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                            |
+|      CornerType       | Single: `square`, `lite_rounded`, `medium_rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
+|     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                                                                                                                                                                                                                                                                  |
+|     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
+|       ColorType       | An array of three numbers (RGB), HEX string or `auto`.                                                                                                                                                                                                                                                                                                              |
+|     ActionConfig      | Event cased by an Action. See more [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables)                                                                                                                                                                                                                                         |
+| UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
+|   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
+|  StatisticsFunction   | Single: `max`, `mean`, `min`, `sate`, `sum`, `change`                                                                                                                                                                                                                                                                                                               |
+|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`                                                                                                                                                                                                                                                                                         |
 
 </div>
 
@@ -374,75 +407,75 @@ untracked_legend_label: Untracked
 <hr/>
 
 ### `position: none` `title_position: none` `legend_position: none`
-<img src=".github/img/position/none.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/none.png">
 
 ### `position: left` `title_position: left`
-<img src=".github/img/position/left.png">
-<img src=".github/img/title_position/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/left.png">
 
 ### `position: right` `title_position: right`
-<img src=".github/img/position/right.png">
-<img src=".github/img/title_position/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/right.png">
 
 ### `position: top-left` `title_position: top-left`
-<img src=".github/img/position/top-left.png">
-<img src=".github/img/title_position/top-left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-left.png">
 
 ### `position: top-center` `title_position: top-center`
-<img src=".github/img/position/top-center.png">
-<img src=".github/img/title_position/top-center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-center.png">
 
 ### `position: top-right` `title_position: top-right`
-<img src=".github/img/position/top-right.png">
-<img src=".github/img/title_position/top-right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-right.png">
 
 ### `position: bottom-left` `title_position: bottom-left`
-<img src=".github/img/position/bottom-left.png">
-<img src=".github/img/title_position/bottom-left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-left.png">
 
 ### `position: bottom-center` `title_position: bottom-center`
-<img src=".github/img/position/bottom-center.png">
-<img src=".github/img/title_position/bottom-center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-center.png">
 
 ### `position: bottom-right` `title_position: bottom-right`
-<img src=".github/img/position/bottom-right.png">
-<img src=".github/img/title_position/bottom-right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-right.png">
 
 ## Legend
 
 <div id="legend">
 
 ### `legend_position: left` `legend_alignment: center`
-<img src=".github/img/legend_position/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/left.png">
 
 ### `legend_position: right` `legend_alignment: center`
-<img src=".github/img/legend_position/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/right.png">
 
 ### `legend_position: top-*` `legend_alignment: center`
-<img src=".github/img/legend_position/top.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/top.png">
 
 ### `legend_position: bottom-*` `legend_alignment: center`
-<img src=".github/img/legend_position/bottom.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/bottom.png">
 
 ### Legend Alignment
 
 ### `legend_alignment: left`
-<img src=".github/img/legend_alignment/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/left.png">
 
 ### `legend_alignment: right`
-<img src=".github/img/legend_alignment/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/right.png">
 
 ### `legend_alignment: center`
-<img src=".github/img/legend_alignment/center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/center.png">
 
 ### `legend_alignment: space-around`
-<img src=".github/img/legend_alignment/space-around.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-around.png">
 
 ### `legend_alignment: space-between`
-<img src=".github/img/legend_alignment/space-between.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-between.png">
 
 ### `legend_alignment: space-evenly`
-<img src=".github/img/legend_alignment/space-evenly.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-evenly.png">
 
 
 </div>
@@ -473,6 +506,14 @@ untracked_legend_label: Untracked
 ### `corner: circular`
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png">
+
+<div id="style">
+
+## Style
+
+TODO: Add style examples and hierarchy explanation.
+
+</div>
 
 </div>
 
@@ -546,7 +587,7 @@ untracked_line_state_content:
 ```
 
 ### `line_text_position: *` `line_text_size: 1.5`
-<img src=".github/img/line-text-position/3-3-line-text.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/line-text-position/3-3-line-text.png">
 
 </div>
 
