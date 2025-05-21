@@ -35,6 +35,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   line_text_position?: LinePositionType;
   line_text_size?: number;
   line_text_style?: TextStyleType;
+  line_text_overflow?: TextOverflowType;
 
   // Actions
   tap_action?: ActionConfig;
@@ -100,8 +101,10 @@ export interface ELGEntity {
 // State Content Types -------------------------------------------------------------------------------------------------
 
 export const CORNER_TYPES = ['square', 'lite_rounded', 'medium_rounded', 'rounded', 'circular'] as const;
-export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
 export const TEXT_STYLE_TYPES = ['weight-lighter', 'weight-bold', 'weight-bolder', 'style-italic', 'decoration-underline', 'decoration-overline', 'decoration-line-through', 'transform-uppercase', 'transform-lowercase', 'transform-capitalize', 'family-monospace', 'shadow-light', 'shadow-medium', 'shadow-heavy', 'shadow-hard', 'shadow-neon', 'black-outline', 'white-outline'] as const;
+export const TEXT_OVERFLOW_TYPES = ['ellipsis', 'clip', 'tooltip'] as const;
+
+export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
 export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
 export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 
@@ -112,8 +115,10 @@ export const STATISTICS_PERIOD_TYPES = ['5minute', 'hour', 'day', 'week', 'month
 export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean', 'min', 'state', 'sum'] as const;
 
 export type CornerType = typeof CORNER_TYPES[number];
-export type PositionType = typeof POSITION_TYPES[number];
 export type TextStyleType = typeof TEXT_STYLE_TYPES[number][];
+export type TextOverflowType = typeof TEXT_OVERFLOW_TYPES[number];
+
+export type PositionType = typeof POSITION_TYPES[number];
 export type LinePositionType = typeof LINE_POSITION_TYPES[number];
 export type LegendAlignmentType = typeof LEGEND_ALIGNMENT_TYPES[number];
 

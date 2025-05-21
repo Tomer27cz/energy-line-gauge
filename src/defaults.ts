@@ -3,6 +3,7 @@ import {
   ELGEntity,
 
   CORNER_TYPES,
+  TEXT_OVERFLOW_TYPES,
   POSITION_TYPES,
   LINE_POSITION_TYPES,
   LEGEND_ALIGNMENT_TYPES,
@@ -12,6 +13,7 @@ import {
   STATISTICS_FUNCTION_TYPES,
 
   CornerType,
+  TextOverflowType,
   PositionType,
   LinePositionType,
   LegendAlignmentType,
@@ -61,6 +63,7 @@ const DEFAULTS = {
   line_text_position: 'left' as LinePositionType,
   line_text_size: 1,
   line_text_style: undefined,
+  line_text_overflow: 'tooltip' as TextOverflowType,
 
   // Actions
   tap_action: undefined,
@@ -164,6 +167,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, DEFAULTS.line_text_position),
     line_text_size: config.line_text_size ?? DEFAULTS.line_text_size,
     line_text_style: config.line_text_style ?? DEFAULTS.line_text_style,
+    line_text_overflow: validatedValue(config.line_text_overflow, TEXT_OVERFLOW_TYPES, DEFAULTS.line_text_overflow),
 
     // Actions
     tap_action: config.tap_action ?? DEFAULTS.tap_action,

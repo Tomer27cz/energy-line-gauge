@@ -62,6 +62,7 @@ export class EnergyLineGauge extends LitElement {
 
   private _entitiesWidth: Record<string, number> = {};
   private _entitiesTotalWidth: number = 0;
+  private _resizeObserver!: ResizeObserver;
 
   private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
   private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
@@ -105,7 +106,6 @@ export class EnergyLineGauge extends LitElement {
     const defaultColor = toRGB(rootStyle.getPropertyValue('--primary-color').trim());
     const defaultBgColor = toRGB(rootStyle.getPropertyValue('--secondary-background-color').trim());
 
-
     return {
       type: "custom:energy-line-gauge",
       entity: foundEntities[0],
@@ -128,14 +128,89 @@ export class EnergyLineGauge extends LitElement {
     };
   }
 
-  protected updated(changedProps: PropertyValues): void {
-    super.updated(changedProps);
-    if (!this._card || (!changedProps.has('hass') && !changedProps.has('editMode'))) {
+  protected firstUpdated(changedProperties: PropertyValues): void {
+    super.firstUpdated(changedProperties);
+    if (!(this._config.line_text_overflow === 'tooltip')) return;
+
+    this._resizeObserver = new ResizeObserver(() => {
+      this._checkAllLabelsOverflow();
+    });
+
+    const cardElement = this.shadowRoot?.querySelector('.line-gauge-card');
+    if (cardElement) {
+      this._resizeObserver.observe(cardElement);
+    }
+
+    requestAnimationFrame(() => this._checkAllLabelsOverflow());
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this._resizeObserver && this._config.line_text_overflow === 'tooltip') {
+      this._resizeObserver.disconnect();
+    }
+  }
+
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+
+    // if (!this._card || (!changedProperties.has('hass') && !changedProperties.has('editMode'))) return;
+    if (this.hass && this._card) {this._card.hass = this.hass;}
+
+    if (this._config.line_text_overflow === 'tooltip') {
+      console.info("Checking for overflow");
+      requestAnimationFrame(() => this._checkAllLabelsOverflow());
       return;
     }
-    if (this.hass) {
-      this._card.hass = this.hass;
+
+    requestAnimationFrame(() => this._resetAllLabelsToVisible());
+  }
+
+  private _checkAllLabelsOverflow(): void {
+    if (!this.shadowRoot) return;
+    this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(label => {
+      this._checkLabelOverflow(label);
+    });
+  }
+  private _checkLabelOverflow(labelElement: HTMLElement): void {
+    const wasHiddenByUs = labelElement.style.visibility === 'hidden';
+    if (wasHiddenByUs) {
+      labelElement.style.visibility = 'visible';
     }
+
+    const isOverflowing = labelElement.clientWidth > 0 && labelElement.scrollWidth > labelElement.clientWidth + 1;
+    const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
+    const fullText = labelElement.textContent?.trim() || "";
+
+    if (isOverflowing) {
+      labelElement.style.visibility = 'hidden';
+      if (parentContainer) {
+        parentContainer.setAttribute('title', fullText);
+        return;
+      }
+      labelElement.setAttribute('title', fullText);
+      return;
+    }
+
+    labelElement.style.visibility = 'visible';
+    if (parentContainer) {
+      parentContainer.removeAttribute('title');
+      return;
+    }
+    labelElement.removeAttribute('title');
+    return;
+  }
+  private _resetAllLabelsToVisible(): void {
+    if (!this.shadowRoot) return;
+    this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(labelElement => {
+      labelElement.style.visibility = 'visible';
+      const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
+      if (parentContainer) {
+        parentContainer.removeAttribute('title');
+      } else {
+        labelElement.removeAttribute('title');
+      }
+    });
   }
 
   public static get styles(): CSSResultGroup {
@@ -144,7 +219,8 @@ export class EnergyLineGauge extends LitElement {
 
   protected render(): TemplateResult | void {
     if (!this._config || !this.hass) {
-      this._invalidConfig()
+      // this._invalidConfig() // This throws, perhaps return a template instead for initial setup
+      return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
     }
 
     this._entitiesWidth = {};
@@ -164,9 +240,9 @@ export class EnergyLineGauge extends LitElement {
         .header=${this._config.header}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
-          hasHold: hasAction(this._config.hold_action),
-          hasDoubleClick: hasAction(this._config.double_tap_action),
-        })}
+      hasHold: hasAction(this._config.hold_action),
+      hasDoubleClick: hasAction(this._config.double_tap_action),
+    })}
         tabindex="0"
         .label=${this._config.label}
       >
@@ -264,6 +340,13 @@ export class EnergyLineGauge extends LitElement {
       const lineTextColor = textColor(device.color);
       const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
 
+      const overflowStyles = {
+        "tooltip": "overflow: hidden; text-overflow: ellipsis;",
+        "ellipsis": "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
+        "clip": "overflow: hidden; text-overflow: clip;"
+      }
+      const overflowStyle = overflowStyles[this._config.line_text_overflow ?? "tooltip"] ?? overflowStyles["tooltip"];
+
       // noinspection HtmlUnknownAttribute
       return html`
       <div 
@@ -282,6 +365,7 @@ export class EnergyLineGauge extends LitElement {
             style="
               color: rgba(${lineTextColor}); 
               font-size: ${this._config.line_text_size ?? 1}rem; 
+              ${overflowStyle}
               ${textStyle}
           ">
             ${this._entityLabel(device, stateObj, true, state)}
@@ -403,24 +487,24 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
       ${(line ? device.line_state_content : device.state_content)?.map((value, i, arr) => {
-        const dot = i < arr.length - 1 ? " ⸱ " : '';
-        const timeTemplate = (datetime: string) => html`
+      const dot = i < arr.length - 1 ? " ⸱ " : '';
+      const timeTemplate = (datetime: string) => html`
         <ha-relative-time
           .hass=${this.hass}
           .datetime=${datetime}
           capitalize
         ></ha-relative-time>${dot}
       `;
-  
-        switch (value) {
-          case "name": return html`${this._entityName(device, stateObj)}${dot}`;
-          case "state": return html`${this._formatValueDevice(calculatedState, device)}${dot}`;
-          case "last_changed": return timeTemplate(stateObj.last_changed);
-          case "last_updated": return timeTemplate(stateObj.last_updated);
-          case "percentage": return html`${this._entitiesWidth[device.entity].toFixed(0)}%${dot}`;
-          default: return html`${value}${dot}`;
-        }
-      })
+
+      switch (value) {
+        case "name": return html`${this._entityName(device, stateObj)}${dot}`;
+        case "state": return html`${this._formatValueDevice(calculatedState, device)}${dot}`;
+        case "last_changed": return timeTemplate(stateObj.last_changed);
+        case "last_updated": return timeTemplate(stateObj.last_updated);
+        case "percentage": return html`${this._entitiesWidth[device.entity].toFixed(0)}%${dot}`;
+        default: return html`${value}${dot}`;
+      }
+    })
     }`;
   }
   private _untrackedLabel(line?: boolean, untracked_width?: number) {
@@ -436,14 +520,14 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
       ${state_content?.map((value, i, arr) => {
-        const dot = i < arr.length - 1 ? " ⸱ " : '';
-        switch (value) {
-          case "name": return html`${name}${dot}`;
-          case "state": return html`${this._formatValueMain(deltaValue)}${dot}`;
-          case "percentage": return html`${percentage.toFixed(0)}%${dot}`;
-          default: return html`${value}${dot}`;
-        }
-      })}`;
+      const dot = i < arr.length - 1 ? " ⸱ " : '';
+      switch (value) {
+        case "name": return html`${name}${dot}`;
+        case "state": return html`${this._formatValueMain(deltaValue)}${dot}`;
+        case "percentage": return html`${percentage.toFixed(0)}%${dot}`;
+        default: return html`${value}${dot}`;
+      }
+    })}`;
   }
 
   private _formatValue(value: any, precision?: number, unit?: string): string {
@@ -621,20 +705,13 @@ export class EnergyLineGauge extends LitElement {
     if (!currentBucket) {return 0;}
 
     switch (this._config.statistics_function) {
-      case "mean":
-        return currentBucket.mean;
-      case "max":
-        return currentBucket.max;
-      case "min":
-        return currentBucket.min;
-      case "sum":
-        return currentBucket.sum;
-      case "state":
-        return currentBucket.state;
-      case "change":
-        return currentBucket.change;
-      default:
-        return currentBucket.mean;
+      case "mean": return currentBucket.mean;
+      case "max": return currentBucket.max;
+      case "min": return currentBucket.min;
+      case "sum": return currentBucket.sum;
+      case "state": return currentBucket.state;
+      case "change": return currentBucket.change;
+      default: return currentBucket.mean;
     }
   }
   private _getStatisticsHistory(): void {
