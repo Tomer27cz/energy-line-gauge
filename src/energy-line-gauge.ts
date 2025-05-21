@@ -341,9 +341,10 @@ export class EnergyLineGauge extends LitElement {
       const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
 
       const overflowStyles = {
-        "tooltip": "overflow: hidden; text-overflow: ellipsis;",
-        "ellipsis": "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
-        "clip": "overflow: hidden; text-overflow: clip;"
+        "tooltip": "overflow: hidden; text-overflow: clip;",
+        "ellipsis": "overflow: hidden; text-overflow: ellipsis;",
+        "clip": "overflow: hidden; text-overflow: clip;",
+        "fade": "mask-image: linear-gradient(to right, black 85%, transparent 98%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 85%, transparent 98%, transparent 100%);",
       }
       const overflowStyle = overflowStyles[this._config.line_text_overflow ?? "tooltip"] ?? overflowStyles["tooltip"];
 

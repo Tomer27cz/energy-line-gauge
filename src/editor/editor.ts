@@ -233,7 +233,23 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                   { name: "line_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
                 ],
               },
-              { name: "line_text_style", type: "multi_select", options: styleOptions },
+              {
+                type: "grid",
+                schema: [
+                  { name: "line_text_style", type: "multi_select", options: styleOptions },
+                  { name: "line_text_overflow", required: false, selector: {
+                    select: {
+                      mode: "dropdown",
+                      options: [
+                        { value: "ellipsis", label: "Ellipsis" }, // Ellipsis
+                        { value: "clip", label: "Clip" }, // Clip
+                        { value: "fade", label: "Fade" }, // Fade
+                        { value: "tooltip", label: "Tooltip" }, // Tooltip
+                      ]
+                    }
+                  } },
+                ],
+              },
             ]
           },
         ],
@@ -520,6 +536,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
 
       // Style
       line_text_style: 'ui.panel.lovelace.editor.elements.style',
+      // Overflow
+      line_text_overflow: () => "Overflow",
 
       // ---------------------------------------------------------------------------------------------------------------
       // ---------------------------------------------------------------------------------------------------------------
