@@ -153,12 +153,9 @@ export class EnergyLineGauge extends LitElement {
 
   protected updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
-
-    // if (!this._card || (!changedProperties.has('hass') && !changedProperties.has('editMode'))) return;
     if (this.hass && this._card) {this._card.hass = this.hass;}
 
     if (this._config.line_text_overflow === 'tooltip') {
-      console.info("Checking for overflow");
       requestAnimationFrame(() => this._checkAllLabelsOverflow());
       return;
     }
@@ -178,7 +175,8 @@ export class EnergyLineGauge extends LitElement {
       labelElement.style.visibility = 'visible';
     }
 
-    const isOverflowing = labelElement.clientWidth > 0 && labelElement.scrollWidth > labelElement.clientWidth + 1;
+    const tolerance = 3;
+    const isOverflowing = labelElement.clientWidth > 0 && labelElement.scrollWidth > labelElement.clientWidth + tolerance;
     const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
     const fullText = labelElement.textContent?.trim() || "";
 

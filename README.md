@@ -73,15 +73,7 @@ Then you can paste the following code into the Card Editor:
 ### Visual Editor
 
 <p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_appearance.png" alt="Visual Editor Appearance"/>
-</p>
-
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_untracked_interactions.png" alt="Visual Editor Untracked + Interactions"/>
-</p>
-
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_entities.png" alt="Visual Editor Entities"/>
+<img src=".github/img/editor_v2-2-0.png" alt="Visual Editor"/>
 </p>
 
 <br/>
@@ -213,6 +205,7 @@ There are a lot of settings you can customize your sensors with:
 | `line_text_position`           |   LinePositionType    |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']                                         |
 | `line_text_size`               |        number         |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                    |
 | `line_text_style`              |     TextStyleType     |            [...]             |                                     ['shadow-hard']                                      | Text style of the State content inside the Line [see examples and hierarchy](#style)                                                   |
+| `line_text_overflow`           |   TextOverflowType    |           tooltip            |                                           fade                                           | What happens when the text in the line overflows [see examples](#overflow)                                                             |
 | `color`                        |       ColorType       |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                      |                                                                 
 | `color_bg`                     |       ColorType       | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                            |
 | `tap_action`                   |     Action Config     |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                            |
@@ -223,7 +216,7 @@ There are a lot of settings you can customize your sensors with:
 | `legend_position`              |     PositionType      |        bottom-center         |                                          right                                           | Position of the legend [see examples](#legend)                                                                                         |
 | `legend_alignment`             |     AlignmentType     |            center            |                                      space-between                                       | Alignment of the legend items [see examples](#legend)                                                                                  |
 | `legend_text_size`             |        number         |              1               |                                           1.5                                            | Font size of the legend text (in rem) - not including icon                                                                             |
-| `legend_text_style`            |     TextStyleType     |            [...]             |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                                                         |
+| `legend_text_style`            |     TextStyleType     |            [...]             |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                     |
 | `show_delta`                   |         bool          |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity. [example](#delta)                                      |
 | `delta_position`               |     PositionType      |        bottom-center         |                                        top-center                                        | Position of delta around vlaue and line                                                                                                |
 | `untracked_legend`             |         bool          |             true             |                                          false                                           | Show the legend for untracked consumption.                                                                                             |
@@ -255,6 +248,7 @@ The types are used in the configuration. The type is used to define what kind of
 |      CornerType       | Single: `square`, `lite_rounded`, `medium_rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
 |     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                                                                                                                                                                                                                                                                  |
 |     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
+|   TextOverflowType    | Single: `ellipsis`, `clip`, `tooltip`, `fade`                                                                                                                                                                                                                                                                                                                       |
 |       ColorType       | An array of three numbers (RGB), HEX string or `auto`.                                                                                                                                                                                                                                                                                                              |
 |     ActionConfig      | Event cased by an Action. See more [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables)                                                                                                                                                                                                                                         |
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
@@ -406,7 +400,7 @@ untracked_legend_label: Untracked
 
 <hr/>
 
-### `position: none` `title_position: none` `legend_position: none`
+### `position: none` `title_position: none` `legend_position: none` `line_text_position: none`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/none.png">
 
 ### `position: left` `title_position: left`
@@ -488,30 +482,73 @@ untracked_legend_label: Untracked
 <hr/>
 
 ### `corner: square`
-
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/square.png">
 
 ### `corner: lite_rounded`
-
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/lite_rounded.png">
 
 ### `corner: medium_rounded`
-
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/medium_rounded.png">
 
 ### `corner: rounded`
-
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/rounded.png">
 
 ### `corner: circular`
-
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png">
 
 <div id="style">
 
 ## Style
 
-TODO: Add style examples and hierarchy explanation.
+### `weight-bolder` → `weight-bold` → `weight-lighter`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-bolder.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-bold.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-lighter.png">
+
+### `style-italic`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/style-italic.png">
+
+### `decoration-underline` `decoration-overline` `decoration-line-through`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-underline.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-overline.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-line-through.png">
+
+### `transform-uppercase` → `transform-lowercase` → `transform-capitalize`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-uppercase.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-lowercase.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-capitalize.png">
+
+### `family-monospace`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/family-monospace.png">
+
+### `shadow-neon` → `shadow-hard` → `shadow-heavy` → `shadow-medium` → `shadow-light`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-neon.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-hard.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-heavy.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-medium.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-light.png">
+
+### `black-outline` → `white-outline`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/black-outline.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/white-outline.png">
+
+</div>
+
+<div id="overflow">
+
+## Overflow
+
+### `line_text_overflow: ellipsis`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/ellipsis.png">
+
+### `line_text_overflow: clip`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/clip.png">
+
+### `line_text_overflow: tooltip`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/tooltip.png">
+
+### `line_text_overflow: fade`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/fade.png">
 
 </div>
 
@@ -587,7 +624,15 @@ untracked_line_state_content:
 ```
 
 ### `line_text_position: *` `line_text_size: 1.5`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/line-text-position/3-3-line-text.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/line_text_position/3-3-line-text.png">
+
+|  `top-left`   |  `top-center`   |  `top-right`   |
+|:-------------:|:---------------:|:--------------:|
+|    `left`     |    `center`     |    `right`     |
+| `bottom-left` | `bottom-center` | `bottom-right` |
+
+
+       
 
 </div>
 
