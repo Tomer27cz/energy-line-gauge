@@ -73,7 +73,7 @@ Then you can paste the following code into the Card Editor:
 ### Visual Editor
 
 <p align="center">
-<img src=".github/img/editor_v2-2-0.png" alt="Visual Editor"/>
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_v2-2-0_large.png" alt="Visual Editor"/>
 </p>
 
 <br/>
