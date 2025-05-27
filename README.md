@@ -6,12 +6,12 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/Tomer27cz/energy-line-gauge?style=flat)
 ![GitHub issues](https://img.shields.io/github/issues/Tomer27cz/energy-line-gauge?style=flat)
 
-<h1 style="text-align: center;">A line Gauge with a focus on Energy Usage</h1>
-<p style="text-align: center;">
+<h1 align="center">A line Gauge with a focus on Energy Usage</h1>
+<p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.png" alt="Main Image"/>
 </p>
 
-<p style="text-align: center;">
+<p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_gauge.png" alt="Only Gauge"/>
 </p>
 
@@ -59,7 +59,7 @@ Then you can paste the following code into the Card Editor:
 
 ### Visual Editor
 
-<p style="text-align: center;">
+<p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_v2-2-0.png" alt="Visual Editor"/>
 </p>
 
@@ -249,7 +249,7 @@ The types are used in the configuration. The type is used to define what kind of
 
 <div id="entities">
 
-<p style="text-align: center;">
+<p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_entity_v2-2-1.png" alt="Visual Editor Entity"/>
 </p>
 
