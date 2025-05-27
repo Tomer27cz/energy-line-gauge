@@ -6,17 +6,13 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/Tomer27cz/energy-line-gauge?style=flat)
 ![GitHub issues](https://img.shields.io/github/issues/Tomer27cz/energy-line-gauge?style=flat)
 
-<h1 align="center">A line Gauge with a focus on Energy Usage</h1>
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.gif" alt="Main Image"/>
+<h1 style="text-align: center;">A line Gauge with a focus on Energy Usage</h1>
+<p style="text-align: center;">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.png" alt="Main Image"/>
 </p>
 
-<p align="center">
+<p style="text-align: center;">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_gauge.png" alt="Only Gauge"/>
-</p>
-
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_gauge_entities.png" alt="Only Gauge"/>
 </p>
 
 The main idea of this card is to show the energy consumption of your devices as a percentage of the **main entity** (your entity for tracking whole **house consumption**).
@@ -29,16 +25,7 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
 
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=Tomer27cz&amp;repository=energy-line-gauge&amp;category=plugin" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
 
-<h2> Manual installation via <a href="https://hacs.xyz/">HACS</a> <img src="https://img.shields.io/badge/-Recommended-%2303a9f4"/></h2>
-
-1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
-2. Click on the three dots and add this custom repository
-3. Repository: `https://github.com/Tomer27cz/energy-line-gauge`, Type: `Dashboard`
-4. Search for `energy-line-gauge` and add it through HACS
-5. Refresh home-assistant.
-
-
-<h2> Installation via <a href="https://hacs.xyz/">HACS</a> (currently not in the store - waiting for pull request) </h2>
+<h2> Installation via <a href="https://hacs.xyz/">HACS</a><img src="https://img.shields.io/badge/-Recommended-%2303a9f4" alt=""/></h2>
 
 1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
 2. Search for `energy-line-gauge` and add it through HACS
@@ -72,8 +59,8 @@ Then you can paste the following code into the Card Editor:
 
 ### Visual Editor
 
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_v2-2-0_large.png" alt="Visual Editor"/>
+<p style="text-align: center;">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_v2-2-0.png" alt="Visual Editor"/>
 </p>
 
 <br/>
@@ -184,52 +171,52 @@ entities:
 
 There are a lot of settings you can customize your sensors with:
 
-| Setting                        |         type          |           default            |                                         example                                          | description                                                                                                                            |
-|--------------------------------|:---------------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`                       |       entityID        |          ! required          |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                            | 
-| `title`                        |        string         |            [...]             |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                                                                |
-| `subtitle`                     |        string         |            [...]             |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                                                         |
-| `title_position`               |     PositionType      |           top-left           |                                           left                                           | Position of the title [see examples](#position)                                                                                        |
-| `title_text_size`              |        number         |              2               |                                           1.5                                            | Font size of the title, subtitle is 2x smaller.                                                                                        |
-| `title_text_style`             |     TextStyleType     |            [...]             |                                        ['italic']                                        | Text style of the Title ans Subtitle [see examples and hierarchy](#style)                                                              |
-| `min`                          |  number or entityID   |              0               |                                           100                                            | The minimum value of the gauge. Can be an entity_id.                                                                                   |
-| `max`                          |  number or entityID   |           [entity]           |                                       sensor.power                                       | The maximum value of the gauge. Can be an entity_id.                                                                                   |
-| `precision`                    |        number         |              0               |                                            2                                             | The number of decimals to display.                                                                                                     |
-| `unit`                         |        string         |            [...]             |                                            W                                             | This string will be appended to the end of the value.                                                                                  |
-| `cutoff`                       |        number         |              5               |                                            10                                            | Any entity with a value below or equal to this will not be displayed or counted.                                                       |
-| `offset`                       |        string         |            [...]             |                                            1d                                            | Offset state into the past [see more](#offset).                                                                                        |
-| `corner`                       |      CornerType       |            square            |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                  |
-| `position`                     |     PositionType      |             left             |                                           none                                           | Position of the main label [see examples](#position)                                                                                   |
-| `text_size`                    |        number         |             2.5              |                                            2                                             | Font size of the main value (in rem).                                                                                                  |
-| `text_style`                   |     TextStyleType     |            [...]             |                                     ['weight-bold']                                      | Text style of the Value [see examples and hierarchy](#style)                                                                           |
-| `line_text_position`           |   LinePositionType    |             left             |                                       bottom-right                                       | Position of the state content in the line ['left', 'right', 'center', 'top-...', 'bottom-...']                                         |
-| `line_text_size`               |        number         |              1               |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                    |
-| `line_text_style`              |     TextStyleType     |            [...]             |                                     ['shadow-hard']                                      | Text style of the State content inside the Line [see examples and hierarchy](#style)                                                   |
-| `line_text_overflow`           |   TextOverflowType    |           tooltip            |                                           fade                                           | What happens when the text in the line overflows [see examples](#overflow)                                                             |
-| `color`                        |       ColorType       |       [primary-color]        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                      |                                                                 
-| `color_bg`                     |       ColorType       | [secondary-background-color] |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                            |
-| `tap_action`                   |     Action Config     |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                            |
-| `hold_action`                  |     Action Config     |          more-info           | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                  |
-| `double_tap_action`            |     Action Config     |             none             | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                            |
-| `legend_hide`                  |         bool          |            false             |                                           true                                           | This will hide the legend = only line visible. [example](#legend_hide)                                                                 |
-| `legend_all`                   |         bool          |            false             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge) [example](#legend_all)                                      |
-| `legend_position`              |     PositionType      |        bottom-center         |                                          right                                           | Position of the legend [see examples](#legend)                                                                                         |
-| `legend_alignment`             |     AlignmentType     |            center            |                                      space-between                                       | Alignment of the legend items [see examples](#legend)                                                                                  |
-| `legend_text_size`             |        number         |              1               |                                           1.5                                            | Font size of the legend text (in rem) - not including icon                                                                             |
-| `legend_text_style`            |     TextStyleType     |            [...]             |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                     |
-| `show_delta`                   |         bool          |            false             |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity. [example](#delta)                                      |
-| `delta_position`               |     PositionType      |        bottom-center         |                                        top-center                                        | Position of delta around vlaue and line                                                                                                |
-| `untracked_legend`             |         bool          |             true             |                                          false                                           | Show the legend for untracked consumption.                                                                                             |
-| `untracked_legend_label`       |        string         |    Untracked consumption     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                                                            |
-| `untracked_legend_icon`        |        string         |            [...]             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                             |
-| `untracked_state_content`      | UntrackedStateContent |           ['name']           |                                        ['state']                                         | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot. Options: `name`,`state`,`percentage` |
-| `untracked_line_state_content` | UntrackedStateContent |            [...]             |                                      ['percentage']                                      | Info will be shown in the line. Order matters. Info will be separated by a dot. Options: `name`,`state`,`percentage`                   |
-| `suppress_warnings`            |         bool          |            false             |                                           true                                           | Do not show the warnings, such as "Entity unavailable" or "Entity not found"                                                           |
-| `statistics`                   |         bool          |            false             |                                           true                                           | Enable the statistic data. Data from statistic will be displayed instead of current state [see more](#statistics).                     |
-| `statistics_day_offset`        |        number         |              1               |                                            7                                             | Whole number of days into the past.                                                                                                    |
-| `statistics_period`            |   StatisticsPeriod    |             hour             |                                           day                                            | Statistical period [see more](#statistics). Options: `5minute`, `hour`, `day`, `week`, `month`                                         |
-| `statistics_function`          |  StatisticsFunction   |             mean             |                                           max                                            | Statistical function [see more](#statistics). Options: `change`, `max`, `mean`, `min`, `state`, `sum`                                  |
-| `entities`                     |       Entities        |            [...]             |                                    (Example in yaml)                                     | The list of entities. Config [here.](#entities)                                                                                        |
+| Setting                        |         type          |           default            |                                         example                                          | description                                                                                                                                |
+|--------------------------------|:---------------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`                       |       entityID        |         *!required*          |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                                | 
+| `title`                        |        string         |            *none*            |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                                                                    |
+| `subtitle`                     |        string         |            *none*            |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                                                             |
+| `title_position`               |     PositionType      |          `top-left`          |                                           left                                           | Position of the title [see examples](#position)                                                                                            |
+| `title_text_size`              |        number         |             `2`              |                                           1.5                                            | Font size of the title, subtitle is 2x smaller.                                                                                            |
+| `title_text_style`             |     TextStyleType     |            *none*            |                                        ['italic']                                        | Text style of the Title ans Subtitle [see examples and hierarchy](#style)                                                                  |
+| `min`                          |  number or entityID   |             `0`              |                                           100                                            | The minimum value of the gauge. Can be an entity_id.                                                                                       |
+| `max`                          |  number or entityID   |           *entity*           |                                       sensor.power                                       | The maximum value of the gauge. Can be an entity_id.                                                                                       |
+| `precision`                    |        number         |             `0`              |                                            2                                             | The number of decimals to display.                                                                                                         |
+| `unit`                         |        string         |            *none*            |                                            W                                             | This string will be appended to the end of the value.                                                                                      |
+| `cutoff`                       |        number         |             `0`              |                                            10                                            | Any entity with a value below or equal to this will not be displayed or counted.                                                           |
+| `offset`                       |        string         |            *none*            |                                            1d                                            | Offset state into the past [see more](#offset).                                                                                            |
+| `corner`                       |      CornerType       |           `square`           |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                      |
+| `position`                     |     PositionType      |            `left`            |                                           none                                           | Position of the main label [see examples](#position)                                                                                       |
+| `text_size`                    |        number         |            `2.5`             |                                            2                                             | Font size of the main value (in rem).                                                                                                      |
+| `text_style`                   |     TextStyleType     |            *none*            |                                     ['weight-bold']                                      | Text style of the Value [see examples and hierarchy](#style)                                                                               |
+| `line_text_position`           |   LinePositionType    |            `left`            |                                       bottom-right                                       | Position of the state content in the line [see examples](#untracked_state_content)                                                         |
+| `line_text_size`               |        number         |             `1`              |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                        |
+| `line_text_style`              |     TextStyleType     |            *none*            |                                     ['shadow-hard']                                      | Text style of the State content inside the Line [see examples and hierarchy](#style)                                                       |
+| `line_text_overflow`           |   TextOverflowType    |          `tooltip`           |                                           fade                                           | What happens when the text in the line overflows [see examples](#overflow)                                                                 |
+| `color`                        |       ColorType       |       *primary-color*        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                          |                                                                 
+| `color_bg`                     |       ColorType       | *secondary-background-color* |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                                |
+| `tap_action`                   |     Action Config     |         *more-info*          | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                |
+| `hold_action`                  |     Action Config     |         *more-info*          | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                      |
+| `double_tap_action`            |     Action Config     |            *none*            | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                |
+| `legend_hide`                  |         bool          |           `false`            |                                           true                                           | This will hide the legend = only line visible. [example](#legend_hide)                                                                     |
+| `legend_all`                   |         bool          |           `false`            |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge) [example](#legend_all)                                          |
+| `legend_position`              |     PositionType      |       `bottom-center`        |                                          right                                           | Position of the legend [see examples](#legend)                                                                                             |
+| `legend_alignment`             |     AlignmentType     |           `center`           |                                      space-between                                       | Alignment of the legend items [see examples](#legend)                                                                                      |
+| `legend_text_size`             |        number         |             `1`              |                                           1.5                                            | Font size of the legend text (in rem) - not including icon                                                                                 |
+| `legend_text_style`            |     TextStyleType     |            *none*            |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                         |
+| `show_delta`                   |         bool          |           `false`            |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity. [example](#delta)                                          |
+| `delta_position`               |     PositionType      |       `bottom-center`        |                                        top-center                                        | Position of delta around value and line                                                                                                    |
+| `untracked_legend`             |         bool          |            `true`            |                                          false                                           | Show the legend for untracked consumption.                                                                                                 |
+| `untracked_legend_label`       |        string         |   `Untracked consumption`    |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                                                                |
+| `untracked_legend_icon`        |        string         |            *none*            |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                                 |
+| `untracked_state_content`      | UntrackedStateContent |          `['name']`          |                                        ['state']                                         | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot. [see examples](#untracked_state_content) |
+| `untracked_line_state_content` | UntrackedStateContent |            *none*            |                                      ['percentage']                                      | Info will be shown in the line. Order matters. Info will be separated by a dot. [see examples](#untracked_state_content)                   |
+| `suppress_warnings`            |         bool          |           `false`            |                                           true                                           | Do not show the warnings, such as "Entity unavailable" or "Entity not found"                                                               |
+| `statistics`                   |         bool          |           `false`            |                                           true                                           | Enable the statistic data. Data from statistic will be displayed instead of current state [see more](#statistics).                         |
+| `statistics_day_offset`        |        number         |             `1`              |                                            7                                             | Whole number of days into the past.                                                                                                        |
+| `statistics_period`            |   StatisticsPeriod    |            `hour`            |                                           day                                            | Statistical period [see more](#statistics).                                                                                                |
+| `statistics_function`          |  StatisticsFunction   |            `mean`            |                                           max                                            | Statistical function [see more](#statistics).                                                                                              |
+| `entities`                     |       Entities        |            *none*            |                                    (Example in yaml)                                     | The list of entities. Config [here.](#entities)                                                                                            |
 
 ### Types
 
@@ -244,8 +231,8 @@ The types are used in the configuration. The type is used to define what kind of
 |         bool          | `true` or `false`                                                                                                                                                                                                                                                                                                                                                   |
 |       entityID        | String containing an entity id. Example: `sensor.plug_1_power`                                                                                                                                                                                                                                                                                                      |
 |     PositionType      | Single: `left`, `right`, `none`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                              |
-|   LinePositionType    | Single: `left`, `right`, `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                            |
-|      CornerType       | Single: `square`, `lite_rounded`, `medium_rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
+|   LinePositionType    | Single: `left`, `right`, `none`, `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                    |
+|      CornerType       | Single: `square`, `lite-rounded`, `medium-rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
 |     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                                                                                                                                                                                                                                                                  |
 |     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
 |   TextOverflowType    | Single: `ellipsis`, `clip`, `tooltip`, `fade`                                                                                                                                                                                                                                                                                                                       |
@@ -253,7 +240,7 @@ The types are used in the configuration. The type is used to define what kind of
 |     ActionConfig      | Event cased by an Action. See more [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables)                                                                                                                                                                                                                                         |
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
 |   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
-|  StatisticsFunction   | Single: `max`, `mean`, `min`, `sate`, `sum`, `change`                                                                                                                                                                                                                                                                                                               |
+|  StatisticsFunction   | Single: `max`, `mean`, `min`, `state`, `sum`, `change`                                                                                                                                                                                                                                                                                                              |
 |     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`                                                                                                                                                                                                                                                                                         |
 
 </div>
@@ -262,29 +249,29 @@ The types are used in the configuration. The type is used to define what kind of
 
 <div id="entities">
 
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/visual_editor_entity.png" alt="Visual Editor Entity"/>
+<p style="text-align: center;">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_entity_v2-2-1.png" alt="Visual Editor Entity"/>
 </p>
 
 The only required field is `entity`. The rest of the fields are optional. Color `auto` can only be set in the YAML file (or it will be set to `auto` by default when creating the card).
 
 #### Each entity has its own settings:
 
-| Setting              |        type        |    default    |                                         example                                          | description                                                                                                                                          |
-|----------------------|:------------------:|:-------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`             |      entityID      |  ! required   |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                          | 
-| `name`               |       string       |     [...]     |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                                                                |
-| `icon`               |       string       |     [...]     |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored) [example](#icon)                                                          |
-| `color`              |     ColorType      |     auto      |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                              |
-| `cutoff`             |       number       |  [main = 5]   |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                            |
-| `unit`               |       string       | [entity unit] |                                            kW                                            | String that is added to the end of entity state.                                                                                                     |
-| `multiplier`         |       number       |       1       |                                          0.001                                           | Entity state will be multiplied by this number. Useful when you have entities in kW and W. Automatically set (adjusts to be the same as main entity) |
-| `precision`          |       number       |  [main = 0]   |                                            1                                             | Will override main precision pre entity.                                                                                                             |
-| `state_content`      |    StateContent    |   ['name']    |                                    ['name', 'state']                                     | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot.                                       |
-| `line_state_content` |    StateContent    |     [...]     |                                 ['percentage', 'state']                                  | ['name','state','last_changed','last_updated', 'percentage'] - Order matters. Info will be separated by a dot.                                       |
-| `tap_action`         |   Action Config    |   more-info   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                          |
-| `hold_action`        |   Action Config    |   more-info   | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                |
-| `double_tap_action`  |   Action Config    |     none      | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                          |
+| Setting              |     type      |     default      |                                         example                                          | description                                                                                                                                          |
+|----------------------|:-------------:|:----------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`             |   entityID    |   *!required*    |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                          | 
+| `name`               |    string     |      *none*      |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                                                                |
+| `icon`               |    string     |      *none*      |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored) [example](#icon)                                                          |
+| `color`              |   ColorType   |      `auto`      |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                              |
+| `cutoff`             |    number     |  *main cutoff*   |                                            10                                            | Any entity with a value below this will not be displayed.                                                                                            |
+| `unit`               |    string     |  *entity unit*   |                                            kW                                            | String that is added to the end of entity state.                                                                                                     |
+| `multiplier`         |    number     |       `1`        |                                          0.001                                           | Entity state will be multiplied by this number. Useful when you have entities in kW and W. Automatically set (adjusts to be the same as main entity) |
+| `precision`          |    number     | *main precision* |                                            1                                             | Will override main precision pre entity.                                                                                                             |
+| `state_content`      | StateContent  |    `['name']`    |                                    ['name', 'state']                                     | State content in the legend. Order matters. Info will be separated by a dot.                                                                         |
+| `line_state_content` | StateContent  |      *none*      |                                 ['percentage', 'state']                                  | State content in the line. Order matters. Info will be separated by a dot.                                                                           |
+| `tap_action`         | Action Config |   *more-info*    | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                          |
+| `hold_action`        | Action Config |   *more-info*    | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                |
+| `double_tap_action`  | Action Config |      *none*      | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                          |
 <p> 
 
 </div>
@@ -300,7 +287,7 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 ### Icons in the legend
 
 <div id="icon">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/icons.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/icons.png" alt="Icons in the Legend">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -322,9 +309,9 @@ untracked_state_content:
 ### Only Line
 
 <div id="legend_hide">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_line_entities.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/only_line_entities.png" alt="Only Line Entities">
 
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/only_line_max.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/only_line_max.png" alt="Only Line Max">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -340,7 +327,7 @@ corner: square
 <div id="delta">
 Shows the difference between the main entity and the sum of all the entities.
 
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/delta.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/delta.png" alt="Delta">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -357,7 +344,7 @@ entities:
 ### Legend with all entities
 
 <div id="legend_all">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_all.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/legend_all.png" alt="Legend All Entities">
 
 ```yaml
 type: 'custom:energy-line-gauge'
@@ -375,7 +362,7 @@ entities:
 Mainly using the default settings. 
 I am using the automatic color option, and I have the entities in the same order as I have them in the Home Assistant Energy panel.
 
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/normal.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/normal.png" alt="Normal Usage">
 
 ```yaml
 type: custom:energy-line-gauge
@@ -389,7 +376,6 @@ entities:
     name: Bed
   - entity: sensor.immax_wifi_plug_wattage
     name: Bedroom Outlet
-  ...
 untracked_legend: true
 untracked_legend_label: Untracked
 ```
@@ -401,75 +387,75 @@ untracked_legend_label: Untracked
 <hr/>
 
 ### `position: none` `title_position: none` `legend_position: none` `line_text_position: none`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/none.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/none.png" alt="none">
 
 ### `position: left` `title_position: left`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/left.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/left.png" alt="left">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/left.png" alt="left">
 
 ### `position: right` `title_position: right`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/right.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/right.png" alt="right">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/right.png" alt="right">
 
 ### `position: top-left` `title_position: top-left`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-left.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-left.png" alt="top-left">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-left.png" alt="top-left">
 
 ### `position: top-center` `title_position: top-center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-center.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-center.png" alt="top-center">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-center.png" alt="top-center">
 
 ### `position: top-right` `title_position: top-right`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-right.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/top-right.png" alt="top-right">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/top-right.png" alt="top-right">
 
 ### `position: bottom-left` `title_position: bottom-left`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-left.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-left.png" alt="bottom-left">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-left.png" alt="bottom-left">
 
 ### `position: bottom-center` `title_position: bottom-center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-center.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-center.png" alt="bottom-center">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-center.png" alt="bottom-center">
 
 ### `position: bottom-right` `title_position: bottom-right`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-right.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-right.png" alt="bottom-right">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-right.png" alt="bottom-right">
 
 ## Legend
 
 <div id="legend">
 
 ### `legend_position: left` `legend_alignment: center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/left.png" alt="left">
 
 ### `legend_position: right` `legend_alignment: center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/right.png" alt="right">
 
 ### `legend_position: top-*` `legend_alignment: center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/top.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/top.png" alt="top">
 
 ### `legend_position: bottom-*` `legend_alignment: center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/bottom.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/bottom.png" alt="bottom">
 
 ### Legend Alignment
 
 ### `legend_alignment: left`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/left.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/left.png" alt="left">
 
 ### `legend_alignment: right`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/right.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/right.png" alt="right">
 
 ### `legend_alignment: center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/center.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/center.png" alt="center">
 
 ### `legend_alignment: space-around`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-around.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-around.png" alt="space-around">
 
 ### `legend_alignment: space-between`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-between.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-between.png" alt="space-between">
 
 ### `legend_alignment: space-evenly`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-evenly.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-evenly.png" alt="space-evenly">
 
 
 </div>
@@ -482,55 +468,55 @@ untracked_legend_label: Untracked
 <hr/>
 
 ### `corner: square`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/square.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/square.png" alt="square">
 
-### `corner: lite_rounded`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/lite_rounded.png">
+### `corner: lite-rounded`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/lite-rounded.png" alt="lite-rounded">
 
-### `corner: medium_rounded`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/medium_rounded.png">
+### `corner: medium-rounded`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/medium-rounded.png" alt="medium-rounded">
 
 ### `corner: rounded`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/rounded.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/rounded.png" alt="rounded">
 
 ### `corner: circular`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/circular.png" alt="circular">
 
 <div id="style">
 
 ## Style
 
 ### `weight-bolder` → `weight-bold` → `weight-lighter`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-bolder.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-bold.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-lighter.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-bolder.png" alt="weight-bolder">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-bold.png" alt="weight-bold">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/weight-lighter.png" alt="weight-lighter">
 
 ### `style-italic`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/style-italic.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/style-italic.png" alt="style-italic">
 
 ### `decoration-underline` `decoration-overline` `decoration-line-through`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-underline.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-overline.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-line-through.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-underline.png" alt="decoration-underline">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-overline.png" alt="decoration-overline">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/decoration-line-through.png" alt="decoration-line-through">
 
 ### `transform-uppercase` → `transform-lowercase` → `transform-capitalize`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-uppercase.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-lowercase.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-capitalize.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-uppercase.png" alt="transform-uppercase">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-lowercase.png" alt="transform-lowercase">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/transform-capitalize.png" alt="transform-capitalize">
 
 ### `family-monospace`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/family-monospace.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/family-monospace.png" alt="family-monospace">
 
 ### `shadow-neon` → `shadow-hard` → `shadow-heavy` → `shadow-medium` → `shadow-light`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-neon.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-hard.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-heavy.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-medium.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-light.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-neon.png" alt="shadow-neon">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-hard.png" alt="shadow-hard">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-heavy.png" alt="shadow-heavy">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-medium.png" alt="shadow-medium">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/shadow-light.png" alt="shadow-light">
 
 ### `black-outline` → `white-outline`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/black-outline.png">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/white-outline.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/black-outline.png" alt="black-outline">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/text_style/white-outline.png" alt="white-outline">
 
 </div>
 
@@ -539,16 +525,16 @@ untracked_legend_label: Untracked
 ## Overflow
 
 ### `line_text_overflow: ellipsis`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/ellipsis.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/ellipsis.png" alt="ellipsis">
 
 ### `line_text_overflow: clip`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/clip.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/clip.png" alt="clip">
 
 ### `line_text_overflow: tooltip`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/tooltip.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/tooltip.png" alt="tooltip">
 
 ### `line_text_overflow: fade`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/fade.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/fade.png" alt="fade">
 
 </div>
 
@@ -569,7 +555,7 @@ The position of the text in the line is set by `line_text_position`. Options are
 | `last_updated` | The last time the entity was updated.                        | 6 seconds ago |
 | `percentage`   | The percentage of the entity in respect to the main entity.  |      55%      |
 
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/state_content.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/state_content.png" alt="State Content">
 
 ```yaml
 type: custom:energy-line-gauge
@@ -592,9 +578,9 @@ untracked_legend: false
 ```
 </div>
 
-### Untracked State Content
-
 <div id="untracked_state_content">
+
+### Untracked State Content
 
 | Option         | description                                                                                       |  Example  |
 |----------------|---------------------------------------------------------------------------------------------------|:---------:|
@@ -603,7 +589,7 @@ untracked_legend: false
 | `percentage`   | One hundred minus the sum of device widths                                                        |    3%     |
 
 
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/untracked_state_content.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/untracked_state_content.png" alt="Untracked State Content">
 
 ```yaml
 type: custom:energy-line-gauge
@@ -624,7 +610,7 @@ untracked_line_state_content:
 ```
 
 ### `line_text_position: *` `line_text_size: 1.5`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/line_text_position/3-3-line-text.png">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/line_text_position/3-3-line-text.png" alt="line_text_position">
 
 |  `top-left`   |  `top-center`   |  `top-right`   |
 |:-------------:|:---------------:|:--------------:|

@@ -289,11 +289,11 @@ export const styles = css`
     
     /*Theme  --------------------------------------------------*/
     
-    .line-corner-lite_rounded {
+    .line-corner-lite-rounded {
         border-radius: 0.25rem;
         overflow: hidden;
     }
-    .line-corner-medium_rounded {
+    .line-corner-medium-rounded {
         border-radius: 0.5rem;
         overflow: hidden;
     }

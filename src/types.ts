@@ -1,4 +1,4 @@
-import { ActionConfig, LovelaceCardConfig } from 'custom-card-helpers';
+import { ActionConfig, LovelaceCardConfig, HomeAssistant } from 'custom-card-helpers';
 
 export interface ELGConfig extends LovelaceCardConfig {
   entity: string;
@@ -103,7 +103,7 @@ export interface ELGEntity {
 
 // State Content Types -------------------------------------------------------------------------------------------------
 
-export const CORNER_TYPES = ['square', 'lite_rounded', 'medium_rounded', 'rounded', 'circular'] as const;
+export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;
 export const TEXT_STYLE_TYPES = ['weight-lighter', 'weight-bold', 'weight-bolder', 'style-italic', 'decoration-underline', 'decoration-overline', 'decoration-line-through', 'transform-uppercase', 'transform-lowercase', 'transform-capitalize', 'family-monospace', 'shadow-light', 'shadow-medium', 'shadow-heavy', 'shadow-hard', 'shadow-neon', 'black-outline', 'white-outline'] as const;
 export const TEXT_OVERFLOW_TYPES = ['ellipsis', 'clip', 'tooltip', 'fade'] as const;
 
@@ -142,6 +142,11 @@ export const DEFAULT_ACTIONS = [
   "assist",
   "none",
 ];
+
+export interface LabelConfigEntry {
+  tryLocalize: string | ((hass: HomeAssistant) => string);
+  fallback: string;
+}
 
 export interface EditorTarget extends EventTarget {
   value?: string;

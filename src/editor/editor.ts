@@ -15,6 +15,7 @@ import {
   ELGConfig,
   HassCustomElement,
   ELGEntity,
+  LabelConfigEntry,
   DEFAULT_ACTIONS
 } from '../types';
 
@@ -127,8 +128,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                     mode: "dropdown",
                     options: [
                       { value: "square", label: "Square (default)" },
-                      { value: "lite_rounded", label: "Lite Rounded" },
-                      { value: "medium_rounded", label: "Medium Rounded" },
+                      { value: "lite-rounded", label: "Lite Rounded" },
+                      { value: "medium-rounded", label: "Medium Rounded" },
                       { value: "rounded", label: "Rounded" },
                       { value: "circular", label: "Circular" },
                     ]
@@ -439,175 +440,333 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
   private _computeLabelCallback = (schema: any) => {
     if (!this.hass) return "";
 
-    const labelMap: Record<string, string | ((hass: any) => string)> = {
+    const labelMap: Record<string, LabelConfigEntry> = {
       // Entity (required)
-      entity: (hass) =>
-        `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
+      entity: {
+        tryLocalize: (hass) =>
+          `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
+        fallback: "Entity (required)"
+      },
 
       // Title
-      title: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+      title: {
+        tryLocalize: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
+        fallback: "Title"
+      },
       // Subtitle
-      subtitle: "ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle",
+      subtitle: {
+        tryLocalize: "ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle",
+        fallback: "Subtitle"
+      },
 
       // Minimum
-      min: "ui.panel.lovelace.editor.card.generic.minimum",
+      min: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.minimum",
+        fallback: "Minimum",
+      },
       // Maximum
-      max: "ui.panel.lovelace.editor.card.generic.maximum",
+      max: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.maximum",
+        fallback: "Maximum",
+      },
 
       // ------------------------------------------- Appearance --------------------------------------------------------
-      expandable_appearance: 'ui.panel.lovelace.editor.card.map.appearance',
+      expandable_appearance: {
+        tryLocalize: "ui.panel.lovelace.editor.card.map.appearance",
+        fallback: "Appearance",
+      },
 
       // Suppress Warnings
-      suppress_warnings: () => "Suppress Warnings",
+      suppress_warnings: {
+        tryLocalize: () => "Suppress Warnings",
+        fallback: "Suppress Warnings",
+      },
       // Theme
-      corner: "ui.panel.lovelace.editor.card.generic.theme",
+      corner: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.theme",
+        fallback: "Theme",
+      },
 
       // Line
-      color: "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line",
+      color: {
+        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line",
+        fallback: "Line Color",
+      },
       // Background
-      color_bg: "ui.panel.lovelace.editor.edit_view.tab_background",
+      color_bg: {
+        tryLocalize: "ui.panel.lovelace.editor.edit_view.tab_background",
+        fallback: "Background Color",
+      },
 
       // ---------------------------------------------------- Value ----------------------------------------------------
-      expandable_appearance_value: 'ui.panel.config.zwave_js.node_config.value',
+      expandable_appearance_value: {
+        tryLocalize: "ui.panel.config.zwave_js.node_config.value",
+        fallback: "Value",
+      },
 
       // Position
-      position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      position: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+        fallback: "Position",
+      },
       // Size (rem)
-      text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+      text_size: {
+        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+        fallback: "Size (rem)",
+      },
 
       // Style
-      text_style: 'ui.panel.lovelace.editor.elements.style',
+      text_style: {
+        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
+        fallback: "Style",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // ---------------------------------------------------- Title ----------------------------------------------------
-      expandable_appearance_title: 'ui.panel.lovelace.editor.card.heading.heading_style_options.title',
+      expandable_appearance_title: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.heading.heading_style_options.title',
+        fallback: "Title",
+      },
 
       // Position
-      title_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      title_position: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+        fallback: "Position",
+      },
       // Size (rem)
-      title_text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+      title_text_size: {
+        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+        fallback: "Size (rem)",
+      },
 
       // Style
-      title_text_style: 'ui.panel.lovelace.editor.elements.style',
+      title_text_style: {
+        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
+        fallback: "Style",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // --------------------------------------------------- Legend ----------------------------------------------------
-      expandable_appearance_legend: () => "Legend",
+      expandable_appearance_legend: {
+        tryLocalize: "Legend",
+        fallback: "Legend",
+      },
 
       // Hide legend
-      legend_hide: "ui.panel.lovelace.editor.card.statistics-graph.hide_legend",
-      // // Select all
-      // legend_all: "ui.components.subpage-data-table.select_all",
+      legend_hide: {
+        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.hide_legend",
+        fallback: "Hide Legend",
+      },
       // Show all
-      legend_all: 'ui.panel.config.category.filter.show_all',
+      legend_all: {
+        tryLocalize: 'ui.panel.config.category.filter.show_all',
+        fallback: "Show All",
+      },
 
       // Position
-      legend_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      legend_position: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+        fallback: "Position",
+      },
       // Legend Alignment
-      legend_alignment: () => "Legend Alignment",
+      legend_alignment: {
+        tryLocalize: () => "Legend Alignment",
+        fallback: "Legend Alignment",
+      },
 
       // Style
-      legend_text_style: 'ui.panel.lovelace.editor.elements.style',
+      legend_text_style: {
+        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
+        fallback: "Style",
+      },
       // Size (rem)
-      legend_text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+      legend_text_size: {
+        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+        fallback: "Size (rem)",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // ---------------------------------------------------- Delta ----------------------------------------------------
-      expandable_appearance_delta: () => "Delta",
+      expandable_appearance_delta: {
+        tryLocalize: () => "Delta",
+        fallback: "Delta",
+      },
 
       // Show stat
-      show_delta: "ui.panel.lovelace.editor.card.statistic.stat_types",
+      show_delta: {
+        tryLocalize: "ui.panel.lovelace.editor.card.statistic.stat_types",
+        fallback: "Show Delta",
+      },
       // Position
-      delta_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      delta_position: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+        fallback: "Position",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // --------------------------------------------- State content (Line) --------------------------------------------
-      expandable_appearance_line_text: (hass) =>
+      expandable_appearance_line_text: {
+        tryLocalize: (hass) =>
         `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+        fallback: "State Content (Line)",
+      },
 
       // Position
-      line_text_position: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+      line_text_position: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
+        fallback: "Position",
+      },
       // Size (rem)
-      line_text_size: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+      line_text_size: {
+        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
+        fallback: "Size (rem)",
+      },
 
       // Style
-      line_text_style: 'ui.panel.lovelace.editor.elements.style',
+      line_text_style: {
+        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
+        fallback: "Style",
+      },
       // Overflow
-      line_text_overflow: () => "Overflow",
+      line_text_overflow: {
+        tryLocalize: () => "Overflow",
+        fallback: "Overflow",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
       // ---------------------------------------------------------------------------------------------------------------
 
       // ----------------------------------------------- Value ---------------------------------------------------------
-      expandable_value: 'ui.panel.config.zwave_js.node_config.value',
+      expandable_value: {
+        tryLocalize: 'ui.panel.config.zwave_js.node_config.value',
+        fallback: "Value",
+      },
 
       // Unit
-      unit: "ui.panel.lovelace.editor.card.generic.unit",
+      unit: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.unit",
+        fallback: "Unit",
+      },
       // Display Precision
-      precision: "ui.dialogs.entity_registry.editor.precision",
+      precision: {
+        tryLocalize: "ui.dialogs.entity_registry.editor.precision",
+        fallback: "Display Precision",
+      },
 
       // Lower limit
-      cutoff: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
+      cutoff: {
+        tryLocalize: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
+        fallback: "Lower Limit",
+      },
       // Offset (optional)
-      offset: "ui.panel.config.automation.editor.triggers.type.calendar.offset",
+      offset: {
+        tryLocalize: "ui.panel.config.automation.editor.triggers.type.calendar.offset",
+        fallback: "Offset (optional)",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // ----------------------------------------- Untracked consumption -----------------------------------------------
-      expandable_untracked: 'ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption',
+      expandable_untracked: {
+        tryLocalize: 'ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption',
+        fallback: "Untracked Consumption",
+      },
 
       // Untracked consumption
-      untracked_legend: "ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption",
+      untracked_legend: {
+        tryLocalize: "ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption",
+        fallback: "Untracked Consumption",
+      },
 
       // Name
-      untracked_legend_label: "ui.panel.lovelace.editor.card.generic.name",
+      untracked_legend_label: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.name",
+        fallback: "Name",
+      },
       // Icon
-      untracked_legend_icon: "ui.panel.lovelace.editor.card.generic.icon",
+      untracked_legend_icon: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.icon",
+        fallback: "Icon",
+      },
 
       // State content
-      untracked_state_content: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
+      untracked_state_content: {
+        tryLocalize: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
+        fallback: "State Content",
+      },
       // State content (Line)
-      untracked_line_state_content: (hass) =>
+      untracked_line_state_content: {
+        tryLocalize: (hass) =>
         `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+        fallback: "State Content (Line)",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // ------------------------------------------------ Statistic ----------------------------------------------------
-      expandable_statistic: 'ui.panel.lovelace.editor.card.statistics-graph.picked_statistic',
+      expandable_statistic: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.statistics-graph.picked_statistic',
+        fallback: "Statistic",
+      },
 
       // Statistic
-      statistics: "ui.panel.lovelace.editor.card.statistics-graph.picked_statistic",
+      statistics: {
+        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.picked_statistic",
+        fallback: "Statistic",
+      },
       // Offset (optional) (Day)
-      statistics_day_offset: (hass) =>
+      statistics_day_offset: {
+        tryLocalize: (hass) =>
         `${hass.localize("ui.panel.config.automation.editor.triggers.type.calendar.offset")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day")})`,
+        fallback: "Offset (optional) (Day)",
+      },
       // Period
-      statistics_period: "ui.panel.lovelace.editor.card.statistics-graph.period",
+      statistics_period: {
+        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.period",
+        fallback: "Period",
+      },
       // Show stat types
-      statistics_function: "ui.panel.lovelace.editor.card.statistics-graph.stat_types",
+      statistics_function: {
+        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.stat_types",
+        fallback: "Show Stat Types",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // ----------------------------------------------- Interactions --------------------------------------------------
-      expandable_interactions: 'ui.panel.lovelace.editor.card.generic.interactions',
+      expandable_interactions: {
+        tryLocalize: 'ui.panel.lovelace.editor.card.generic.interactions',
+        fallback: "Interactions",
+      },
 
       // Tap action
-      tap_action: "ui.panel.lovelace.editor.card.generic.tap_action",
+      tap_action: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.tap_action",
+        fallback: "Tap Action",
+      },
       // Hold action
-      hold_action: "ui.panel.lovelace.editor.card.generic.hold_action",
+      hold_action: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.hold_action",
+        fallback: "Hold Action",
+      },
       // Double tap action
-      double_tap_action: "ui.panel.lovelace.editor.card.generic.double_tap_action",
+      double_tap_action: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.double_tap_action",
+        fallback: "Double Tap Action",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
     };
 
-    const entry = labelMap[schema.name];
+    const entry: LabelConfigEntry = labelMap[schema.name];
     if (!entry) return schema.name;
 
-    return typeof entry === "function" ? entry(this.hass) : this.hass.localize(entry);
+    const label = typeof entry.tryLocalize === "function" ? entry.tryLocalize(this.hass) : this.hass.localize(entry.tryLocalize);
+    return label || entry.fallback || schema.name;
   };
 
   private _entitiesChanged(ev: CustomEvent<ELGEntity[]>): void {

@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 
 import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 
-import { ELGEntity, DEFAULT_ACTIONS } from '../types';
+import { ELGEntity, DEFAULT_ACTIONS, LabelConfigEntry } from '../types';
 import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 
 @customElement('energy-line-gauge-item-editor')
@@ -164,61 +164,102 @@ export class ItemEditor extends LitElement {
   private _computeLabelCallback = (schema: any) => {
     if (!this.hass) return "";
 
-    const labelMap: Record<string, string | ((hass: any) => string)> = {
+    const labelMap: Record<string, LabelConfigEntry> = {
       // Entity (required)
-      entity: (hass) =>
-        `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
+      entity: {
+        tryLocalize: (hass) => `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
+        fallback: "Entity (required)",
+      },
 
       // Name
-      name: "ui.panel.lovelace.editor.card.generic.name",
+      name: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.name",
+        fallback: "Name",
+      },
 
       // RGB Color
-      color: "ui.components.selectors.selector.types.color_rgb",
+      color: {
+        tryLocalize: "ui.components.selectors.selector.types.color_rgb",
+        fallback: "Color",
+      },
       // Icon
-      icon: "ui.panel.lovelace.editor.card.generic.icon",
+      icon: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.icon",
+        fallback: "Icon",
+      },
 
       // ------------------------------------------------ State Content ------------------------------------------------
 
       // State Content
-      state_content: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
+      state_content: {
+        tryLocalize: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
+        fallback: "State Content",
+      },
 
       // State Content (Line)
-      line_state_content: (hass) =>
-        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+      line_state_content: {
+        tryLocalize: (hass) => `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
+        fallback: "State Content (Line)",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // ---------------------------------------------------- Unit -----------------------------------------------------
 
       // Unit
-      unit: "ui.panel.lovelace.editor.card.generic.unit",
+      unit: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.unit",
+        fallback: "Unit",
+      },
       // Unit system
-      multiplier: "ui.panel.config.core.section.core.core_config.unit_system",
+      multiplier: {
+        tryLocalize: "ui.panel.config.core.section.core.core_config.unit_system",
+        fallback: "Unit System",
+      },
       // Precision
-      precision: "ui.dialogs.entity_registry.editor.precision",
+      precision: {
+        tryLocalize: "ui.dialogs.entity_registry.editor.precision",
+        fallback: "Precision",
+      },
       // Lower Limit
-      cutoff: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
+      cutoff: {
+        tryLocalize: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
+        fallback: "Lower Limit",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
 
       // -------------------------------------------------- Interactions -----------------------------------------------
 
       // Interactions
-      interactions: "ui.panel.lovelace.editor.card.generic.interactions",
+      interactions: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.interactions",
+        fallback: "Interactions",
+      },
       // Tap Action
-      tap_action: "ui.panel.lovelace.editor.card.generic.tap_action",
+      tap_action: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.tap_action",
+        fallback: "Tap Action",
+      },
       // Hold Action
-      hold_action: "ui.panel.lovelace.editor.card.generic.hold_action",
+      hold_action: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.hold_action",
+        fallback: "Hold Action",
+      },
       // Double Tap Action
-      double_tap_action: "ui.panel.lovelace.editor.card.generic.double_tap_action",
+      double_tap_action: {
+        tryLocalize: "ui.panel.lovelace.editor.card.generic.double_tap_action",
+        fallback: "Double Tap Action",
+      },
 
       // ---------------------------------------------------------------------------------------------------------------
     };
 
-    const entry = labelMap[schema.name];
+    const entry: LabelConfigEntry = labelMap[schema.name];
     if (!entry) return schema.name;
 
-    return typeof entry === "function" ? entry(this.hass) : this.hass.localize(entry);
+    const label = typeof entry.tryLocalize === "function" ? entry.tryLocalize(this.hass) : this.hass.localize(entry.tryLocalize);
+    return label || entry.fallback || schema.name;
   };
 
   private _valueChanged(ev: any): void {
