@@ -168,7 +168,7 @@ export class ItemsEditor extends LitElement {
       unit_of_measurement in units &&
       main_unit in units
     ) {
-      multiplier = units[main_unit] / units[unit_of_measurement];
+      multiplier = units[unit_of_measurement] / units[main_unit];
       unit = unit_of_measurement;
     }
 
