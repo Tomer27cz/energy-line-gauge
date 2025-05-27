@@ -102,18 +102,12 @@ export class ItemsEditor extends LitElement {
         )}
       </div>
       <div class="add-item row">
-        <ha-entity-picker 
-            .hass=${this.hass} 
-            name="entity" 
-            class="add-entity"
-            .includeDomains=${["sensor", "input_number", "number", "counter"]}
+        <ha-entity-picker
+          class="add-entity"
+          .hass=${this.hass}
+          .includeDomains=${["sensor", "input_number", "number", "counter"]}
+          @value-changed=${this._addRow}
         ></ha-entity-picker>
-        <ha-icon-button
-          .label=${this.hass.localize('ui.common.add')}
-          .path=${mdiPlusCircleOutline}
-          class="add-icon"
-          @click="${this._addRow}"
-        ></ha-icon-button>
       </div>
     `;
   }
@@ -142,43 +136,50 @@ export class ItemsEditor extends LitElement {
     }
   }
 
-  private _addRow(ev: Event): void {
+  private _addRow(ev: CustomEvent): void {
     ev.stopPropagation();
-    if (!this.entities || !this.hass) {
-      return;
-    }
+    if (!this.hass) {return;}
 
-    const entity_id = (this.shadowRoot!.querySelector('.add-entity') as HTMLElementValue).value;
+    const entity_id = ev.detail.value;
+    if (entity_id === "") {return;}
+
     const stateObj = this.hass.states[entity_id];
 
     const units = {
-      'TW': 1000000000000,
-      'GW': 1000000000,
-      'MW': 1000000,
-      'kW': 1000,
+      'TW': 1_000_000_000_000,
+      'GW': 1_000_000_000,
+      'MW': 1_000_000,
+      'kW': 1_000,
       'W': 1,
       'mW': 0.001,
-    }
-
-    const unit_of_measurement = stateObj.attributes.unit_of_measurement;
-    const main_unit = this.entity_id ? this.hass.states[this.entity_id].attributes.unit_of_measurement : "W";
-
-    // what multiplier is needed for the selected entity to match the main unit
-    // check if the unit_of_measurement is in the units object
-    const multiplier =
-      unit_of_measurement && main_unit &&
-      unit_of_measurement in units && main_unit in units
-        ? units[main_unit] / units[unit_of_measurement]
-        : 1;
-
-    let entity: ELGEntity = {
-      entity: entity_id,
-      state_content: ['name'],
-      multiplier: multiplier,
-      unit: unit_of_measurement,
     };
 
-    fireEvent<ELGEntity[]>(this, 'config-changed', [...this.entities, entity]);
+    let multiplier: number | undefined = undefined;
+    let unit: string | undefined = undefined;
+
+    const unit_of_measurement = stateObj?.attributes?.unit_of_measurement;
+    const main_unit = this.entity_id
+      ? this.hass.states[this.entity_id]?.attributes?.unit_of_measurement || 'W'
+      : 'W';
+
+    if (
+      unit_of_measurement &&
+      main_unit &&
+      unit_of_measurement in units &&
+      main_unit in units
+    ) {
+      multiplier = units[main_unit] / units[unit_of_measurement];
+      unit = unit_of_measurement;
+    }
+
+    const entity: ELGEntity = {
+      entity: entity_id,
+      state_content: ['name'],
+      ...(multiplier !== undefined && { multiplier }),
+      ...(unit && { unit }),
+    };
+
+    fireEvent<ELGEntity[]>(this, 'config-changed', [...this.entities ?? [], entity]);
   }
 
   private _rowMoved(ev: SortableEvent): void {

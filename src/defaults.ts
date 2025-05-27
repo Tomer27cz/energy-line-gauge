@@ -160,8 +160,8 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
     // Styling
     corner: validatedValue(config.corner, CORNER_TYPES, DEFAULTS.corner),
-    color: validateColor(config.color, defaultColor), // --primary-color
-    color_bg: validateColor(config.color_bg, defaultBgColor), // --secondary-background-color
+    color: validateColor(config.color ?? config.colour, defaultColor), // --primary-color
+    color_bg: validateColor(config.color_bg ?? config.colour_bg, defaultBgColor), // --secondary-background-color
 
     // Line Text
     line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, DEFAULTS.line_text_position),
@@ -213,7 +213,7 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
   );
 
   return entities.map(entity => {
-    let color = entity.color;
+    let color = entity.color ?? (entity as any).colour;
 
     if (!color || color === "auto") {
       const available = COLORS.find(c => !usedColors.has(c.toUpperCase()));

@@ -30,6 +30,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   corner?: CornerType;
   color?: [number, number, number] | string;
   color_bg?: [number, number, number] | string;
+  colour?: [number, number, number] | string; // For British English support
+  colour_bg?: [number, number, number] | string; // For British English support
 
   // Line Text
   line_text_position?: LinePositionType;
@@ -81,6 +83,7 @@ export interface ELGEntity {
   name?: string;
   icon?: string;
   color?: [number, number, number] | 'auto';
+  colour?: [number, number, number] | 'auto'; // For British English support
 
   // Value
   cutoff?: number;
