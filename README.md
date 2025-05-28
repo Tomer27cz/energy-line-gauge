@@ -18,7 +18,7 @@
 The main idea of this card is to show the energy consumption of your devices as a percentage of the **main entity** (your entity for tracking whole **house consumption**).
 
 
-The card is designed to resemble the Home Assistant **Energy panel** style. The **auto color** option will use the colors in the same order as the energy panel. 
+The card is designed to resemble the Home Assistant **Energy panel** style. The **auto color** option will use the colors in the same order as the energy panel.
 
 <div id="installation">
 <h1> Installation</h1>
@@ -156,7 +156,7 @@ entities:
     state_content:
       - name
       - state
-      - percentage 
+      - percentage
     line_state_content:
       - percentage
   - entity: sensor.plug_1_power
@@ -173,7 +173,7 @@ There are a lot of settings you can customize your sensors with:
 
 | Setting                        |         type          |           default            |                                         example                                          | description                                                                                                                                |
 |--------------------------------|:---------------------:|:----------------------------:|:----------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`                       |       entityID        |         *!required*          |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                                | 
+| `entity`                       |       entityID        |         *!required*          |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                                |
 | `title`                        |        string         |            *none*            |                                    Power Consumption                                     | The title of the Card (font_size: 2rem)                                                                                                    |
 | `subtitle`                     |        string         |            *none*            |                                           Glow                                           | Text in gray below the title (font_size: 1rem)                                                                                             |
 | `title_position`               |     PositionType      |          `top-left`          |                                           left                                           | Position of the title [see examples](#position)                                                                                            |
@@ -193,7 +193,7 @@ There are a lot of settings you can customize your sensors with:
 | `line_text_size`               |        number         |             `1`              |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                        |
 | `line_text_style`              |     TextStyleType     |            *none*            |                                     ['shadow-hard']                                      | Text style of the State content inside the Line [see examples and hierarchy](#style)                                                       |
 | `line_text_overflow`           |   TextOverflowType    |          `tooltip`           |                                           fade                                           | What happens when the text in the line overflows [see examples](#overflow)                                                                 |
-| `color`                        |       ColorType       |       *primary-color*        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                          |                                                                 
+| `color`                        |       ColorType       |       *primary-color*        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                          |
 | `color_bg`                     |       ColorType       | *secondary-background-color* |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                                |
 | `tap_action`                   |     Action Config     |         *more-info*          | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                |
 | `hold_action`                  |     Action Config     |         *more-info*          | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                      |
@@ -241,7 +241,7 @@ The types are used in the configuration. The type is used to define what kind of
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
 |   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
 |  StatisticsFunction   | Single: `max`, `mean`, `min`, `state`, `sum`, `change`                                                                                                                                                                                                                                                                                                              |
-|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`                                                                                                                                                                                                                                                                                         |
+|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`, `icon`                                                                                                                                                                                                                                                                                     |
 
 </div>
 
@@ -259,7 +259,7 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 
 | Setting              |     type      |     default      |                                         example                                          | description                                                                                                                                          |
 |----------------------|:-------------:|:----------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `entity`             |   entityID    |   *!required*    |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                          | 
+| `entity`             |   entityID    |   *!required*    |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                          |
 | `name`               |    string     |      *none*      |                                          Plug 0                                          | The name of the entity to be displayed in the legend.                                                                                                |
 | `icon`               |    string     |      *none*      |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored) [example](#icon)                                                          |
 | `color`              |   ColorType   |      `auto`      |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                              |
@@ -272,7 +272,7 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 | `tap_action`         | Action Config |   *more-info*    | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                          |
 | `hold_action`        | Action Config |   *more-info*    | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                |
 | `double_tap_action`  | Action Config |      *none*      | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                          |
-<p> 
+<p>
 
 </div>
 
@@ -359,7 +359,7 @@ entities:
 
 ### Normal usage ( how I use it )
 
-Mainly using the default settings. 
+Mainly using the default settings.
 I am using the automatic color option, and I have the entities in the same order as I have them in the Home Assistant Energy panel.
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/normal.png" alt="Normal Usage">
@@ -554,6 +554,7 @@ The position of the text in the line is set by `line_text_position`. Options are
 | `last_changed` | The last time the entity changed state.                      | 6 seconds ago |
 | `last_updated` | The last time the entity was updated.                        | 6 seconds ago |
 | `percentage`   | The percentage of the entity in respect to the main entity.  |      55%      |
+| `icon`         | Specified in config or if not the `icon` attribute.          | mdi:lightbulb |
 
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/state_content.png" alt="State Content">
 
@@ -618,7 +619,7 @@ untracked_line_state_content:
 | `bottom-left` | `bottom-center` | `bottom-right` |
 
 
-       
+
 
 </div>
 
@@ -660,7 +661,7 @@ Some entities only support `mean`, `min` and `max` (For example `sensor.plug_1_p
 
 <hr/>
 
-**If you find a Bug or have some suggestions, let me know <a href="https://github.com/Tomer27cz/energy-line-gauge/issues">here</a>! I'm happy about every feedback.** 
+**If you find a Bug or have some suggestions, let me know <a href="https://github.com/Tomer27cz/energy-line-gauge/issues">here</a>! I'm happy about every feedback.**
 
 **Contributions are welcome!**
 

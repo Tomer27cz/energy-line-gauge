@@ -111,7 +111,7 @@ export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle'
 export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
 export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 
-export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage'] as const;
+export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage', 'icon'] as const;
 export const UNTRACKED_STATE_CONTENT_TYPES = ['name', 'state', 'percentage'] as const;
 
 export const STATISTICS_PERIOD_TYPES = ['5minute', 'hour', 'day', 'week', 'month'] as const;
