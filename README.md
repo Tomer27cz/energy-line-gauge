@@ -1,10 +1,15 @@
 # Energy Line Gauge
 [![GitHub package.json version](https://img.shields.io/github/package-json/v/Tomer27cz/energy-line-gauge)](https://github.com/Tomer27cz/energy-line-gauge/blob/master/package.json)
+![Maintained](https://img.shields.io/maintenance/yes/2025)
 ![Validate HACS](https://img.shields.io/github/actions/workflow/status/Tomer27cz/energy-line-gauge/.github/workflows/validate-hacs.yaml?label=Validate%20HACS)
 [![GitHub license](https://img.shields.io/github/license/Tomer27cz/energy-line-gauge)](https://img.shields.io/github/license/Tomer27cz/energy-line-gauge/blob/master/LICENSE)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Tomer27cz/energy-line-gauge?style=flat)
 ![GitHub issues](https://img.shields.io/github/issues/Tomer27cz/energy-line-gauge?style=flat)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues-pr/Tomer27cz/energy-line-gauge)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Tomer27cz/energy-line-gauge/total)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Tomer27cz/energy-line-gauge/latest/total)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Tomer27cz/energy-line-gauge)
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
@@ -17,20 +22,57 @@
 
 The main idea of this card is to show the energy consumption of your devices as a percentage of the **main entity** (your entity for tracking whole **house consumption**).
 
-
 The card is designed to resemble the Home Assistant **Energy panel** style. The **auto color** option will use the colors in the same order as the energy panel.
 
+
+<!-- toc -->
+
+<div id="table-of-contents">
+<h1>Table of Contents</h1>
+
+* [Energy Line Gauge](#energy-line-gauge)
+* [Installation](#installation)
+    * [Installation via HACS](#installation-via-hacs)
+    * [Manual installation](#manual-installation)
+* [Configuration](#configuration)
+    * [Visual Editor](#visual-editor)
+    * [YAML Only](#yaml-only)
+    * [Main Options](#main-options)
+    * [Types](#types)
+    * [Entities](#entities)
+* [Examples](#example)
+    * [Icons in the legend](#icon)
+    * [Only Line](#legend_hide)
+    * [Delta](#delta)
+    * [Legend with all entities](#legend_all)
+    * [Normal usage](#normal-usage--how-i-use-it-)
+    * [Position (Text & Title Placement)](#position)
+    * [Legend (Layout & Alignment)](#legend)
+    * [Theme (Corner Styles)](#theme)
+    * [Style (Text Styling)](#style)
+    * [Overflow (Text Overflow Handling)](#overflow)
+* [State Content](#state_content)
+    * [Untracked State Content](#untracked_state_content)
+* [Offset](#offset)
+* [Statistics](#statistics)
+
+</div>
+
 <div id="installation">
-<h1> Installation</h1>
+<h1>Installation</h1>
 
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=Tomer27cz&amp;repository=energy-line-gauge&amp;category=plugin" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
 
+<div id="installation-via-hacs">
 <h2> Installation via <a href="https://hacs.xyz/">HACS</a><img src="https://img.shields.io/badge/-Recommended-%2303a9f4" alt=""/></h2>
 
 1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
 2. Search for `energy-line-gauge` and add it through HACS
 3. Refresh home-assistant.
+4. 
+</div>
 
+<div id="manual-installation">
 <h2> Manual installation</h2>
 
 1. Download the [energy-line-gauge](http://www.github.com/Tomer27cz/energy-line-gauge/releases/latest/download/energy-line-gauge.js) (`energy-line-gauge.js` from latest release)
@@ -45,6 +87,7 @@ Or alternatively set it up via the UI:
 `Configuration -> Lovelace Dashboards -> Resources (TAB)`
 For more guidance check out the [docs](https://developers.home-assistant.io/docs/frontend/custom-ui/registering-resources/).
 
+</div>
 </div>
 
 ***
@@ -241,7 +284,7 @@ The types are used in the configuration. The type is used to define what kind of
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
 |   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
 |  StatisticsFunction   | Single: `max`, `mean`, `min`, `state`, `sum`, `change`                                                                                                                                                                                                                                                                                                              |
-|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`, `icon`                                                                                                                                                                                                                                                                                     |
+|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`, `icon`                                                                                                                                                                                                                                                                                 |
 
 </div>
 

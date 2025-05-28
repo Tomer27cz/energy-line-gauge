@@ -16,6 +16,16 @@ export class ItemEditor extends LitElement {
     if (!this.hass || !this.config) {
       return html``;
     }
+
+    const stateContentOptions = [
+      ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
+      ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
+      ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
+      ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
+      ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
+      ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
+    ];
+
     const item = {...this.config};
     const schema = [
       {
@@ -46,28 +56,14 @@ export class ItemEditor extends LitElement {
             schema: [
               {
                 type: "multi_select",
-                options: [
-                  ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
-                  ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
-                  ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
-                  ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
-                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
-                  ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
-                ],
+                options: stateContentOptions,
                 name: "state_content",
                 required: false,
                 default: ["name"],
               },
               {
                 type: "multi_select",
-                options: [
-                  ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
-                  ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
-                  ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
-                  ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
-                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
-                  ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
-                ],
+                options: stateContentOptions,
                 name: "line_state_content",
                 required: false,
                 default: [],
