@@ -234,7 +234,7 @@ export class EnergyLineGauge extends LitElement {
     }
 
     return html`
-      <ha-card 
+      <ha-card
         .header=${this._config.header}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
@@ -293,7 +293,7 @@ export class EnergyLineGauge extends LitElement {
           const stateObj: HassEntity = this.hass.states[device.entity];
           const state = this._calcState(stateObj, device.multiplier);
           const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
-          
+
           if (state <= cutoff && !this._config.legend_all) {return html``;}
 
           // noinspection HtmlUnknownAttribute
@@ -304,16 +304,16 @@ export class EnergyLineGauge extends LitElement {
                 hasHold: hasAction(device.hold_action),
                 hasDoubleClick: hasAction(device.double_tap_action),
               })}
-              title="${this._entityName(device, stateObj)}" 
+              title="${this._entityName(device, stateObj)}"
               id="legend-${device.entity.replace('.', '-')}"
             >
-              ${device.icon ? 
-                  html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` : 
+              ${device.icon ?
+                  html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` :
                   html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
               }
               <div class="label" style="font-size: ${textSize}rem; ${textStyle}">${this._entityLabel(device, stateObj, false, state)}</div>
             </li>`;
-        })}  
+        })}
         ${this._createUntrackedLegend(textStyle, textSize)}
       </ul>
     </div>`
@@ -348,9 +348,9 @@ export class EnergyLineGauge extends LitElement {
 
       // noinspection HtmlUnknownAttribute
       return html`
-      <div 
-        id="line-${device.entity.replace(".", "-")}" 
-        class="device-line" 
+      <div
+        id="line-${device.entity.replace(".", "-")}"
+        class="device-line"
         style="background-color: ${toHEX(device.color)}; width: ${width}%;"
         @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
         .actionHandler=${actionHandler({
@@ -359,11 +359,11 @@ export class EnergyLineGauge extends LitElement {
       })}
       >
         ${displayLineState ? html`
-          <div 
-            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
+          <div
+            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
             style="
-              color: rgba(${lineTextColor}); 
-              font-size: ${this._config.line_text_size ?? 1}rem; 
+              color: rgba(${lineTextColor});
+              font-size: ${this._config.line_text_size ?? 1}rem;
               ${overflowStyle}
               ${textStyle}
           ">
@@ -384,10 +384,10 @@ export class EnergyLineGauge extends LitElement {
       ${deviceLines}
       ${displayUntrackedLine ? html`
         <div class="untracked-line" style="width: ${untrackedWidth}%">
-          <div 
-            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}" 
+          <div
+            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
             style="
-              color: rgba(${untrackedTextColor}); 
+              color: rgba(${untrackedTextColor});
               font-size: ${this._config.line_text_size ?? 1}rem;
               ${untrackedStyle}
         ">
@@ -477,6 +477,10 @@ export class EnergyLineGauge extends LitElement {
     if (device.name) {return device.name;}
     return stateObj.attributes.friendly_name || device.entity.split('.')[1];
   }
+  private _entityIcon(device: ELGEntity, stateObj: HassEntity): string {
+    if (device.icon) {return device.icon;}
+    return stateObj.attributes.icon || '';
+  }
   private _entityLabel(device: ELGEntity, stateObj: HassEntity, line?: boolean, calculatedState?: number,): TemplateResult | string | undefined {
     if (line) {
       if (!device.line_state_content || device.line_state_content.length === 0) {return;}
@@ -501,6 +505,7 @@ export class EnergyLineGauge extends LitElement {
         case "last_changed": return timeTemplate(stateObj.last_changed);
         case "last_updated": return timeTemplate(stateObj.last_updated);
         case "percentage": return html`${this._entitiesWidth[device.entity].toFixed(0)}%${dot}`;
+        case "icon": return html`<ha-icon icon="${this._entityIcon(device, stateObj)}"></ha-icon>`;
         default: return html`${value}${dot}`;
       }
     })

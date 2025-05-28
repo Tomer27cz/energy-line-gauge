@@ -52,6 +52,7 @@ export class ItemEditor extends LitElement {
                   ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
                   ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
                   ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
+                  ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
                 ],
                 name: "state_content",
                 required: false,
@@ -65,6 +66,7 @@ export class ItemEditor extends LitElement {
                   ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
                   ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
                   ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
+                  ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
                 ],
                 name: "line_state_content",
                 required: false,
