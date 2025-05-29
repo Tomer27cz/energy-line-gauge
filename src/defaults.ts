@@ -5,6 +5,7 @@ import {
   CORNER_TYPES,
   TEXT_OVERFLOW_TYPES,
   POSITION_TYPES,
+  INDICATOR_TYPES,
   LINE_POSITION_TYPES,
   LEGEND_ALIGNMENT_TYPES,
   STATE_CONTENT_TYPES,
@@ -15,6 +16,7 @@ import {
   CornerType,
   TextOverflowType,
   PositionType,
+  IndicatorType,
   LinePositionType,
   LegendAlignmentType,
 
@@ -56,6 +58,7 @@ const DEFAULTS = {
 
   // Styling
   corner: 'square' as CornerType,
+  state_content_separator: ' ⸱ ',
   color: undefined, // --primary-color
   color_bg: undefined, // --secondary-background-color
 
@@ -76,6 +79,7 @@ const DEFAULTS = {
 
   legend_position: 'bottom-center' as PositionType,
   legend_alignment: 'center' as LegendAlignmentType,
+  legend_indicator: 'circle' as IndicatorType,
   legend_text_size: 1,
   legend_text_style: undefined,
 
@@ -121,6 +125,9 @@ const ENTITY_DEFAULTS = {
   state_content: ['name'] as StateContentType,
   line_state_content: undefined,
 
+  // Styling
+  legend_indicator: undefined,
+
   // Actions
   tap_action: undefined,
   hold_action: undefined,
@@ -160,6 +167,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
     // Styling
     corner: validatedValue(config.corner, CORNER_TYPES, DEFAULTS.corner),
+    state_content_separator: config.state_content_separator ?? DEFAULTS.state_content_separator,
     color: validateColor(config.color ?? config.colour, defaultColor), // --primary-color
     color_bg: validateColor(config.color_bg ?? config.colour_bg, defaultBgColor), // --secondary-background-color
 
@@ -180,6 +188,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
     legend_position: validatedValue(config.legend_position, POSITION_TYPES, DEFAULTS.legend_position),
     legend_alignment: validatedValue(config.legend_alignment, LEGEND_ALIGNMENT_TYPES, DEFAULTS.legend_alignment),
+    legend_indicator: validatedValue(config.legend_indicator, INDICATOR_TYPES, DEFAULTS.legend_indicator),
     legend_text_size: config.legend_text_size ?? DEFAULTS.legend_text_size,
     legend_text_style: config.legend_text_style ?? DEFAULTS.legend_text_style,
 
@@ -239,6 +248,9 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
       state_content: validateArray(entity.state_content, STATE_CONTENT_TYPES) ?? ENTITY_DEFAULTS.state_content,
       line_state_content: validateArray(entity.line_state_content, STATE_CONTENT_TYPES) ?? ENTITY_DEFAULTS.line_state_content,
 
+      // Styling
+      legend_indicator: validatedValue(entity.legend_indicator, INDICATOR_TYPES, ENTITY_DEFAULTS.legend_indicator),
+
       // Actions
       tap_action: entity.tap_action ?? ENTITY_DEFAULTS.tap_action,
       hold_action: entity.hold_action ?? ENTITY_DEFAULTS.hold_action,
@@ -274,8 +286,8 @@ function parseDurationToMilliseconds(durationStr: string | number) {
 function validatedValue<T extends readonly string[]>(
   currentValue: string | undefined,
   possibleValues: T,
-  defaultValue: T[number]
-): T[number] {
+  defaultValue: T[number] | undefined
+): T[number] | undefined {
   return (currentValue && possibleValues.includes(currentValue as T[number]))
     ? currentValue as T[number]
     : defaultValue;

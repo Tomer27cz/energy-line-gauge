@@ -278,6 +278,24 @@ export class EnergyLineGauge extends LitElement {
         </div>
       </li>`
   }
+  private _createLegendIndicator(device: ELGEntity, hexColor: string | undefined): TemplateResult {
+    const legendType = device.legend_indicator ?? this._config.legend_indicator ?? "circle";
+    const hasIcon = !!device.icon;
+
+    if (legendType === 'none') return html``;
+
+    if (legendType === 'icon') {
+      if (!hasIcon) return html``;
+      return html`<ha-icon style="color:${hexColor}" icon="${device.icon}"></ha-icon>`;
+    }
+
+    if (legendType === 'icon-fallback' && hasIcon) {
+      return html`<ha-icon style="color:${hexColor}" icon="${device.icon}"></ha-icon>`;
+    }
+
+    return html`<div class="bullet" style="background-color:${hexColor + "7F"};border-color:${hexColor};"></div>`;
+  }
+
   _createLegend() {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
 
@@ -296,6 +314,8 @@ export class EnergyLineGauge extends LitElement {
 
           if (state <= cutoff && !this._config.legend_all) {return html``;}
 
+          const hexColor = toHEX(device.color);
+          
           // noinspection HtmlUnknownAttribute
           return html`
             <li
@@ -307,16 +327,15 @@ export class EnergyLineGauge extends LitElement {
               title="${this._entityName(device, stateObj)}"
               id="legend-${device.entity.replace('.', '-')}"
             >
-              ${device.icon ?
-                  html`<ha-icon style="color:${toHEX(device.color)}" icon="${device.icon}"></ha-icon>` :
-                  html`<div class="bullet" style="background-color:${toHEX(device.color) + "7F"};border-color:${toHEX(device.color)};"></div>`
-              }
-              <div class="label" style="font-size: ${textSize}rem; ${textStyle}">${this._entityLabel(device, stateObj, false, state)}</div>
+              ${this._createLegendIndicator(device, hexColor)}
+              <div class="label" style="font-size: ${textSize}rem; ${textStyle}">
+                ${this._entityLabel(device, stateObj, false, state)}
+              </div>
             </li>`;
         })}
         ${this._createUntrackedLegend(textStyle, textSize)}
       </ul>
-    </div>`
+    </div>`;
   }
   _createDeviceLines() {
     if (!this._config.entities) return html``;
@@ -390,7 +409,7 @@ export class EnergyLineGauge extends LitElement {
               color: rgba(${untrackedTextColor});
               font-size: ${this._config.line_text_size ?? 1}rem;
               ${untrackedStyle}
-        ">
+          ">
             ${this._untrackedLabel(true, untrackedWidth)}
           </div>
         </div>
@@ -481,6 +500,7 @@ export class EnergyLineGauge extends LitElement {
     if (device.icon) {return device.icon;}
     return stateObj.attributes.icon || '';
   }
+
   private _entityLabel(device: ELGEntity, stateObj: HassEntity, line?: boolean, calculatedState?: number,): TemplateResult | string | undefined {
     if (line) {
       if (!device.line_state_content || device.line_state_content.length === 0) {return;}
@@ -490,7 +510,7 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
       ${(line ? device.line_state_content : device.state_content)?.map((value, i, arr) => {
-      const dot = i < arr.length - 1 ? " ⸱ " : '';
+      const dot = i < arr.length - 1 ? this._config.state_content_separator : '';
       const timeTemplate = (datetime: string) => html`
         <ha-relative-time
           .hass=${this.hass}
@@ -524,7 +544,7 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
       ${state_content?.map((value, i, arr) => {
-      const dot = i < arr.length - 1 ? " ⸱ " : '';
+      const dot = i < arr.length - 1 ? this._config.state_content_separator : '';
       switch (value) {
         case "name": return html`${name}${dot}`;
         case "state": return html`${this._formatValueMain(deltaValue)}${dot}`;

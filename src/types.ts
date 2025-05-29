@@ -28,6 +28,8 @@ export interface ELGConfig extends LovelaceCardConfig {
 
   // Styling
   corner?: CornerType;
+  state_content_separator?: string;
+
   color?: [number, number, number] | string;
   color_bg?: [number, number, number] | string;
   colour?: [number, number, number] | string; // For British English support
@@ -50,6 +52,7 @@ export interface ELGConfig extends LovelaceCardConfig {
 
   legend_position?: PositionType;
   legend_alignment?: LegendAlignmentType
+  legend_indicator?: IndicatorType;
   legend_text_size?: number;
   legend_text_style?: TextStyleType;
 
@@ -95,6 +98,9 @@ export interface ELGEntity {
   state_content?: StateContentType;
   line_state_content?: StateContentType;
 
+  // Styling
+  legend_indicator?: IndicatorType;
+
   // Actions
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
@@ -106,6 +112,7 @@ export interface ELGEntity {
 export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;
 export const TEXT_STYLE_TYPES = ['weight-lighter', 'weight-bold', 'weight-bolder', 'style-italic', 'decoration-underline', 'decoration-overline', 'decoration-line-through', 'transform-uppercase', 'transform-lowercase', 'transform-capitalize', 'family-monospace', 'shadow-light', 'shadow-medium', 'shadow-heavy', 'shadow-hard', 'shadow-neon', 'black-outline', 'white-outline'] as const;
 export const TEXT_OVERFLOW_TYPES = ['ellipsis', 'clip', 'tooltip', 'fade'] as const;
+export const INDICATOR_TYPES = ['circle', 'icon', 'icon-fallback', 'none'] as const;
 
 export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
 export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
@@ -120,6 +127,7 @@ export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean',
 export type CornerType = typeof CORNER_TYPES[number];
 export type TextStyleType = typeof TEXT_STYLE_TYPES[number][];
 export type TextOverflowType = typeof TEXT_OVERFLOW_TYPES[number];
+export type IndicatorType = typeof INDICATOR_TYPES[number];
 
 export type PositionType = typeof POSITION_TYPES[number];
 export type LinePositionType = typeof LINE_POSITION_TYPES[number];
