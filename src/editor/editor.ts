@@ -266,7 +266,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                         { value: "clip", label: "Clip" }, // Clip
                         { value: "fade", label: "Fade" }, // Fade
                         { value: "tooltip", label: "Tooltip" }, // Tooltip
-                        { value: "tooltip-segment", label: "Tooltip Each" }, // Tooltip Each
+                        { value: "tooltip-segment", label: "Tooltip Segment" }, // Tooltip Segment
                       ]
                     }
                   }},

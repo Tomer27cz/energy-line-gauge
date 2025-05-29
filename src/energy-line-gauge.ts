@@ -174,7 +174,7 @@ export class EnergyLineGauge extends LitElement {
     });
   }
 
-  private _handleTooltipEachLogic(labelElement: HTMLElement): void {
+  private _handleTooltipSegmentLogic(labelElement: HTMLElement): void {
     const childNodes = Array.from(labelElement.childNodes);
     const parts: HTMLElement[] = [];
     const separators: HTMLElement[] = [];
@@ -242,7 +242,7 @@ export class EnergyLineGauge extends LitElement {
     labelElement.style.visibility = 'visible';
 
     if (this._config.line_text_overflow === 'tooltip-segment') {
-      this._handleTooltipEachLogic(labelElement);
+      this._handleTooltipSegmentLogic(labelElement);
     } else if (this._config.line_text_overflow === 'tooltip') {
       const tolerance = 3;
       const isOverflowing = labelElement.clientWidth > 0 && labelElement.scrollWidth > labelElement.clientWidth + tolerance;
