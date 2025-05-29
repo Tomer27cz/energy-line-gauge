@@ -134,7 +134,7 @@ export class EnergyLineGauge extends LitElement {
   protected firstUpdated(changedProperties: PropertyValues): void {
     super.firstUpdated(changedProperties);
 
-    if (!(['tooltip', 'tooltip-each'].includes(this._config.line_text_overflow ?? 'tooltip'))) return;
+    if (!(['tooltip', 'tooltip-segment'].includes(this._config.line_text_overflow ?? 'tooltip'))) return;
 
     this._resizeObserver = new ResizeObserver(() => {
       this._checkAllLabelsOverflow();
@@ -159,7 +159,7 @@ export class EnergyLineGauge extends LitElement {
     super.updated(changedProperties);
     if (this.hass && this._card) {this._card.hass = this.hass;}
 
-    if (['tooltip', 'tooltip-each'].includes(this._config.line_text_overflow ?? 'tooltip'))  {
+    if (['tooltip', 'tooltip-segment'].includes(this._config.line_text_overflow ?? 'tooltip'))  {
       requestAnimationFrame(() => this._checkAllLabelsOverflow());
       return;
     }
@@ -241,7 +241,7 @@ export class EnergyLineGauge extends LitElement {
 
     labelElement.style.visibility = 'visible';
 
-    if (this._config.line_text_overflow === 'tooltip-each') {
+    if (this._config.line_text_overflow === 'tooltip-segment') {
       this._handleTooltipEachLogic(labelElement);
     } else if (this._config.line_text_overflow === 'tooltip') {
       const tolerance = 3;
@@ -440,7 +440,7 @@ export class EnergyLineGauge extends LitElement {
           overflowStyle = `mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); -webkit-mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); ${overflowDirectionStyle}`;
           break;
         case "tooltip":
-        case "tooltip-each":
+        case "tooltip-segment":
           overflowStyle = `overflow: hidden;`;
           break;
       }
@@ -483,7 +483,7 @@ export class EnergyLineGauge extends LitElement {
           <div
             class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
             data-full-text="${untrackedLabelResult.fullText}"
-            style="color: rgba(${untrackedTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${untrackedTextStyle} ${this._config.line_text_overflow === 'tooltip-each' ? 'overflow: hidden;' : ''}">
+            style="color: rgba(${untrackedTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${untrackedTextStyle} ${this._config.line_text_overflow === 'tooltip-segment' ? 'overflow: hidden;' : ''}">
             ${untrackedLabelResult.template}
           </div>
         </div>
@@ -719,7 +719,6 @@ export class EnergyLineGauge extends LitElement {
       fullText: textParts.join(''),
     };
   }
-
 
   private _formatValue(value: any, precision?: number, unit?: string): string {
     if (!value && value !== 0) return '';

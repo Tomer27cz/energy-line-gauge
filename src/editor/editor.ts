@@ -258,7 +258,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               {
                 type: "grid",
                 schema: [
-                  { name: "line_text_style", type: "multi_select", options: styleOptions },
                   { name: "line_text_overflow", required: false, selector: {
                     select: {
                       mode: "dropdown",
@@ -267,11 +266,22 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                         { value: "clip", label: "Clip" }, // Clip
                         { value: "fade", label: "Fade" }, // Fade
                         { value: "tooltip", label: "Tooltip" }, // Tooltip
+                        { value: "tooltip-segment", label: "Tooltip Each" }, // Tooltip Each
                       ]
                     }
-                  } },
+                  }},
+                  { name: "overflow_direction", required: false, selector: {
+                    select: {
+                      mode: "dropdown",
+                      options: [
+                        { value: "left", label: "Left" }, // Left
+                        { value: "right", label: "Right" }, // Right
+                      ]
+                    }
+                  }},
                 ],
               },
+              { name: "line_text_style", type: "multi_select", options: styleOptions },
             ]
           },
         ],
@@ -658,15 +668,21 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         fallback: "Size (rem)",
       },
 
-      // Style
-      line_text_style: {
-        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
-        fallback: "Style",
-      },
       // Overflow
       line_text_overflow: {
         tryLocalize: () => "Overflow",
         fallback: "Overflow",
+      },
+      // Overflow Direction
+      overflow_direction: {
+        tryLocalize: () => "Overflow Direction",
+        fallback: "Overflow Direction",
+      },
+
+      // Style
+      line_text_style: {
+        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
+        fallback: "Style",
       },
 
       // ---------------------------------------------------------------------------------------------------------------
