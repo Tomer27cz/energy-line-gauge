@@ -138,6 +138,27 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               },
             ],
           },
+
+          {
+            type: "grid",
+            schema: [
+              { name: "legend_indicator", required: false, selector:
+                {
+                  select: {
+                    mode: "dropdown",
+                    options: [
+                      { value: 'circle', label: "Circle (default)" },
+                      { value: 'icon', label: "Icon" },
+                      { value: 'icon-fallback', label: "Icon Fallback" },
+                      { value: 'none', label: "None" },
+                    ]
+                  }
+                }
+              },
+              { name: "state_content_separator", required: false, selector: { text: {} } },
+            ],
+          },
+
           {
             type: "grid",
             schema: [
@@ -485,6 +506,17 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       corner: {
         tryLocalize: "ui.panel.lovelace.editor.card.generic.theme",
         fallback: "Theme",
+      },
+
+      // Legend Indicator
+      legend_indicator: {
+        tryLocalize: () => "Legend Indicator",
+        fallback: "Legend Indicator",
+      },
+      // State Content Separator
+      state_content_separator: {
+        tryLocalize: () => "State Content Separator",
+        fallback: "State Content Separator",
       },
 
       // Line

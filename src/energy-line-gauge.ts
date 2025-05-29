@@ -217,7 +217,6 @@ export class EnergyLineGauge extends LitElement {
 
   protected render(): TemplateResult | void {
     if (!this._config || !this.hass) {
-      // this._invalidConfig() // This throws, perhaps return a template instead for initial setup
       return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
     }
 
@@ -229,9 +228,21 @@ export class EnergyLineGauge extends LitElement {
     if (this._config.offset) {this._getOffsetHistory();}
     if (this._config.statistics) {this._getStatisticsHistory();}
 
-    if (this._config.show_delta || this._config.untracked_state_content?.includes("state") || this._config.untracked_line_state_content?.includes("state")) {
+    if (
+      this._config.show_delta ||
+      this._config.untracked_state_content?.includes("state") ||
+      this._config.untracked_line_state_content?.includes("state")
+    ) {
       this._deltaValue = this._delta();
     }
+
+
+
+
+
+
+
+
 
     return html`
       <ha-card
@@ -278,7 +289,7 @@ export class EnergyLineGauge extends LitElement {
         </div>
       </li>`
   }
-  private _createLegendIndicator(device: ELGEntity, hexColor: string | undefined): TemplateResult {
+  _createLegendIndicator(device: ELGEntity, hexColor: string | undefined): TemplateResult {
     const legendType = device.legend_indicator ?? this._config.legend_indicator ?? "circle";
     const hasIcon = !!device.icon;
 
@@ -295,7 +306,6 @@ export class EnergyLineGauge extends LitElement {
 
     return html`<div class="bullet" style="background-color:${hexColor + "7F"};border-color:${hexColor};"></div>`;
   }
-
   _createLegend() {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
 

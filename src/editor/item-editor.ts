@@ -34,13 +34,32 @@ export class ItemEditor extends LitElement {
         selector: {entity: {domain: "sensor"}},
       },
 
-      { name: "name", required: false, selector: {text: {}}},
+      {
+        name: "",
+        type: "grid",
+        schema: [
+          { name: "name", required: false, selector: {text: {}}},
+          { name: "color", required: false, selector: {color_rgb: {}}},
+        ]
+      },
 
       {
         name: "",
         type: "grid",
         schema: [
-          { name: "color", required: false, selector: {color_rgb: {}}},
+          { name: "legend_indicator", required: false, selector:
+            {
+              select: {
+                mode: "dropdown",
+                options: [
+                  { value: 'circle', label: "Circle (default)" },
+                  { value: 'icon', label: "Icon" },
+                  { value: 'icon-fallback', label: "Icon Fallback" },
+                  { value: 'none', label: "None" },
+                ]
+              }
+            }
+          },
           { name: "icon", required: false, selector: {icon: {}}},
         ]
       },
@@ -174,11 +193,16 @@ export class ItemEditor extends LitElement {
         tryLocalize: "ui.panel.lovelace.editor.card.generic.name",
         fallback: "Name",
       },
-
       // RGB Color
       color: {
         tryLocalize: "ui.components.selectors.selector.types.color_rgb",
         fallback: "Color",
+      },
+
+      // Legend Indicator
+      legend_indicator: {
+        tryLocalize: () => "Legend Indicator",
+        fallback: "Legend Indicator",
       },
       // Icon
       icon: {
