@@ -4,6 +4,7 @@ import {
 
   CORNER_TYPES,
   TEXT_OVERFLOW_TYPES,
+  OVERFLOW_DIRECTION_TYPES,
   POSITION_TYPES,
   INDICATOR_TYPES,
   LINE_POSITION_TYPES,
@@ -15,6 +16,7 @@ import {
 
   CornerType,
   TextOverflowType,
+  OverflowDirectionType,
   PositionType,
   IndicatorType,
   LinePositionType,
@@ -67,6 +69,7 @@ const DEFAULTS = {
   line_text_size: 1,
   line_text_style: undefined,
   line_text_overflow: 'tooltip' as TextOverflowType,
+  overflow_direction: 'right' as OverflowDirectionType,
 
   // Actions
   tap_action: undefined,
@@ -176,6 +179,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     line_text_size: config.line_text_size ?? DEFAULTS.line_text_size,
     line_text_style: config.line_text_style ?? DEFAULTS.line_text_style,
     line_text_overflow: validatedValue(config.line_text_overflow, TEXT_OVERFLOW_TYPES, DEFAULTS.line_text_overflow),
+    overflow_direction: validatedValue(config.overflow_direction, OVERFLOW_DIRECTION_TYPES, DEFAULTS.overflow_direction),
 
     // Actions
     tap_action: config.tap_action ?? DEFAULTS.tap_action,

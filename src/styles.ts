@@ -230,6 +230,7 @@ export const styles = css`
         height: 100%;
         transition: width 1s ease-out;
         display: flex;
+        direction: ltr;
     }
     .untracked-line {
       float: right;
