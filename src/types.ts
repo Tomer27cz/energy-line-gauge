@@ -107,6 +107,12 @@ export interface ELGEntity {
   double_tap_action?: ActionConfig;
 }
 
+export interface ELGEntityState {
+  state: number;
+  width: number;
+  stateObject: HassEntity;
+}
+
 // State Content Types -------------------------------------------------------------------------------------------------
 
 export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;

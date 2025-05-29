@@ -16,6 +16,7 @@ import { version } from '../package.json';
 import {
   ELGConfig,
   ELGEntity,
+  ELGEntityState,
 
   ELGHistoryOffset,
   ELGHistoryOffsetEntities,
@@ -60,7 +61,7 @@ export class EnergyLineGauge extends LitElement {
   private _warnings: string[] = [];
   private _deltaValue: [number, number, number] | undefined = undefined;
 
-  private _entitiesWidth: Record<string, number> = {};
+  private _entitiesObject: Record<string, ELGEntityState> = {};
   private _entitiesTotalWidth: number = 0;
   private _resizeObserver!: ResizeObserver;
 
@@ -220,7 +221,8 @@ export class EnergyLineGauge extends LitElement {
       return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
     }
 
-    this._entitiesWidth = {};
+    this._entitiesObject = {};
+    this._entitiesTotalWidth = 0;
     this._warnings = [];
 
     if (!this._validate(this._config.entity)) {return this._renderWarnings();}
@@ -236,13 +238,22 @@ export class EnergyLineGauge extends LitElement {
       this._deltaValue = this._delta();
     }
 
+    for (const device of this._config.entities ?? []) {
+      if (!this._validate(device.entity)) {continue;}
 
+      const stateObj: HassEntity = this.hass.states[device.entity];
+      const state: number = this._calcState(stateObj, device.multiplier);
+      const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
 
+      const width: number = state <= cutoff ? 0 : this._calculateDeviceWidth(state);
+      if (width > 0) {this._entitiesTotalWidth += width;}
 
-
-
-
-
+      this._entitiesObject[device.entity] = {
+        state: state,
+        width: width,
+        stateObject: stateObj,
+      };
+    }
 
     return html`
       <ha-card
@@ -316,13 +327,8 @@ export class EnergyLineGauge extends LitElement {
     <div class="chart-legend">
       <ul style="justify-content: ${this._config.legend_alignment ?? "center"}">
         ${this._config.entities.map((device: ELGEntity) => {
-          if (!this._validate(device.entity)) return html``;
-
-          const stateObj: HassEntity = this.hass.states[device.entity];
-          const state = this._calcState(stateObj, device.multiplier);
-          const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
-
-          if (state <= cutoff && !this._config.legend_all) {return html``;}
+          const entityObject: ELGEntityState = this._entitiesObject[device.entity];
+          if (entityObject.width <= 0 && !this._config.legend_all) {return html``;}
 
           const hexColor = toHEX(device.color);
           
@@ -334,12 +340,12 @@ export class EnergyLineGauge extends LitElement {
                 hasHold: hasAction(device.hold_action),
                 hasDoubleClick: hasAction(device.double_tap_action),
               })}
-              title="${this._entityName(device, stateObj)}"
+              title="${this._entityName(device, entityObject.stateObject)}"
               id="legend-${device.entity.replace('.', '-')}"
             >
               ${this._createLegendIndicator(device, hexColor)}
               <div class="label" style="font-size: ${textSize}rem; ${textStyle}">
-                ${this._entityLabel(device, stateObj, false, state)}
+                ${this._entityLabel(device, entityObject.stateObject, false, entityObject.state)}
               </div>
             </li>`;
         })}
@@ -349,23 +355,13 @@ export class EnergyLineGauge extends LitElement {
   }
   _createDeviceLines() {
     if (!this._config.entities) return html``;
-
-    this._entitiesTotalWidth = 0;
     const deviceLines = this._config.entities.map((device: ELGEntity) => {
-      if (!this._validate(device.entity)) return html``;
+      const entityObject: ELGEntityState = this._entitiesObject[device.entity];
 
-      const stateObj: HassEntity = this.hass.states[device.entity];
-      const state = this._calcState(stateObj, device.multiplier);
-      const cutoff = device.cutoff ?? this._config.cutoff ?? 0;
-
-      const width = state <= cutoff ? 0 : this._calculateDeviceWidth(state);
-      this._entitiesWidth[device.entity] = width;
-
-      if (width > 0) {this._entitiesTotalWidth += width;}
-
+      const width: number = entityObject.width;
       const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
       const lineTextColor = textColor(device.color);
-      const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
+      const textStyle: string = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
 
       const overflowStyles = {
         "tooltip": "overflow: hidden; text-overflow: clip;",
@@ -373,7 +369,7 @@ export class EnergyLineGauge extends LitElement {
         "clip": "overflow: hidden; text-overflow: clip;",
         "fade": "mask-image: linear-gradient(to right, black 85%, transparent 98%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 85%, transparent 98%, transparent 100%);",
       }
-      const overflowStyle = overflowStyles[this._config.line_text_overflow ?? "tooltip"] ?? overflowStyles["tooltip"];
+      const overflowStyle: string = overflowStyles[this._config.line_text_overflow ?? "tooltip"] ?? overflowStyles["tooltip"];
 
       // noinspection HtmlUnknownAttribute
       return html`
@@ -396,7 +392,7 @@ export class EnergyLineGauge extends LitElement {
               ${overflowStyle}
               ${textStyle}
           ">
-            ${this._entityLabel(device, stateObj, true, state)}
+            ${this._entityLabel(device, entityObject.stateObject, true, entityObject.state)}
           </div>
         ` : html``}
       </div>
@@ -534,7 +530,7 @@ export class EnergyLineGauge extends LitElement {
         case "state": return html`${this._formatValueDevice(calculatedState, device)}${dot}`;
         case "last_changed": return timeTemplate(stateObj.last_changed);
         case "last_updated": return timeTemplate(stateObj.last_updated);
-        case "percentage": return html`${this._entitiesWidth[device.entity].toFixed(0)}%${dot}`;
+        case "percentage": return html`${this._entitiesObject[device.entity].width.toFixed(0)}%${dot}`;
         case "icon": return html`<ha-icon icon="${this._entityIcon(device, stateObj)}"></ha-icon>`;
         default: return html`${value}${dot}`;
       }

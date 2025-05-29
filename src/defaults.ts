@@ -119,7 +119,7 @@ const ENTITY_DEFAULTS = {
   cutoff: undefined,
   unit: undefined,
   multiplier: 1,
-  precision: 0,
+  precision: undefined,
 
   // State Content
   state_content: ['name'] as StateContentType,
