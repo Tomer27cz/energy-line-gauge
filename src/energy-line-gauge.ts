@@ -17,7 +17,7 @@ import {
   ELGConfig,
   ELGEntity,
   ELGEntityState,
-  ELGDelta,
+  ELGState,
 
   ELGHistoryOffset,
   ELGHistoryOffsetEntities,
@@ -31,6 +31,9 @@ import {
   HassStatistics,
 
   LabelRenderResult,
+  PartRenderer,
+  RendererContext,
+  DeviceRendererContext,
 } from './types';
 import { styles, getTextStyle } from './styles';
 import { actionHandler } from './action-handler';
@@ -62,10 +65,13 @@ export class EnergyLineGauge extends LitElement {
   @property() private _card!: LovelaceCard;
 
   private _warnings: string[] = [];
-  private _deltaValue: ELGDelta | undefined = undefined;
+
+  private _mainObject!: ELGEntityState;
+  private _untrackedObject!: ELGState;
 
   private _entitiesObject: Record<string, ELGEntityState> = {};
-  private _entitiesTotalWidth: number = 0;
+  private _entitiesTotalObject!: ELGState;
+
   private _resizeObserver!: ResizeObserver;
 
   private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
@@ -86,11 +92,7 @@ export class EnergyLineGauge extends LitElement {
   }
 
   // noinspection JSUnusedGlobalSymbols
-  public static getStubConfig(
-    hass: HomeAssistant,
-    entities: string[],
-    entitiesFallback: string[]
-  ): ELGConfig {
+  public static getStubConfig(hass: HomeAssistant, entities: string[], entitiesFallback: string[]): ELGConfig {
     const includeDomains = ["sensor"];
     const maxEntities = 4;
     const entityFilter = (stateObj: HassEntity): boolean => !isNaN(Number(stateObj.state))
@@ -175,6 +177,340 @@ export class EnergyLineGauge extends LitElement {
     });
   }
 
+  public static get styles(): CSSResultGroup {
+    return styles;
+  }
+
+  protected render(): TemplateResult | void {
+    if (!this._config || !this.hass) {
+      return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
+    }
+
+    this._entitiesObject = {};
+    this._warnings = [];
+
+    if (!this._validate(this._config.entity)) {return this._renderWarnings();}
+
+    if (this._config.offset) {this._getOffsetHistory();}
+    if (this._config.statistics) {this._getStatisticsHistory();}
+
+    const mainState: number = this._calcStateMain();
+
+    let max: number = this._getMax(mainState);
+    let min: number = this._getMin();
+
+    if (mainState > max) {max = mainState;}
+    const range: number = max - min;
+
+    const clampedMain: number = Math.min(Math.max(mainState, min), max);
+    const mainWidth: number = ((clampedMain - min) / range) * 100;
+    const mainPercentage: number = clampedMain / max;
+
+    this._mainObject = {
+      state: mainState,
+      width: mainWidth,
+      percentage: mainPercentage,
+      stateObject: this.hass.states[this._config.entity],
+    };
+
+    let stateSum: number = 0;
+    let percentageSum: number = 0;
+    let widthSum: number = 0;
+
+    for (const device of this._config.entities ?? []) {
+      if (!this._validate(device.entity)) continue;
+
+      const stateObj: HassEntity = this.hass.states[device.entity];
+      const state: number = this._calcState(stateObj, device.multiplier);
+      const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
+
+      const percentage: number = state / mainState;
+      const clampedDevice = Math.min(Math.max(state, min), max);
+      const width: number = state <= cutoff ? 0 : ((clampedDevice - min) / range) * 100;
+
+      stateSum += state;
+      percentageSum += percentage;
+      widthSum += width;
+
+      this._entitiesObject[device.entity] = {
+        state: state,
+        width: width,
+        percentage: percentage,
+        stateObject: stateObj,
+      };
+    }
+
+    this._entitiesTotalObject = {
+      state: stateSum,
+      width: widthSum,
+      percentage: percentageSum,
+    }
+
+    this._untrackedObject = {
+      state: mainState - stateSum,
+      width: mainWidth - widthSum,
+      percentage: (mainState - stateSum) / mainState,
+    };
+
+    return html`
+      <ha-card
+        .header=${this._config.header}
+        @action=${this._handleAction}
+        .actionHandler=${actionHandler({
+          hasHold: hasAction(this._config.hold_action),
+          hasDoubleClick: hasAction(this._config.double_tap_action),
+        })}
+        tabindex="0"
+        .label=${this._config.label}
+      >
+        <div class="line-gauge-card" style="--color: ${toHEX(this._config.color)}; --background-color: ${toHEX(this._config.color_bg)}"">
+          ${this._createInnerHtml()}
+        </div>
+      </ha-card>
+    `;
+  }
+
+  _createDelta() {
+    return html`
+      <div class="gauge-delta">
+        <div class="gauge-delta-item">State: <span>${this._formatValueMain(this._mainObject?.state)}</span></div>
+        <div class="gauge-delta-item">Sum: <span>${this._formatValueMain(this._entitiesTotalObject?.state)}</span></div>
+        <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(this._untrackedObject?.state)}</span></div>
+      </div>`;
+  }
+  _createUntrackedLegend(style: string, size: number) {
+    if (!this._config.untracked_legend) {return html``;}
+    const untrackedLabelResult = this._untrackedLabel();
+
+    return html`
+      <li title="${this._config.untracked_legend_label || untrackedLabelResult?.text}" id="legend-untracked" style="display: inline-grid;">
+        ${this._config.untracked_legend_icon ?
+          html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` :
+          html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
+        }
+        <div class="label" style="font-size: ${size}rem; ${style}">
+          ${untrackedLabelResult?.template}
+        </div>
+      </li>`
+  }
+  _createLegendIndicator(device: ELGEntity, hexColor: string | undefined): TemplateResult {
+    const legendType = device.legend_indicator ?? this._config.legend_indicator ?? "circle";
+    const hasIcon = !!device.icon;
+
+    if (legendType === 'none') return html``;
+
+    if (legendType === 'icon') {
+      if (!hasIcon) return html``;
+      return html`<ha-icon style="color:${hexColor}" icon="${device.icon}"></ha-icon>`;
+    }
+
+    if (legendType === 'icon-fallback' && hasIcon) {
+      return html`<ha-icon style="color:${hexColor}" icon="${device.icon}"></ha-icon>`;
+    }
+
+    return html`<div class="bullet" style="background-color:${hexColor + "7F"};border-color:${hexColor};"></div>`;
+  }
+  _createLegend() {
+    if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
+
+    const textSize = this._config.legend_text_size ?? this._config.text_size ?? 1;
+    const textStyle = getTextStyle(this._config.legend_text_style, textSize);
+
+    return html`
+    <div class="chart-legend">
+      <ul style="justify-content: ${this._config.legend_alignment ?? "center"}">
+        ${this._config.entities.map((device: ELGEntity) => {
+          if (this._entitiesObject[device.entity].width <= 0 && !this._config.legend_all) {return html``;}
+
+          const hexColor = toHEX(device.color);
+          const labelResult = this._entityLabel(device, false);
+          
+          // noinspection HtmlUnknownAttribute
+          return html`
+            <li
+              @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
+              .actionHandler=${actionHandler({
+                hasHold: hasAction(device.hold_action),
+                hasDoubleClick: hasAction(device.double_tap_action),
+              })}
+              title="${this._entityName(device)}"
+              id="legend-${device.entity.replace('.', '-')}"
+            >
+              ${this._createLegendIndicator(device, hexColor)}
+              <div class="label" style="font-size: ${textSize}rem; ${textStyle}">
+                ${labelResult?.template}
+              </div>
+            </li>`;
+        })}
+        ${this._createUntrackedLegend(textStyle, textSize)}
+      </ul>
+    </div>`;
+  }
+  _createDeviceLines() {
+    if (!this._config.entities) return html``;
+    const deviceLines = this._config.entities.map((device: ELGEntity) => {
+      const width: number = this._entitiesObject[device.entity].width;
+      const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
+      const lineTextColor = textColor(device.color);
+      const textStyle: string = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
+
+      const labelResult = this._entityLabel(device, true);
+
+      let overflowStyle = "";
+      const currentOverflowType = this._config.line_text_overflow ?? "tooltip";
+      const overflowDirectionStyle = this._config.overflow_direction === 'right' ? 'direction: ltr;' : 'direction: rtl;';
+
+      switch(currentOverflowType) {
+        case "ellipsis":
+          overflowStyle = `overflow: hidden; text-overflow: ellipsis; ${overflowDirectionStyle}`;
+          break;
+        case "clip":
+          overflowStyle = `overflow: hidden; text-overflow: clip; ${overflowDirectionStyle}`;
+          break;
+        case "fade":
+          const fadeDirection = this._config.overflow_direction === 'left' ? 'left' : 'right';
+          overflowStyle = `mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); -webkit-mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); ${overflowDirectionStyle}`;
+          break;
+        case "tooltip":
+        case "tooltip-segment":
+          overflowStyle = `overflow: hidden;`;
+          break;
+      }
+
+      // noinspection HtmlUnknownAttribute
+      return html`
+      <div
+        id="line-${device.entity.replace(".", "-")}"
+        class="device-line"
+        style="background-color: ${toHEX(device.color)}; width: ${width}%;"
+        @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
+        .actionHandler=${actionHandler({
+        hasHold: hasAction(device.hold_action),
+        hasDoubleClick: hasAction(device.double_tap_action),
+      })}
+      >
+        ${displayLineState && labelResult ? html`
+          <div
+            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
+            data-full-text="${labelResult.text}"
+            style="color: rgba(${lineTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${overflowStyle} ${textStyle}">
+            ${labelResult.template}
+          </div>
+        ` : html``}
+      </div>
+    `;
+    });
+
+    const untrackedWidth: number = this._untrackedObject?.width ?? 0;
+    const displayUntrackedLine: boolean = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
+    const untrackedTextColor = textColor(this._config.color);
+    const untrackedTextStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(untrackedTextColor));
+    const untrackedLabelResult = this._untrackedLabel(true);
+
+    return html`
+    <div class="device-line-container">
+      ${deviceLines}
+      ${displayUntrackedLine && untrackedLabelResult ? html`
+        <div class="untracked-line" style="width: ${untrackedWidth}%">
+          <div
+            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
+            data-full-text="${untrackedLabelResult.text}"
+            style="color: rgba(${untrackedTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${untrackedTextStyle} ${this._config.line_text_overflow === 'tooltip-segment' ? 'overflow: hidden;' : ''}">
+            ${untrackedLabelResult.template}
+          </div>
+        </div>
+      ` : html``}
+    </div>
+  `;
+  }
+  _createInnerHtml() {
+    const titlePosition = this._config.title_position ?? "top-left";
+    const legendPosition = this._config.legend_position ?? "bottom-center";
+    const deltaPosition = this._config.delta_position ?? "bottom-center";
+    const valuePosition = this._config.position ?? "left";
+
+    const cornerStyle = this._config.corner ?? "square";
+
+    const titleTextSize = this._config.title_text_size ?? 2;
+    const textSize = this._config.text_size ?? 2.5;
+
+    const displayTitle: boolean = !!((this._config.title || this._config.subtitle) && titlePosition !== 'none');
+    const displayLegend: boolean = (this._config.entities && this._config.entities.length > 0 && legendPosition !== 'none');
+    const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
+    const displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
+
+    const titleStyle = getTextStyle(this._config.title_text_style, titleTextSize);
+    const valueStyle = getTextStyle(this._config.text_style, textSize);
+
+    return html`
+      <div class="gauge-position-frame position-${titlePosition}">
+        ${displayTitle ? html`
+          <div>
+            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}">${this._config.title}</div>` : ''}
+            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}">${this._config.subtitle}</div>` : ''}
+          </div>
+        ` : ''}
+        <div class="gauge-position-frame position-${legendPosition}">
+          ${displayLegend ? this._createLegend() : ''}
+          <div class="gauge-position-frame position-${deltaPosition}">
+            ${displayDelta ? this._createDelta() : ''}
+            <div class="gauge-position-frame position-${valuePosition}">
+              ${displayValue ? html`
+                <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}">
+                  ${this._calcStateMain().toFixed(this._config.precision)}
+                  ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
+                </div>
+              ` : ''}
+              <div class="gauge-line line-corner-${cornerStyle}">
+                <div class="main-line" style="width: ${this._mainObject?.width}%;"></div>
+                ${this._createDeviceLines()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${this._renderWarnings()}
+    `;
+  }
+
+  // Warnings ----------------------------------------------------------------------------------------------------------
+
+  private _invalidConfig() {
+    if (!this.hass) {throw new Error("Invalid configuration (no hass)");}
+    throw new Error(this.hass.localize("ui.panel.lovelace.editor.condition-editor.invalid_config_title"));
+  }
+  private _entityNotFound(entity: string): string {
+    return this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
+      entity: entity || "[empty]"
+    });
+  }
+  private _entityUnavailable(stateObj: HassEntity): string {
+    return this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
+      entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`
+    });
+  }
+  private _entityNotNumeric(stateObj: HassEntity): string {
+    return this.hass.localize("ui.panel.lovelace.warning.entity_non_numeric", {
+      entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`
+    });
+  }
+  private _entityNoStatistics(entityId: string): string {
+    return this.hass.localize("ui.components.statistics_charts.no_statistics_found") + `(${entityId}), change function / see docs`;
+  }
+
+  // ----------------------------------------------------- Entity ------------------------------------------------------
+
+  private _entityName(device: ELGEntity): string {
+    if (device.name) {return device.name;}
+    return this._entitiesObject[device.entity].stateObject.attributes.friendly_name || device.entity.split('.')[1];
+  }
+  private _entityIcon(device: ELGEntity): string {
+    if (device.icon) {return device.icon;}
+    return this._entitiesObject[device.entity].stateObject.attributes.icon || '';
+  }
+
+  // Label -------------------------------------------------------------------------------------------------------------
+
   private _handleTooltipSegmentLogic(labelElement: HTMLElement): void {
     const childNodes = Array.from(labelElement.childNodes);
     const parts: HTMLElement[] = [];
@@ -229,15 +565,14 @@ export class EnergyLineGauge extends LitElement {
       }
     }
   }
-
   private _checkLabelOverflow(labelElement: HTMLElement): void {
     const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
-    const fullText = labelElement.dataset.fullText || labelElement.textContent?.trim() || "";
+    const text = labelElement.dataset.text || labelElement.textContent?.trim() || "";
 
     if (parentContainer) {
-      parentContainer.setAttribute('title', fullText);
+      parentContainer.setAttribute('title', text);
     } else {
-      labelElement.setAttribute('title', fullText);
+      labelElement.setAttribute('title', text);
     }
 
     labelElement.style.visibility = 'visible';
@@ -253,7 +588,6 @@ export class EnergyLineGauge extends LitElement {
       }
     }
   }
-
   private _resetAllLabelsToVisible(): void {
     if (!this.shadowRoot) return;
     this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(labelElement => {
@@ -270,450 +604,147 @@ export class EnergyLineGauge extends LitElement {
     });
   }
 
-  public static get styles(): CSSResultGroup {
-    return styles;
-  }
+  // Label Parts -------------------------------------------------------------------------------------------------------
 
-  protected render(): TemplateResult | void {
-    if (!this._config || !this.hass) {
-      return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
-    }
-
-    this._entitiesObject = {};
-    this._entitiesTotalWidth = 0;
-    this._warnings = [];
-
-    if (!this._validate(this._config.entity)) {return this._renderWarnings();}
-
-    if (this._config.offset) {this._getOffsetHistory();}
-    if (this._config.statistics) {this._getStatisticsHistory();}
-
-    if (
-      this._config.show_delta ||
-      this._config.untracked_state_content?.includes("state") ||
-      this._config.untracked_line_state_content?.includes("state")
-    ) {
-      this._deltaValue = this._delta();
-    }
-
-    for (const device of this._config.entities ?? []) {
-      if (!this._validate(device.entity)) {continue;}
-
-      const stateObj: HassEntity = this.hass.states[device.entity];
-      const state: number = this._calcState(stateObj, device.multiplier);
-      const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
-
-      const width: number = state <= cutoff ? 0 : this._calculateDeviceWidth(state);
-      if (width > 0) {this._entitiesTotalWidth += width;}
-
-      this._entitiesObject[device.entity] = {
-        state: state,
-        width: width,
-        stateObject: stateObj,
-      };
-    }
-
-    return html`
-      <ha-card
-        .header=${this._config.header}
-        @action=${this._handleAction}
-        .actionHandler=${actionHandler({
-      hasHold: hasAction(this._config.hold_action),
-      hasDoubleClick: hasAction(this._config.double_tap_action),
-    })}
-        tabindex="0"
-        .label=${this._config.label}
-      >
-        <div class="line-gauge-card" style="--color: ${toHEX(this._config.color)}; --background-color: ${toHEX(this._config.color_bg)}"">
-          ${this._createInnerHtml()}
-        </div>
-      </ha-card>
-    `;
-  }
-
-  _createDelta() {
-    if (!this._deltaValue) {
-      if (!this._config.suppress_warnings) {this._addWarning("Delta could not be calculated");}
-      return html``;
-    }
-    return html`
-      <div class="gauge-delta">
-        <div class="gauge-delta-item">State: <span>${this._formatValueMain(this._deltaValue.state)}</span></div>
-        <div class="gauge-delta-item">Sum: <span>${this._formatValueMain(this._deltaValue.sum)}</span></div>
-        <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(this._deltaValue.delta)}</span></div>
-      </div>`;
-  }
-  _createUntrackedLegend(style: string, size: number) {
-    if (!this._config.untracked_legend) {return html``;}
-    const untrackedLabelResult = this._untrackedLabel();
-
-    return html`
-      <li title="${this._config.untracked_legend_label || untrackedLabelResult?.fullText}" id="legend-untracked" style="display: inline-grid;">
-        ${this._config.untracked_legend_icon ?
-          html`<ha-icon style="color:${toHEX(this._config.color)}" icon="${this._config.untracked_legend_icon}"></ha-icon>` :
-          html`<div class="bullet" style="background-color:${toHEX(this._config.color) + "7F"};border-color:${toHEX(this._config.color)};"></div>`
-        }
-        <div class="label" style="font-size: ${size}rem; ${style}">
-          ${untrackedLabelResult?.template}
-        </div>
-      </li>`
-  }
-  _createLegendIndicator(device: ELGEntity, hexColor: string | undefined): TemplateResult {
-    const legendType = device.legend_indicator ?? this._config.legend_indicator ?? "circle";
-    const hasIcon = !!device.icon;
-
-    if (legendType === 'none') return html``;
-
-    if (legendType === 'icon') {
-      if (!hasIcon) return html``;
-      return html`<ha-icon style="color:${hexColor}" icon="${device.icon}"></ha-icon>`;
-    }
-
-    if (legendType === 'icon-fallback' && hasIcon) {
-      return html`<ha-icon style="color:${hexColor}" icon="${device.icon}"></ha-icon>`;
-    }
-
-    return html`<div class="bullet" style="background-color:${hexColor + "7F"};border-color:${hexColor};"></div>`;
-  }
-  _createLegend() {
-    if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
-
-    const textSize = this._config.legend_text_size ?? this._config.text_size ?? 1;
-    const textStyle = getTextStyle(this._config.legend_text_style, textSize);
-
-    return html`
-    <div class="chart-legend">
-      <ul style="justify-content: ${this._config.legend_alignment ?? "center"}">
-        ${this._config.entities.map((device: ELGEntity) => {
-          const entityObject: ELGEntityState = this._entitiesObject[device.entity];
-          if (entityObject.width <= 0 && !this._config.legend_all) {return html``;}
-
-          const hexColor = toHEX(device.color);
-          const labelResult = this._entityLabel(device, entityObject.stateObject, false, entityObject.state);
-          
-          // noinspection HtmlUnknownAttribute
-          return html`
-            <li
-              @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
-              .actionHandler=${actionHandler({
-                hasHold: hasAction(device.hold_action),
-                hasDoubleClick: hasAction(device.double_tap_action),
-              })}
-              title="${this._entityName(device, entityObject.stateObject)}"
-              id="legend-${device.entity.replace('.', '-')}"
-            >
-              ${this._createLegendIndicator(device, hexColor)}
-              <div class="label" style="font-size: ${textSize}rem; ${textStyle}">
-                ${labelResult?.template}
-              </div>
-            </li>`;
-        })}
-        ${this._createUntrackedLegend(textStyle, textSize)}
-      </ul>
-    </div>`;
-  }
-  _createDeviceLines() {
-    if (!this._config.entities) return html``;
-    const deviceLines = this._config.entities.map((device: ELGEntity) => {
-      const entityObject: ELGEntityState = this._entitiesObject[device.entity];
-
-      const width: number = entityObject.width;
-      const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
-      const lineTextColor = textColor(device.color);
-      const textStyle: string = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
-
-      const labelResult = this._entityLabel(device, entityObject.stateObject, true, entityObject.state);
-
-      let overflowStyle = "";
-      const currentOverflowType = this._config.line_text_overflow ?? "tooltip";
-      const overflowDirectionStyle = this._config.overflow_direction === 'right' ? 'direction: ltr;' : 'direction: rtl;';
-
-      switch(currentOverflowType) {
-        case "ellipsis":
-          overflowStyle = `overflow: hidden; text-overflow: ellipsis; ${overflowDirectionStyle}`;
-          break;
-        case "clip":
-          overflowStyle = `overflow: hidden; text-overflow: clip; ${overflowDirectionStyle}`;
-          break;
-        case "fade":
-          const fadeDirection = this._config.overflow_direction === 'left' ? 'left' : 'right';
-          overflowStyle = `mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); -webkit-mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); ${overflowDirectionStyle}`;
-          break;
-        case "tooltip":
-        case "tooltip-segment":
-          overflowStyle = `overflow: hidden;`;
-          break;
-      }
-
-      // noinspection HtmlUnknownAttribute
-      return html`
-      <div
-        id="line-${device.entity.replace(".", "-")}"
-        class="device-line"
-        style="background-color: ${toHEX(device.color)}; width: ${width}%;"
-        @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
-        .actionHandler=${actionHandler({
-        hasHold: hasAction(device.hold_action),
-        hasDoubleClick: hasAction(device.double_tap_action),
-      })}
-      >
-        ${displayLineState && labelResult ? html`
-          <div
-            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
-            data-full-text="${labelResult.fullText}"
-            style="color: rgba(${lineTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${overflowStyle} ${textStyle}">
-            ${labelResult.template}
-          </div>
-        ` : html``}
-      </div>
-    `;
-    });
-
-    const untrackedWidth = this._calculateMainWidth() - this._entitiesTotalWidth;
-    const displayUntrackedLine: boolean = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
-    const untrackedTextColor = textColor(this._config.color);
-    const untrackedTextStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(untrackedTextColor));
-    const untrackedLabelResult = this._untrackedLabel(true, untrackedWidth);
-
-    return html`
-    <div class="device-line-container">
-      ${deviceLines}
-      ${displayUntrackedLine && untrackedLabelResult ? html`
-        <div class="untracked-line" style="width: ${untrackedWidth}%">
-          <div
-            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
-            data-full-text="${untrackedLabelResult.fullText}"
-            style="color: rgba(${untrackedTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${untrackedTextStyle} ${this._config.line_text_overflow === 'tooltip-segment' ? 'overflow: hidden;' : ''}">
-            ${untrackedLabelResult.template}
-          </div>
-        </div>
-      ` : html``}
-    </div>
-  `;
-  }
-  _createInnerHtml() {
-    const titlePosition = this._config.title_position ?? "top-left";
-    const legendPosition = this._config.legend_position ?? "bottom-center";
-    const deltaPosition = this._config.delta_position ?? "bottom-center";
-    const valuePosition = this._config.position ?? "left";
-
-    const cornerStyle = this._config.corner ?? "square";
-
-    const titleTextSize = this._config.title_text_size ?? 2;
-    const textSize = this._config.text_size ?? 2.5;
-
-    const displayTitle: boolean = !!((this._config.title || this._config.subtitle) && titlePosition !== 'none');
-    const displayLegend: boolean = (this._config.entities && this._config.entities.length > 0 && legendPosition !== 'none');
-    const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
-    const displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
-
-    const titleStyle = getTextStyle(this._config.title_text_style, titleTextSize);
-    const valueStyle = getTextStyle(this._config.text_style, textSize);
-
-    // gauge-position-frame - First div is moved around the second div based on the position-* class
-    // delta is currently always at the bottom of the line
-    return html`
-      <div class="gauge-position-frame position-${titlePosition}">
-        ${displayTitle ? html`
-          <div>
-            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}">${this._config.title}</div>` : ''}
-            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}">${this._config.subtitle}</div>` : ''}
-          </div>
-        ` : ''}
-        <div class="gauge-position-frame position-${legendPosition}">
-          ${displayLegend ? this._createLegend() : ''}
-          <div class="gauge-position-frame position-${deltaPosition}">
-            ${displayDelta ? this._createDelta() : ''}
-            <div class="gauge-position-frame position-${valuePosition}">
-              ${displayValue ? html`
-                <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}">
-                  ${this._calcStateMain().toFixed(this._config.precision)}
-                  ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
-                </div>
-              ` : ''}
-              <div class="gauge-line line-corner-${cornerStyle}">
-                <div class="main-line" style="width: ${this._calculateMainWidth()}%;"></div>
-                ${this._createDeviceLines()}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      ${this._renderWarnings()}
-    `;
-  }
-
-  private _invalidConfig() {
-    if (!this.hass) {throw new Error("Invalid configuration (no hass)");}
-    throw new Error(this.hass.localize("ui.panel.lovelace.editor.condition-editor.invalid_config_title"));
-  }
-  private _entityNotFound(entity: string): string {
-    return this.hass.localize("ui.panel.lovelace.warning.entity_not_found", {
-      entity: entity || "[empty]"
-    });
-  }
-  private _entityUnavailable(stateObj: HassEntity): string {
-    return this.hass.localize("ui.panel.lovelace.warning.entity_unavailable", {
-      entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`
-    });
-  }
-  private _entityNotNumeric(stateObj: HassEntity): string {
-    return this.hass.localize("ui.panel.lovelace.warning.entity_non_numeric", {
-      entity: `${stateObj.attributes?.friendly_name} (${stateObj.entity_id})`
-    });
-  }
-  private _entityNoStatistics(entityId: string): string {
-    return this.hass.localize("ui.components.statistics_charts.no_statistics_found") + `(${entityId}), change function / see docs`;
-  }
-
-  private _entityName(device: ELGEntity, stateObj: HassEntity): string {
-    if (device.name) {return device.name;}
-    return stateObj.attributes.friendly_name || device.entity.split('.')[1];
-  }
-  private _entityIcon(device: ELGEntity, stateObj: HassEntity): string {
-    if (device.icon) {return device.icon;}
-    return stateObj.attributes.icon || '';
-  }
-
-  private _entityLabel(device: ELGEntity, stateObj: HassEntity, line = false, calculatedState?: number): LabelRenderResult | undefined {
-    const stateContent = line ? device.line_state_content : device.state_content;
-    const defaultLabel = this._entityName(device, stateObj);
-
+  private _renderLabelInternal(stateContent: string[] | undefined, line: boolean, partRenderer: PartRenderer, rendererContext: RendererContext | DeviceRendererContext): LabelRenderResult | undefined {
     if (!stateContent?.length) {
-      return line ? undefined : { template: defaultLabel, fullText: defaultLabel };
+      return line ? undefined : { template: rendererContext.defaultLabel, text: rendererContext.defaultLabel };
     }
 
-    const shouldReverse = (this._config.overflow_direction === 'left' && ['clip', 'fade', 'ellipsis'].includes(this._config.line_text_overflow ?? 'tooltip'));
+    const shouldReverse = (
+      this._config.overflow_direction === 'left' &&
+      ['clip', 'fade', 'ellipsis'].includes(this._config.line_text_overflow??'')
+    );
     const sortedContent = shouldReverse ? [...stateContent].reverse() : stateContent;
 
-    const contentTemplates: TemplateResult[] = [];
-    const textParts: string[] = [];
+    const templates: TemplateResult[] = [];
+    const texts: string[] = [];
 
     for (let i = 0; i < sortedContent.length; i++) {
       const value = sortedContent[i];
-      let templatePart: TemplateResult | string | undefined;
-      let textPart = '';
+      const { template, text } = partRenderer.call(this, value, rendererContext);
 
-      const renderRelativeTime = (datetime: string) => {
-        const date = new Date(datetime);
-        return {
-          template: html`<ha-relative-time .hass=${this.hass} .datetime=${datetime}></ha-relative-time>`,
-          text: `${date.toLocaleTimeString()} ${date.toLocaleDateString()}`,
-        };
-      };
-
-      switch (value) {
-        case 'name':
-          textPart = this._entityName(device, stateObj);
-          templatePart = html`${textPart}`;
-          break;
-
-        case 'state':
-          textPart = this._formatValueDevice(calculatedState, device);
-          templatePart = html`${textPart}`;
-          break;
-
-        case 'last_changed':
-          ({ template: templatePart, text: textPart } = renderRelativeTime(stateObj.last_changed));
-          break;
-
-        case 'last_updated':
-          ({ template: templatePart, text: textPart } = renderRelativeTime(stateObj.last_updated));
-          break;
-
-        case 'percentage':
-          const entityObj = this._entitiesObject[device.entity];
-          textPart = entityObj ? `${entityObj.width.toFixed(0)}%` : '0%';
-          templatePart = html`${textPart}`;
-          break;
-
-        case 'icon':
-          const icon = this._entityIcon(device, stateObj);
-          templatePart = html`<ha-icon icon="${icon}"></ha-icon>`;
-          textPart = `[icon:${icon}]`;
-          break;
-      }
-
-      if (templatePart !== undefined) {
-        contentTemplates.push(html`<span class="label-part">${templatePart}</span>`);
-        textParts.push(textPart);
+      if (template !== undefined && text !== undefined) {
+        templates.push(html`<span class="label-part">${template}</span>`);
+        texts.push(text);
 
         if (i < sortedContent.length - 1) {
-          const separator = this._config.state_content_separator ?? '';
-          contentTemplates.push(html`<span class="label-separator">${separator}</span>`);
-          textParts.push(separator);
+          templates.push(html`<span class="label-separator">${this._config.state_content_separator ?? ''}</span>`);
+          texts.push(this._config.state_content_separator ?? '');
         }
       }
     }
 
-    if (contentTemplates.length === 0) {
-      return line ? undefined : { template: defaultLabel, fullText: defaultLabel };
+    if (templates.length === 0) {
+      return line ? undefined : { template: rendererContext.defaultLabel, text: rendererContext.defaultLabel };
     }
 
     return {
-      template: html`${contentTemplates}`,
-      fullText: textParts.join(''),
+      template: html`${templates}`,
+      text: texts.join(''),
     };
   }
 
-  private _untrackedLabel(line = false, untrackedWidth?: number): LabelRenderResult | undefined {
+
+  // Entity Label ------------------------------------------------------------------------------------------------------
+
+  private _entityPartRenderer(value: string, context: DeviceRendererContext): LabelRenderResult {
+    let template: TemplateResult | string | undefined;
+    let text: string;
+
+    const device = context.device;
+    const stateObj = this._entitiesObject[device.entity].stateObject;
+
+    const renderRelativeTime = (datetime: string) => {
+      const date = new Date(datetime);
+      return {
+        template: html`<ha-relative-time .hass=${this.hass} .datetime=${datetime}></ha-relative-time>`,
+        text: `${date.toLocaleTimeString()} ${date.toLocaleDateString()}`,
+      };
+    };
+
+    switch (value) {
+      case 'name':
+        text = context.defaultLabel;
+        template = html`${text}`;
+        break;
+      case 'state':
+        text = this._formatValueDevice(device);
+        template = html`${text}`;
+        break;
+      case 'last_changed':
+        ({ template, text } = renderRelativeTime(stateObj.last_changed));
+        break;
+      case 'last_updated':
+        ({ template, text } = renderRelativeTime(stateObj.last_updated));
+        break;
+      case 'percentage':
+        text =`${(this._entitiesObject[device.entity].percentage * 100).toFixed(0)}%`;
+        template = html`${text}`;
+        break;
+      case 'icon':
+        const icon = this._entityIcon(device);
+        template = html`<ha-icon icon="${icon}"></ha-icon>`;
+        text = `[icon:${icon}]`;
+        break;
+      default:
+        text = '';
+        template = html``;
+        break;
+    }
+    return { template, text };
+  }
+  private _entityLabel(device: ELGEntity, line = false): LabelRenderResult | undefined {
+    const stateContent = line ? device.line_state_content : device.state_content;
+    const defaultLabel = this._entityName(device);
+
+    return this._renderLabelInternal(
+      stateContent,
+      line,
+      this._entityPartRenderer,
+      { device, defaultLabel }
+    );
+  }
+
+  // Untracked Label ---------------------------------------------------------------------------------------------------
+
+  private _untrackedPartRenderer(value: string, context: RendererContext): LabelRenderResult {
+    let template: TemplateResult | string;
+    let text: string;
+
+    switch (value) {
+      case 'name':
+        text = context.defaultLabel;
+        template = html`${text}`;
+        break;
+      case 'state':
+        text = this._formatValueMain(this._untrackedObject?.state);
+        template = html`${text}`;
+        break;
+      case 'percentage':
+        text = `${(this._untrackedObject.percentage * 100).toFixed(0)}%`;
+        template = html`${text}`;
+        break;
+      default:
+        text = '';
+        template = html``;
+        break;
+    }
+    return { template, text };
+  }
+  private _untrackedLabel(line = false): LabelRenderResult | undefined {
     const stateContent = line ? this._config.untracked_line_state_content : this._config.untracked_state_content;
     const defaultLabel = this._config.untracked_legend_label ?? this.hass.localize('ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption');
 
-    if (!stateContent?.length) {
-      return line ? undefined : { template: defaultLabel, fullText: defaultLabel };
-    }
-
-    const shouldReverse = (this._config.overflow_direction === 'left' && ['clip', 'fade', 'ellipsis'].includes(this._config.line_text_overflow ?? 'tooltip'));
-    const sortedContent = shouldReverse ? [...stateContent].reverse() : stateContent;
-
-    const percentage = untrackedWidth ?? (this._calculateMainWidth() - this._entitiesTotalWidth);
-
-    const contentTemplates: TemplateResult[] = [];
-    const textParts: string[] = [];
-
-    sortedContent.forEach((value, i) => {
-      let templatePart: TemplateResult | string | undefined;
-      let textPart = '';
-
-      switch (value) {
-        case 'name':
-          textPart = defaultLabel;
-          templatePart = html`${textPart}`;
-          break;
-
-        case 'state':
-          textPart = this._formatValueMain(this._deltaValue?.delta);
-          templatePart = html`${textPart}`;
-          break;
-
-        case 'percentage':
-          textPart = `${percentage.toFixed(0)}%`;
-          templatePart = html`${textPart}`;
-          break;
-      }
-
-      if (templatePart !== undefined) {
-        contentTemplates.push(html`<span class="label-part">${templatePart}</span>`);
-        textParts.push(textPart);
-
-        if (i < sortedContent.length - 1) {
-          const separator = this._config.state_content_separator ?? '';
-          contentTemplates.push(html`<span class="label-separator">${separator}</span>`);
-          textParts.push(separator);
-        }
-      }
-    });
-
-    if (contentTemplates.length === 0) {
-      return line ? undefined : { template: defaultLabel, fullText: defaultLabel };
-    }
-
-    return {
-      template: html`${contentTemplates}`,
-      fullText: textParts.join(''),
-    };
+    return this._renderLabelInternal(
+      stateContent,
+      line,
+      this._untrackedPartRenderer,
+      { defaultLabel }
+    );
   }
+
+  // Formatting --------------------------------------------------------------------------------------------------------
 
   private _formatValue(value: any, precision?: number, unit?: string): string {
     if (!value && value !== 0) return '';
@@ -722,9 +753,11 @@ export class EnergyLineGauge extends LitElement {
   private _formatValueMain(value: any): string {
     return this._formatValue(value, this._config.precision, this._config.unit);
   }
-  private _formatValueDevice(value: any, device: ELGEntity): string {
-    return this._formatValue(value, device.precision ?? this._config.precision, device.unit);
+  private _formatValueDevice(device: ELGEntity): string {
+    return this._formatValue(this._entitiesObject[device.entity].state, device.precision ?? this._config.precision, device.unit);
   }
+
+  // Validation --------------------------------------------------------------------------------------------------------
 
   private _validate(entityId: string): boolean {
     const validationResult = this._validateEntityState(entityId);
@@ -758,6 +791,8 @@ export class EnergyLineGauge extends LitElement {
     this._warnings.push(warning);
   }
 
+  // State Calculations ------------------------------------------------------------------------------------------------
+
   private _calcStateMain(): number {
     if (this._config.offset) {return this._getOffsetState(this._config.entity);}
     if (this._config.statistics) {
@@ -786,6 +821,8 @@ export class EnergyLineGauge extends LitElement {
     })()
     return isNaN(value) ? 0 : value * (multiplier ?? 1);
   }
+
+  // History Offset ----------------------------------------------------------------------------------------------------
 
   private _getOffsetState(entityID: string): number {
     if (!this._offsetTime) {return 0;}
@@ -871,6 +908,8 @@ export class EnergyLineGauge extends LitElement {
     }, {});
   }
 
+  // Statistics --------------------------------------------------------------------------------------------------------
+
   private _getStatisticsState(entityID: string): number | null | undefined {
     if (!this._config.statistics) {return 0;}
     if (!this._entitiesHistoryStatistics) {return 0;}
@@ -945,6 +984,8 @@ export class EnergyLineGauge extends LitElement {
     });
   }
 
+  // Fetching Data -----------------------------------------------------------------------------------------------------
+
   private async _fetchStatistics(entityIds: string[], start: Date | undefined, end: Date | undefined, period: string='hour'): Promise<HassStatistics> {
     const payload = {
       type: 'recorder/statistics_during_period',
@@ -988,59 +1029,28 @@ export class EnergyLineGauge extends LitElement {
     return entityIDs;
   }
 
-  private _calculateMainWidth(): number {
-    return this._calculateWidth(this._calcStateMain());
+  // MIN / MAX ---------------------------------------------------------------------------------------------------------
+
+  private _getMax(defaultValue: number = 100): number {
+    if (!this._config.max) {return defaultValue;}
+
+    if (typeof this._config.max === 'string') {
+      return this._calcState(this.hass.states[this._config.max]);
+    }
+
+    return this._config.max;
   }
-  private _calculateDeviceWidth(value: number): number {
-    return this._calculateWidth(value, this._calculateMainWidth(), this._calcStateMain())
-  }
-  private _calculateWidth(value: number, multiplier: number=100, maxDefault?: number): number {
-    const max: number = ((): number => {
-      if (!this._config.max) {
-        if (maxDefault === undefined) {return value;} // if no max is set, return the value (should only happen if Main width)
-        return maxDefault;
-      }
+  private _getMin(defaultValue: number = 0): number {
+    if (!this._config.min) {return defaultValue;}
 
-      if (typeof this._config.max === 'string') {
-        return this._calcState(this.hass.states[this._config.max])
-      }
+    if (typeof this._config.min === 'string') {
+      return this._calcState(this.hass.states[this._config.min]);
+    }
 
-      return this._config.max
-    })()
-
-    const min: number = ((): number => {
-      if (!this._config.min) {return 0}
-
-      if (typeof this._config.min === 'string') {
-        return this._calcState(this.hass.states[this._config.min])
-      }
-
-      return this._config.min
-    })()
-
-    const clampValue = Math.min(Math.max(value, min), max);
-    if (max === min) {return 0;} // Avoid division by zero
-    return ((clampValue - min) / (max - min)) * multiplier;
+    return this._config.min;
   }
 
-  private _devicesSum(): number {
-    if (!this._config.entities) {return 0;}
-    return (this._config.entities ?? []).reduce((sum: number, device: ELGEntity) => {
-      if (!this._validate(device.entity)) {return sum;}
-      return sum + this._calcState(this.hass.states[device.entity], device.multiplier);
-    }, 0);
-  }
-  private _delta(): ELGDelta | undefined {
-    let sum: number = this._devicesSum();
-    let state: number = this._calcStateMain();
-    let delta: number = state - sum;
-
-    return {
-      state: state,
-      sum: sum,
-      delta: delta,
-    };
-  }
+  // Action Handling ---------------------------------------------------------------------------------------------------
 
   private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
     ev.stopPropagation();

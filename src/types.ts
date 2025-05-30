@@ -109,22 +109,30 @@ export interface ELGEntity {
   double_tap_action?: ActionConfig;
 }
 
-export interface ELGEntityState {
+export interface ELGState {
   state: number;
   width: number;
+  percentage: number;
+}
+export interface ELGEntityState extends ELGState {
   stateObject: HassEntity;
 }
 
 // Helper interface for functions returning template and text
 export interface LabelRenderResult {
   template: TemplateResult | string; // Allow string for simple cases
-  fullText: string;
+  text: string;
 }
+export type PartRenderer = (
+  value: string,
+  context: any,
+) => LabelRenderResult;
 
-export interface ELGDelta {
-  state: number;
-  sum: number;
-  delta: number;
+export interface RendererContext {
+  defaultLabel: string;
+}
+export interface DeviceRendererContext extends RendererContext {
+  device: ELGEntity;
 }
 
 // State Content Types -------------------------------------------------------------------------------------------------
