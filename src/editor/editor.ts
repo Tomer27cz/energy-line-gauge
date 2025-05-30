@@ -10,6 +10,8 @@ import {
   mdiChartAreaspline,
 } from '@mdi/js';
 
+import memoizeOne  from 'memoize-one';
+
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import {
   ELGConfig,
@@ -43,399 +45,394 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     }
   }
 
+  private _schema = memoizeOne(() =>
+  {
+      if (!this.hass) return [];
+      console.info("Energy Line Gauge Editor: Schema loaded");
+
+      const positionOptions = [
+        { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
+        { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
+        { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
+        { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
+        { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
+        { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
+        { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
+        { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
+        { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+      ];
+      const linePositionOptions = positionOptions.concat({ value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") })
+
+      const alignmentOptions = [
+        { value: "left", label: 'Left' },
+        { value: "right", label: 'Right' },
+        { value: "center", label: 'Center (default)' },
+        { value: "space-around", label: 'Space Around' },
+        { value: "space-between", label: 'Space Between' },
+        { value: "space-evenly", label: 'Space Evenly' },
+      ];
+
+      const styleOptions = [
+        ["weight-lighter", "Lighter Weight"],
+        ["weight-bold", "Bold Weight"],
+        ["weight-bolder", "Bolder Weight"],
+        ["style-italic", "Italic"],
+        ["decoration-underline", "Underline"],
+        ["decoration-overline", "Overline"],
+        ["decoration-line-through", "Line Through"],
+        ["transform-uppercase", "Uppercase"],
+        ["transform-lowercase", "Lowercase"],
+        ["transform-capitalize", "Capitalize"],
+        ["family-monospace", "Monospace"],
+        ["shadow-light", "Light Shadow"],
+        ["shadow-medium", "Medium Shadow"],
+        ["shadow-heavy", "Heavy Shadow"],
+        ["shadow-hard", "Hard Shadow"],
+        ["shadow-neon", "Neon Shadow"],
+        ["black-outline", "Black Outline"],
+        ["white-outline", "White Outline"]
+      ]
+
+      const untrackedStateContent = [
+        ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
+        ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
+        ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
+      ];
+
+      const statisticsPeriods = [
+        { value: "5minute", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.5minute")}, // 5 Minutes
+        { value: "hour", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.hour")}, // Hour
+        { value: "day", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day")}, // Day
+        { value: "week", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.week")}, // Week
+        { value: "month", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.month")}, // Month
+      ];
+
+      const statisticsFunctions = [
+        { value: "change", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.change")}, // Change
+        { value: "max", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.max")}, // Max
+        { value: "mean", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.mean")}, // Mean
+        { value: "min", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.min")}, // Min
+        { value: "state", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.state")}, // State
+        { value: "sum", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.sum")}, // Sum
+      ];
+
+      return [
+        {
+          name: "entity",
+          required: true,
+          selector: { entity: { domain: ["sensor", "input_number", "number", "counter"] } },
+        },
+
+        {
+          type: "grid",
+          schema: [
+            { name: "title", required: false, selector: { text: {} } },
+            { name: "subtitle", required: false, selector: { text: {} } }
+          ]
+        },
+
+        {
+          type: "grid",
+          schema: [
+            { name: "min", required: false, selector: { number: {} }},
+            { name: "max", required: false, selector: { number: {} }},
+          ]
+        },
+
+        {
+          type: "expandable",
+          name: "expandable_appearance", // Appearance
+          flatten: true,
+          iconPath: mdiPalette,
+          schema: [
+            {
+              type: "grid",
+              schema: [
+                { name: "suppress_warnings", required: false, selector: { boolean: {} } },
+                { name: "corner", required: false, selector:
+                    {
+                      select: {
+                        mode: "dropdown",
+                        options: [
+                          { value: "square", label: "Square (default)" },
+                          { value: "lite-rounded", label: "Lite Rounded" },
+                          { value: "medium-rounded", label: "Medium Rounded" },
+                          { value: "rounded", label: "Rounded" },
+                          { value: "circular", label: "Circular" },
+                        ]
+                      }
+                    }
+                },
+              ],
+            },
+
+            {
+              type: "grid",
+              schema: [
+                { name: "legend_indicator", required: false, selector:
+                    {
+                      select: {
+                        mode: "dropdown",
+                        options: [
+                          { value: 'circle', label: "Circle (default)" },
+                          { value: 'icon', label: "Icon" },
+                          { value: 'icon-fallback', label: "Icon Fallback" },
+                          { value: 'none', label: "None" },
+                        ]
+                      }
+                    }
+                },
+                { name: "state_content_separator", required: false, selector: { text: {} } },
+              ],
+            },
+
+            {
+              type: "grid",
+              schema: [
+                { name: "color", required: false, selector: { color_rgb: {} } },
+                { name: "color_bg", required: false, selector: { color_rgb: {} } },
+              ],
+            },
+
+            {
+              type: "expandable",
+              name: "expandable_appearance_value", // Value
+              flatten: true,
+              schema: [
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                    { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                  ],
+                },
+                { name: "text_style", type: "multi_select", options: styleOptions },
+              ]
+            },
+
+            {
+              type: "expandable",
+              name: "expandable_appearance_title", // Title
+              flatten: true,
+              schema: [
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "title_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                    { name: "title_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                  ],
+                },
+                { name: "title_text_style", type: "multi_select", options: styleOptions },
+              ]
+            },
+
+            {
+              type: "expandable",
+              name: "expandable_appearance_legend", // Legend
+              flatten: true,
+              schema: [
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "legend_hide", required: false, selector: { boolean: {} } },
+                    { name: "legend_all", required: false, selector: { boolean: {} } },
+                  ],
+                },
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "legend_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                    { name: "legend_alignment", required: false, selector: { select: { mode: "dropdown", options: alignmentOptions } } },
+                  ],
+                },
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "legend_text_style", type: "multi_select", options: styleOptions },
+                    { name: "legend_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                  ],
+                },
+              ]
+            },
+
+            {
+              type: "expandable",
+              name: "expandable_appearance_delta", // Delta
+              flatten: true,
+              schema: [
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "show_delta", required: false, selector: { boolean: {} } },
+                    { name: "delta_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
+                  ],
+                },
+              ]
+            },
+
+            {
+              type: "expandable",
+              name: "expandable_appearance_line_text", // State content (Line)
+              flatten: true,
+              schema: [
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "line_text_position", required: false, selector: { select: { mode: "dropdown", options: linePositionOptions }}},
+                    { name: "line_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
+                  ],
+                },
+                {
+                  type: "grid",
+                  schema: [
+                    { name: "line_text_overflow", required: false, selector: {
+                        select: {
+                          mode: "dropdown",
+                          options: [
+                            { value: "ellipsis", label: "Ellipsis" }, // Ellipsis
+                            { value: "clip", label: "Clip" }, // Clip
+                            { value: "fade", label: "Fade" }, // Fade
+                            { value: "tooltip", label: "Tooltip" }, // Tooltip
+                            { value: "tooltip-segment", label: "Tooltip Segment" }, // Tooltip Segment
+                          ]
+                        }
+                      }},
+                    { name: "overflow_direction", required: false, selector: {
+                        select: {
+                          mode: "dropdown",
+                          options: [
+                            { value: "left", label: "Left" }, // Left
+                            { value: "right", label: "Right" }, // Right
+                          ]
+                        }
+                      }},
+                  ],
+                },
+                { name: "line_text_style", type: "multi_select", options: styleOptions },
+              ]
+            },
+          ],
+        },
+
+        {
+          type: "expandable",
+          iconPath: mdiChartAreaspline,
+          name: 'expandable_value', // Value
+          flatten: true,
+          schema: [
+            {
+              type: "grid",
+              schema: [
+                { name: "unit", required: false, selector: { text: {} } },
+                { name: "precision", required: false, selector: { number: {min: 0, step: 1} }},
+              ],
+            },
+            {
+              type: "grid",
+              schema: [
+                { name: "cutoff", required: false, selector: { number: {} } },
+                { name: "offset", required: false, selector: { text: {} } },
+              ]
+            },
+          ],
+        },
+
+        {
+          type: "expandable",
+          iconPath: mdiLightningBolt,
+          name: "expandable_untracked", // Untracked consumption
+          flatten: true,
+          schema: [
+            { name: "untracked_legend", required: false, selector: { boolean: {} } },
+            {
+              type: "grid",
+              schema: [
+                { name: "untracked_legend_label", required: false, selector: { text: {} } },
+                { name: "untracked_legend_icon", required: false, selector: { icon: {} } },
+              ],
+            },
+            {
+              type: "grid",
+              schema: [
+                {
+                  type: "multi_select",
+                  options: untrackedStateContent,
+                  name: "untracked_state_content",
+                  required: false,
+                  default: ["name"],
+                },
+                {
+                  type: "multi_select",
+                  options: untrackedStateContent,
+                  name: "untracked_line_state_content",
+                  required: false,
+                  default: [],
+                },
+              ],
+            },
+          ],
+        },
+
+        {
+          type: "expandable",
+          iconPath: mdiChartBar,
+          name: "expandable_statistic", // Statistic
+          flatten: true,
+          schema: [
+            {
+              name: "",
+              type: "grid",
+              schema: [
+                { name: "statistics", required: false, selector: { boolean: {} } },
+                { name: "statistics_day_offset", required: false, selector: { number: { min: 1, step: 1} } },
+                { name: "statistics_period", required: false, selector: { select: { mode: "dropdown", options: statisticsPeriods }}},
+                { name: "statistics_function", required: false, selector: { select: { mode: "dropdown", options: statisticsFunctions }}},
+              ],
+            },
+          ],
+        },
+
+        {
+          type: "expandable",
+          iconPath: mdiGestureTap,
+          name: "expandable_interactions", // Interactions
+          flatten: true,
+          schema: [
+            {
+              name: "tap_action",
+              selector: {
+                ui_action: {
+                  default_action: "more-info",
+                  DEFAULT_ACTIONS,
+                },
+              },
+            },
+            {
+              name: "hold_action",
+              selector: {
+                ui_action: {
+                  default_action: "more-info",
+                  DEFAULT_ACTIONS,
+                },
+              },
+            },
+            {
+              name: "double_tap_action",
+              selector: {
+                ui_action: {
+                  default_action: "none",
+                  DEFAULT_ACTIONS,
+                },
+              },
+            }
+          ],
+        },
+      ];
+  });
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._config) return html``;
     if (this._subElementEditor != undefined) return this._renderSubElementEditor();
-
-    const positionOptions = [
-      { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
-      { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-      { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-      { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
-      { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-      { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-      { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-      { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
-      { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
-    ];
-
-    const alignmentOptions = [
-      { value: "left", label: 'Left' },
-      { value: "right", label: 'Right' },
-      { value: "center", label: 'Center (default)' },
-      { value: "space-around", label: 'Space Around' },
-      { value: "space-between", label: 'Space Between' },
-      { value: "space-evenly", label: 'Space Evenly' },
-    ];
-
-    const styleOptions = [
-      ["weight-lighter", "Lighter Weight"],
-      ["weight-bold", "Bold Weight"],
-      ["weight-bolder", "Bolder Weight"],
-      ["style-italic", "Italic"],
-      ["decoration-underline", "Underline"],
-      ["decoration-overline", "Overline"],
-      ["decoration-line-through", "Line Through"],
-      ["transform-uppercase", "Uppercase"],
-      ["transform-lowercase", "Lowercase"],
-      ["transform-capitalize", "Capitalize"],
-      ["family-monospace", "Monospace"],
-      ["shadow-light", "Light Shadow"],
-      ["shadow-medium", "Medium Shadow"],
-      ["shadow-heavy", "Heavy Shadow"],
-      ["shadow-hard", "Hard Shadow"],
-      ["shadow-neon", "Neon Shadow"],
-      ["black-outline", "Black Outline"],
-      ["white-outline", "White Outline"]
-    ]
-
-    const schema = [
-      {
-        name: "entity",
-        required: true,
-        selector: { entity: { domain: ["sensor", "input_number", "number", "counter"] } },
-      },
-
-      {
-        type: "grid",
-        schema: [
-          { name: "title", required: false, selector: { text: {} } },
-          { name: "subtitle", required: false, selector: { text: {} } }
-        ]
-      },
-
-      {
-        type: "grid",
-        schema: [
-          { name: "min", required: false, selector: { number: {} }},
-          { name: "max", required: false, selector: { number: {} }},
-        ]
-      },
-
-      {
-        type: "expandable",
-        name: "expandable_appearance", // Appearance
-        flatten: true,
-        iconPath: mdiPalette,
-        schema: [
-          {
-            type: "grid",
-            schema: [
-              { name: "suppress_warnings", required: false, selector: { boolean: {} } },
-              { name: "corner", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      { value: "square", label: "Square (default)" },
-                      { value: "lite-rounded", label: "Lite Rounded" },
-                      { value: "medium-rounded", label: "Medium Rounded" },
-                      { value: "rounded", label: "Rounded" },
-                      { value: "circular", label: "Circular" },
-                    ]
-                  }
-                }
-              },
-            ],
-          },
-
-          {
-            type: "grid",
-            schema: [
-              { name: "legend_indicator", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      { value: 'circle', label: "Circle (default)" },
-                      { value: 'icon', label: "Icon" },
-                      { value: 'icon-fallback', label: "Icon Fallback" },
-                      { value: 'none', label: "None" },
-                    ]
-                  }
-                }
-              },
-              { name: "state_content_separator", required: false, selector: { text: {} } },
-            ],
-          },
-
-          {
-            type: "grid",
-            schema: [
-              { name: "color", required: false, selector: { color_rgb: {} } },
-              { name: "color_bg", required: false, selector: { color_rgb: {} } },
-            ],
-          },
-
-          {
-            type: "expandable",
-            name: "expandable_appearance_value", // Value
-            flatten: true,
-            schema: [
-              {
-                type: "grid",
-                schema: [
-                  { name: "position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
-                  { name: "text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
-                ],
-              },
-              { name: "text_style", type: "multi_select", options: styleOptions },
-            ]
-          },
-
-          {
-            type: "expandable",
-            name: "expandable_appearance_title", // Title
-            flatten: true,
-            schema: [
-              {
-                type: "grid",
-                schema: [
-                  { name: "title_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
-                  { name: "title_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
-                ],
-              },
-              { name: "title_text_style", type: "multi_select", options: styleOptions },
-            ]
-          },
-
-          {
-            type: "expandable",
-            name: "expandable_appearance_legend", // Legend
-            flatten: true,
-            schema: [
-              {
-                type: "grid",
-                schema: [
-                  { name: "legend_hide", required: false, selector: { boolean: {} } },
-                  { name: "legend_all", required: false, selector: { boolean: {} } },
-                ],
-              },
-              {
-                type: "grid",
-                schema: [
-                  { name: "legend_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
-                  { name: "legend_alignment", required: false, selector: { select: { mode: "dropdown", options: alignmentOptions } } },
-                ],
-              },
-              {
-                type: "grid",
-                schema: [
-                  { name: "legend_text_style", type: "multi_select", options: styleOptions },
-                  { name: "legend_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
-                ],
-              },
-            ]
-          },
-
-          {
-            type: "expandable",
-            name: "expandable_appearance_delta", // Delta
-            flatten: true,
-            schema: [
-              {
-                type: "grid",
-                schema: [
-                  { name: "show_delta", required: false, selector: { boolean: {} } },
-                  { name: "delta_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions } } },
-                ],
-              },
-            ]
-          },
-
-          {
-            type: "expandable",
-            name: "expandable_appearance_line_text", // State content (Line)
-            flatten: true,
-            schema: [
-              {
-                type: "grid",
-                schema: [
-                  { name: "line_text_position", required: false, selector: { select: { mode: "dropdown", options: positionOptions.concat({ value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") }) } } },
-                  { name: "line_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
-                ],
-              },
-              {
-                type: "grid",
-                schema: [
-                  { name: "line_text_overflow", required: false, selector: {
-                    select: {
-                      mode: "dropdown",
-                      options: [
-                        { value: "ellipsis", label: "Ellipsis" }, // Ellipsis
-                        { value: "clip", label: "Clip" }, // Clip
-                        { value: "fade", label: "Fade" }, // Fade
-                        { value: "tooltip", label: "Tooltip" }, // Tooltip
-                        { value: "tooltip-segment", label: "Tooltip Segment" }, // Tooltip Segment
-                      ]
-                    }
-                  }},
-                  { name: "overflow_direction", required: false, selector: {
-                    select: {
-                      mode: "dropdown",
-                      options: [
-                        { value: "left", label: "Left" }, // Left
-                        { value: "right", label: "Right" }, // Right
-                      ]
-                    }
-                  }},
-                ],
-              },
-              { name: "line_text_style", type: "multi_select", options: styleOptions },
-            ]
-          },
-        ],
-      },
-
-      {
-        type: "expandable",
-        iconPath: mdiChartAreaspline,
-        name: 'expandable_value', // Value
-        flatten: true,
-        schema: [
-          {
-            type: "grid",
-            schema: [
-              { name: "unit", required: false, selector: { text: {} } },
-              { name: "precision", required: false, selector: { number: {min: 0, step: 1} }},
-            ],
-          },
-          {
-            type: "grid",
-            schema: [
-              { name: "cutoff", required: false, selector: { number: {} } },
-              { name: "offset", required: false, selector: { text: {} } },
-            ]
-          },
-        ],
-      },
-
-      {
-        type: "expandable",
-        iconPath: mdiLightningBolt,
-        name: "expandable_untracked", // Untracked consumption
-        flatten: true,
-        schema: [
-          { name: "untracked_legend", required: false, selector: { boolean: {} } },
-          {
-            type: "grid",
-            schema: [
-              { name: "untracked_legend_label", required: false, selector: { text: {} } },
-              { name: "untracked_legend_icon", required: false, selector: { icon: {} } },
-            ],
-          },
-          {
-            type: "grid",
-            schema: [
-              {
-                type: "multi_select",
-                options: [
-                  ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
-                  ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
-                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
-                ],
-                name: "untracked_state_content",
-                required: false,
-                default: ["name"],
-              },
-              {
-                type: "multi_select",
-                options: [
-                  ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
-                  ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
-                  ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
-                ],
-                name: "untracked_line_state_content",
-                required: false,
-                default: [],
-              },
-            ],
-          },
-        ],
-      },
-
-      {
-        type: "expandable",
-        iconPath: mdiChartBar,
-        name: "expandable_statistic", // Statistic
-        flatten: true,
-        schema: [
-          {
-            name: "",
-            type: "grid",
-            schema: [
-              { name: "statistics", required: false, selector: { boolean: {} } },
-              { name: "statistics_day_offset", required: false, selector: { number: { min: 1, step: 1} } },
-              { name: "statistics_period", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      { value: "5minute", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.5minute")}, // 5 Minutes
-                      { value: "hour", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.hour")}, // Hour
-                      { value: "day", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day")}, // Day
-                      { value: "week", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.week")}, // Week
-                      { value: "month", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.month")}, // Month
-                    ]
-                  }
-                }
-              },
-              { name: "statistics_function", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      { value: "change", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.change")}, // Change
-                      { value: "max", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.max")}, // Max
-                      { value: "mean", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.mean")}, // Mean
-                      { value: "min", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.min")}, // Min
-                      { value: "state", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.state")}, // State
-                      { value: "sum", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.sum")}, // Sum
-                    ]
-                  }
-                }
-              },
-            ],
-          },
-        ],
-      },
-
-      {
-        type: "expandable",
-        iconPath: mdiGestureTap,
-        name: "expandable_interactions", // Interactions
-        flatten: true,
-        schema: [
-          {
-            name: "tap_action",
-            selector: {
-              ui_action: {
-                default_action: "more-info",
-                DEFAULT_ACTIONS,
-              },
-            },
-          },
-          {
-            name: "hold_action",
-            selector: {
-              ui_action: {
-                default_action: "more-info",
-                DEFAULT_ACTIONS,
-              },
-            },
-          },
-          {
-            name: "double_tap_action",
-            selector: {
-              ui_action: {
-                default_action: "none",
-                DEFAULT_ACTIONS,
-              },
-            },
-          }
-        ],
-      },
-    ];
 
     const data = {
       ...this._config,
@@ -445,7 +442,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       <ha-form
           .hass=${this.hass}
           .data=${data}
-          .schema=${schema}
+          .schema=${this._schema()}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
       ></ha-form>

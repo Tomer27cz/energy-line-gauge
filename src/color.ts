@@ -58,9 +58,19 @@ export const COLORS = [
   "#a04a9b",
 ];
 
+export function getComputedColor(color: any): any {
+  if (!color) {return undefined;}
+  if (typeof color !== "string") return color;
+  if (!(color.startsWith("var(") && color.endsWith(")"))) return color;
+  return window
+    .getComputedStyle(document.body)
+    .getPropertyValue(color.slice(4, -1));
+}
+
 export const toHEX = (
   color: [number, number, number] | undefined | string
 ): string | undefined =>{
+  color = getComputedColor(color);
   if (!color) {return undefined;}
   if (typeof color === "string") {return color;}
   return "#" + ((1 << 24) | (color[0] << 16) | (color[1] << 8) | color[2]).toString(16).slice(1).toUpperCase();
@@ -69,6 +79,7 @@ export const toHEX = (
 export const toRGB = (
   color: [number, number, number] | undefined | string
 ): [number, number, number] | undefined => {
+  color = getComputedColor(color);
   if (!color) {return undefined;}
   if (typeof color === "string") {
     const r = parseInt(color.slice(1, 3), 16);

@@ -121,6 +121,12 @@ export interface LabelRenderResult {
   fullText: string;
 }
 
+export interface ELGDelta {
+  state: number;
+  sum: number;
+  delta: number;
+}
+
 // State Content Types -------------------------------------------------------------------------------------------------
 
 export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;

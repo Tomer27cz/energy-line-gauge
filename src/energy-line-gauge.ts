@@ -17,6 +17,7 @@ import {
   ELGConfig,
   ELGEntity,
   ELGEntityState,
+  ELGDelta,
 
   ELGHistoryOffset,
   ELGHistoryOffsetEntities,
@@ -61,7 +62,7 @@ export class EnergyLineGauge extends LitElement {
   @property() private _card!: LovelaceCard;
 
   private _warnings: string[] = [];
-  private _deltaValue: [number, number, number] | undefined = undefined;
+  private _deltaValue: ELGDelta | undefined = undefined;
 
   private _entitiesObject: Record<string, ELGEntityState> = {};
   private _entitiesTotalWidth: number = 0;
@@ -335,12 +336,11 @@ export class EnergyLineGauge extends LitElement {
       if (!this._config.suppress_warnings) {this._addWarning("Delta could not be calculated");}
       return html``;
     }
-    const [state, sum, deltaValue] = this._deltaValue;
     return html`
       <div class="gauge-delta">
-        <div class="gauge-delta-item">State: <span>${this._formatValueMain(state)}</span></div>
-        <div class="gauge-delta-item">Sum: <span>${this._formatValueMain(sum)}</span></div>
-        <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(deltaValue)}</span></div>
+        <div class="gauge-delta-item">State: <span>${this._formatValueMain(this._deltaValue.state)}</span></div>
+        <div class="gauge-delta-item">Sum: <span>${this._formatValueMain(this._deltaValue.sum)}</span></div>
+        <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(this._deltaValue.delta)}</span></div>
       </div>`;
   }
   _createUntrackedLegend(style: string, size: number) {
@@ -657,27 +657,22 @@ export class EnergyLineGauge extends LitElement {
   }
 
   private _untrackedLabel(line = false, untrackedWidth?: number): LabelRenderResult | undefined {
-    const contentConfig = line
-      ? this._config.untracked_line_state_content
-      : this._config.untracked_state_content;
+    const stateContent = line ? this._config.untracked_line_state_content : this._config.untracked_state_content;
+    const defaultLabel = this._config.untracked_legend_label ?? this.hass.localize('ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption');
 
-    const defaultLabel =
-      this._config.untracked_legend_label ??
-      this.hass.localize(
-        'ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption'
-      );
-
-    if (!contentConfig?.length) {
+    if (!stateContent?.length) {
       return line ? undefined : { template: defaultLabel, fullText: defaultLabel };
     }
 
-    const [, , deltaValue] = this._deltaValue ?? [0, 0, undefined];
+    const shouldReverse = (this._config.overflow_direction === 'left' && ['clip', 'fade', 'ellipsis'].includes(this._config.line_text_overflow ?? 'tooltip'));
+    const sortedContent = shouldReverse ? [...stateContent].reverse() : stateContent;
+
     const percentage = untrackedWidth ?? (this._calculateMainWidth() - this._entitiesTotalWidth);
 
     const contentTemplates: TemplateResult[] = [];
     const textParts: string[] = [];
 
-    contentConfig.forEach((value, i) => {
+    sortedContent.forEach((value, i) => {
       let templatePart: TemplateResult | string | undefined;
       let textPart = '';
 
@@ -688,7 +683,7 @@ export class EnergyLineGauge extends LitElement {
           break;
 
         case 'state':
-          textPart = this._formatValueMain(deltaValue);
+          textPart = this._formatValueMain(this._deltaValue?.delta);
           templatePart = html`${textPart}`;
           break;
 
@@ -702,7 +697,7 @@ export class EnergyLineGauge extends LitElement {
         contentTemplates.push(html`<span class="label-part">${templatePart}</span>`);
         textParts.push(textPart);
 
-        if (i < contentConfig.length - 1) {
+        if (i < sortedContent.length - 1) {
           const separator = this._config.state_content_separator ?? '';
           contentTemplates.push(html`<span class="label-separator">${separator}</span>`);
           textParts.push(separator);
@@ -1035,12 +1030,16 @@ export class EnergyLineGauge extends LitElement {
       return sum + this._calcState(this.hass.states[device.entity], device.multiplier);
     }, 0);
   }
-  private _delta(): [number, number, number] | undefined {
-    let sum = this._devicesSum();
-    let state = this._calcStateMain();
-    let delta = state - sum;
+  private _delta(): ELGDelta | undefined {
+    let sum: number = this._devicesSum();
+    let state: number = this._calcStateMain();
+    let delta: number = state - sum;
 
-    return [state, sum, delta];
+    return {
+      state: state,
+      sum: sum,
+      delta: delta,
+    };
   }
 
   private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
