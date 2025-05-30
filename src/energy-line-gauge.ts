@@ -348,76 +348,99 @@ export class EnergyLineGauge extends LitElement {
   }
   _createDeviceLines() {
     if (!this._config.entities) return html``;
-    const deviceLines = this._config.entities.map((device: ELGEntity) => {
-      const width: number = this._entitiesObject[device.entity].width;
-      const displayLineState: boolean = width > 0 && this._config.line_text_position !== "none";
-      const lineTextColor = textColor(device.color);
-      const textStyle: string = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(lineTextColor));
 
-      const labelResult = this._entityLabel(device, true);
-
-      let overflowStyle = "";
-      const currentOverflowType = this._config.line_text_overflow ?? "tooltip";
-      const overflowDirectionStyle = this._config.overflow_direction === 'right' ? 'direction: ltr;' : 'direction: rtl;';
-
-      switch(currentOverflowType) {
+    const getOverflowStyle = (type: string, direction: string) => {
+      const dirStyle = `direction: ${direction === 'right' ? 'ltr' : 'rtl'};`;
+      switch (type) {
         case "ellipsis":
-          overflowStyle = `overflow: hidden; text-overflow: ellipsis; ${overflowDirectionStyle}`;
-          break;
+          return `overflow: hidden; text-overflow: ellipsis; ${dirStyle}`;
         case "clip":
-          overflowStyle = `overflow: hidden; text-overflow: clip; ${overflowDirectionStyle}`;
-          break;
+          return `overflow: hidden; text-overflow: clip; ${dirStyle}`;
         case "fade":
-          const fadeDirection = this._config.overflow_direction === 'left' ? 'left' : 'right';
-          overflowStyle = `mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); -webkit-mask-image: linear-gradient(to ${fadeDirection}, black 85%, transparent 98%, transparent 100%); ${overflowDirectionStyle}`;
-          break;
-        case "tooltip":
-        case "tooltip-segment":
-          overflowStyle = `overflow: hidden;`;
-          break;
+          const fadeDir = direction === 'left' ? 'left' : 'right';
+          return `mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
+                ${dirStyle}`;
+        default:
+          return `overflow: hidden;`;
       }
+    };
+
+    const renderLabel = (
+      text: string,
+      template: any,
+      color: [number, number, number] | undefined,
+      size: number,
+      overflowStyle: string,
+      textStyle: string,
+      position: string
+    ) => html`
+    <div
+      class="device-line-label line-text-position-${position}"
+      data-full-text="${text}"
+      style="color: rgba(${color}); font-size: ${size}rem; ${overflowStyle} ${textStyle}">
+      ${template}
+    </div>
+  `;
+
+    const position = this._config.line_text_position ?? "left";
+    const overflowType = this._config.line_text_overflow ?? "tooltip";
+    const overflowDir = this._config.overflow_direction ?? "right";
+
+    const deviceLines = this._config.entities.map((device: ELGEntity) => {
+      const width = this._entitiesObject[device.entity].width;
+      const showLabel = width > 0 && position !== "none";
+      const lineColor = toHEX(device.color);
+      const lineTextColor = textColor(device.color);
+      const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, lineColor);
+      const label = this._entityLabel(device, true);
+      const overflowStyle = getOverflowStyle(overflowType, overflowDir);
 
       // noinspection HtmlUnknownAttribute
       return html`
       <div
         id="line-${device.entity.replace(".", "-")}"
         class="device-line"
-        style="background-color: ${toHEX(device.color)}; width: ${width}%;"
+        style="background-color: ${lineColor}; width: ${width}%"
         @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
         .actionHandler=${actionHandler({
-        hasHold: hasAction(device.hold_action),
-        hasDoubleClick: hasAction(device.double_tap_action),
+          hasHold: hasAction(device.hold_action),
+          hasDoubleClick: hasAction(device.double_tap_action),
       })}
       >
-        ${displayLineState && labelResult ? html`
-          <div
-            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
-            data-full-text="${labelResult.text}"
-            style="color: rgba(${lineTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${overflowStyle} ${textStyle}">
-            ${labelResult.template}
-          </div>
-        ` : html``}
+        ${showLabel && label ? renderLabel(
+        label.text,
+        label.template,
+        lineTextColor,
+        this._config.line_text_size ?? 1,
+        overflowStyle,
+        textStyle,
+        position
+      ) : html``}
       </div>
     `;
     });
 
-    const untrackedWidth: number = this._untrackedObject?.width ?? 0;
-    const displayUntrackedLine: boolean = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
+    // Untracked Line
+    const untrackedWidth = this._untrackedObject?.width ?? 0;
+    const showUntracked = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
     const untrackedTextColor = textColor(this._config.color);
-    const untrackedTextStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(untrackedTextColor));
-    const untrackedLabelResult = this._untrackedLabel(true);
+    const untrackedLabel = this._untrackedLabel(true);
 
     return html`
     <div class="device-line-container">
       ${deviceLines}
-      ${displayUntrackedLine && untrackedLabelResult ? html`
+      ${showUntracked && untrackedLabel ? html`
         <div class="untracked-line" style="width: ${untrackedWidth}%">
-          <div
-            class="device-line-label line-text-position-${this._config.line_text_position ?? "left"}"
-            data-full-text="${untrackedLabelResult.text}"
-            style="color: rgba(${untrackedTextColor}); font-size: ${this._config.line_text_size ?? 1}rem; ${untrackedTextStyle} ${this._config.line_text_overflow === 'tooltip-segment' ? 'overflow: hidden;' : ''}">
-            ${untrackedLabelResult.template}
-          </div>
+          ${renderLabel(
+            untrackedLabel.text,
+            untrackedLabel.template,
+            untrackedTextColor,
+            this._config.line_text_size ?? 1,
+            overflowType === 'tooltip-segment' ? 'overflow: hidden;' : '',
+            getTextStyle(this._config.line_text_style, this._config.line_text_size, toHEX(untrackedTextColor)),
+            position
+          )}
         </div>
       ` : html``}
     </div>
@@ -512,24 +535,18 @@ export class EnergyLineGauge extends LitElement {
   // Label -------------------------------------------------------------------------------------------------------------
 
   private _handleTooltipSegmentLogic(labelElement: HTMLElement): void {
-    const childNodes = Array.from(labelElement.childNodes);
     const parts: HTMLElement[] = [];
     const separators: HTMLElement[] = [];
 
-    childNodes.forEach(node => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as HTMLElement;
-        if (el.classList.contains('label-part')) {
-          parts.push(el);
-        } else if (el.classList.contains('label-separator')) {
-          separators.push(el);
-        }
-      }
-    });
+    for (const node of Array.from(labelElement.childNodes)) {
+      if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-    if (parts.length === 0) {
-      labelElement.style.visibility = labelElement.scrollWidth > labelElement.clientWidth ? 'hidden' : 'visible';
-      return;
+      const el = node as HTMLElement;
+      if (el.classList.contains('label-part')) {
+        parts.push(el);
+      } else if (el.classList.contains('label-separator')) {
+        separators.push(el);
+      }
     }
 
     parts.forEach(p => p.style.display = 'inline');
@@ -542,22 +559,19 @@ export class EnergyLineGauge extends LitElement {
       return;
     }
 
-    const removalOrderIndices = Array.from({ length: parts.length }, (_, i) => i);
+    const removalIndices = Array.from({ length: parts.length }, (_, i) => i);
     if (this._config.overflow_direction === 'right') {
-      removalOrderIndices.reverse();
+      removalIndices.reverse();
     }
 
-    for (const indexToRemove of removalOrderIndices) {
-      parts[indexToRemove].style.display = 'none';
+    for (const i of removalIndices) {
+      parts[i].style.display = 'none';
 
-      if (this._config.overflow_direction === 'right') {
-        if (indexToRemove > 0 && separators[indexToRemove - 1]) {
-          separators[indexToRemove - 1].style.display = 'none';
-        }
-      } else {
-        if (separators[indexToRemove]) {
-          separators[indexToRemove].style.display = 'none';
-        }
+      const isRight = this._config.overflow_direction === 'right';
+      const separatorIndex = isRight ? i - 1 : i;
+
+      if (separators[separatorIndex]) {
+        separators[separatorIndex].style.display = 'none';
       }
 
       if (labelElement.scrollWidth <= containerWidth + tolerance) {
@@ -569,13 +583,10 @@ export class EnergyLineGauge extends LitElement {
     const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
     const text = labelElement.dataset.text || labelElement.textContent?.trim() || "";
 
-    if (parentContainer) {
-      parentContainer.setAttribute('title', text);
-    } else {
-      labelElement.setAttribute('title', text);
+    (parentContainer ? parentContainer : labelElement).setAttribute('title', text);
+    if (!['visible', ''].includes(labelElement.style.visibility)) {
+      labelElement.style.visibility = 'visible';
     }
-
-    labelElement.style.visibility = 'visible';
 
     if (this._config.line_text_overflow === 'tooltip-segment') {
       this._handleTooltipSegmentLogic(labelElement);
@@ -590,17 +601,25 @@ export class EnergyLineGauge extends LitElement {
   }
   private _resetAllLabelsToVisible(): void {
     if (!this.shadowRoot) return;
+
     this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(labelElement => {
-      labelElement.style.visibility = 'visible';
+      if (labelElement.style.visibility !== 'visible') {
+        labelElement.style.visibility = 'visible';
+      }
+
       labelElement.querySelectorAll<HTMLElement>('.label-part, .label-separator').forEach(part => {
-        part.style.display = 'inline';
+        if (part.style.display !== 'inline') {
+          part.style.display = 'inline';
+        }
       });
+
       const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
       if (parentContainer) {
         parentContainer.removeAttribute('title');
       } else {
         labelElement.removeAttribute('title');
       }
+
     });
   }
 

@@ -48,7 +48,6 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
   private _schema = memoizeOne(() =>
   {
       if (!this.hass) return [];
-      console.info("Energy Line Gauge Editor: Schema loaded");
 
       const positionOptions = [
         { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") + " (default)" },
