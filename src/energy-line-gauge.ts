@@ -224,9 +224,9 @@ export class EnergyLineGauge extends LitElement {
       const state: number = this._calcState(stateObj, device.multiplier);
       const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
 
-      const percentage: number = state / mainState;
+      const percentage: number = (state / mainState) ?? 0;
       const clampedDevice = Math.min(Math.max(state, min), max);
-      const width: number = state <= cutoff ? 0 : ((clampedDevice - min) / range) * 100;
+      const width: number = state <= cutoff ? 0 : (((clampedDevice - min) / range) * 100 ) ?? 0;
 
       stateSum += state;
       percentageSum += percentage;
@@ -320,6 +320,7 @@ export class EnergyLineGauge extends LitElement {
     <div class="chart-legend">
       <ul style="justify-content: ${this._config.legend_alignment ?? "center"}">
         ${this._config.entities.map((device: ELGEntity) => {
+          if (!this._entitiesObject[device.entity]) {return html``;}
           if (this._entitiesObject[device.entity].width <= 0 && !this._config.legend_all) {return html``;}
 
           const hexColor = toHEX(device.color);
@@ -388,6 +389,8 @@ export class EnergyLineGauge extends LitElement {
     const overflowDir = this._config.overflow_direction ?? "right";
 
     const deviceLines = this._config.entities.map((device: ELGEntity) => {
+      if (!this._entitiesObject[device.entity]) {return html``;}
+
       const width = this._entitiesObject[device.entity].width;
       const showLabel = width > 0 && position !== "none";
       const lineColor = toHEX(device.color);
