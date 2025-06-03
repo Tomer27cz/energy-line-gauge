@@ -749,6 +749,6 @@ If you want to contribute to the project, you can do so by forking the repositor
 </div>
 <hr/>
 
-## **All contributions are welcome!**
+### **All contributions are welcome!**
 
-## **If you like the card, consider ⭐ starring it.**
+### **If you like the card, consider ⭐ starring it.**
