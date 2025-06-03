@@ -1,5 +1,6 @@
-import { LitElement, TemplateResult, html } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import memoizeOne  from 'memoize-one';
 
 import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 
@@ -12,10 +13,8 @@ export class ItemEditor extends LitElement {
 
   @property({ attribute: false }) hass?: HomeAssistant;
 
-  protected render(): TemplateResult {
-    if (!this.hass || !this.config) {
-      return html``;
-    }
+  private _schema = memoizeOne(() =>  {
+    if (!this.hass) return [];
 
     const stateContentOptions = [
       ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
@@ -26,8 +25,26 @@ export class ItemEditor extends LitElement {
       ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
     ];
 
-    const item = {...this.config};
-    const schema = [
+    const indicatorOptions = [
+      { value: 'circle', label: "Circle" },
+      { value: 'icon', label: "Icon" },
+      { value: 'icon-fallback', label: "Icon Fallback (default)" },
+      { value: 'none', label: "None" },
+    ]
+
+    const multiplierOptions = [
+      { value: 1000000000000, label: "10^12 (Tera)" },
+      { value: 1000000000, label: "10^9 (Giga)" },
+      { value: 1000000, label: "10^6 (Mega)" },
+      { value: 1000, label: "10^3 (Kilo)" },
+      { value: 1, label: "1 (Same as Main)" },
+      { value: 0.001, label: "10^-3 (Milli)" },
+      { value: 0.000001, label: "10^-6 (Micro)"},
+      { value: 0.000000001, label: "10^-9 (Nano)" },
+      { value: 0.000000000001, label: "10^-12 (Pico)" },
+    ];
+
+    return [
       {
         name: "entity",
         required: true,
@@ -47,19 +64,7 @@ export class ItemEditor extends LitElement {
         name: "",
         type: "grid",
         schema: [
-          { name: "legend_indicator", required: false, selector:
-            {
-              select: {
-                mode: "dropdown",
-                options: [
-                  { value: 'circle', label: "Circle (default)" },
-                  { value: 'icon', label: "Icon" },
-                  { value: 'icon-fallback', label: "Icon Fallback" },
-                  { value: 'none', label: "None" },
-                ]
-              }
-            }
-          },
+          { name: "legend_indicator", required: false, selector: { select: { mode: "dropdown", options: indicatorOptions }}},
           { name: "icon", required: false, selector: {icon: {}}},
         ]
       },
@@ -103,24 +108,7 @@ export class ItemEditor extends LitElement {
             type: "grid",
             schema: [
               { name: "unit", required: false, selector: {text: {}}},
-              { name: "multiplier", required: false, selector:
-                {
-                  select: {
-                    mode: "dropdown",
-                    options: [
-                      { value: 1000000000000, label: "10^12 (Tera)" },
-                      { value: 1000000000, label: "10^9 (Giga)" },
-                      { value: 1000000, label: "10^6 (Mega)" },
-                      { value: 1000, label: "10^3 (Kilo)" },
-                      { value: 1, label: "1 (Same as Main)" },
-                      { value: 0.001, label: "10^-3 (Milli)" },
-                      { value: 0.000001, label: "10^-6 (Micro)"},
-                      { value: 0.000000001, label: "10^-9 (Nano)" },
-                      { value: 0.000000000001, label: "10^-12 (Pico)" },
-                    ]
-                  }
-                }
-              },
+              { name: "multiplier", required: false, selector: { select: { mode: "dropdown", options: multiplierOptions }}},
               { name: "precision", required: false, selector: {number: {}}},
               { name: "cutoff", required: false, selector: {number: {}}},
             ]
@@ -164,18 +152,23 @@ export class ItemEditor extends LitElement {
         ],
       },
     ];
+  });
+
+  protected render() {
+    if (!this.hass || !this.config) {
+      return html``;
+    }
 
     return html`
       <ha-form
           .hass=${this.hass}
-          .data=${item}
-          .schema=${schema}
+          .data=${{...this.config}}
+          .schema=${this._schema()}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
       ></ha-form>
       <br />
     `;
-
   }
 
   private _computeLabelCallback = (schema: any) => {

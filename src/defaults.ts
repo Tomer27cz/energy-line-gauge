@@ -82,7 +82,7 @@ const DEFAULTS = {
 
   legend_position: 'bottom-center' as PositionType,
   legend_alignment: 'center' as LegendAlignmentType,
-  legend_indicator: 'circle' as IndicatorType,
+  legend_indicator: 'icon-fallback' as IndicatorType,
   legend_text_size: 1,
   legend_text_style: undefined,
 

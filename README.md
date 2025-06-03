@@ -11,6 +11,10 @@
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Tomer27cz/energy-line-gauge/latest/total)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Tomer27cz/energy-line-gauge)
 
+<a href="https://www.buymeacoffee.com/tomer27" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px; width: auto; cursor: pointer;" />
+</a>
+
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.png" alt="Main Image"/>
@@ -55,6 +59,10 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
     * [Untracked State Content](#untracked_state_content)
 * [Offset](#offset)
 * [Statistics](#statistics)
+
+
+* [Issues](#issues)
+* [Contribute](#contribute)
 
 </div>
 
@@ -135,6 +143,8 @@ text_size: 2.5
 text_style: weight-bold
 
 corner: 'square'
+state_content_separator: '|'
+
 color: "#00aafa"
 color_bg:
     - 40
@@ -144,6 +154,8 @@ color_bg:
 line_text_position: 'bottom-right'
 line_text_size: 1.5
 line_text_style: shadow-medium
+line_text_overflow: fade
+overflow_direction: right
 
 tap_action:
   action: more-info
@@ -158,6 +170,7 @@ legend_all: false
 
 legend_position: bottom-center
 legend_alignment: center
+legend_indicator: icon-fallback
 legend_text_size: 1
 legend_text_style: italic
 
@@ -196,6 +209,7 @@ entities:
       - percentage
     line_state_content:
       - percentage
+    legend_indicator: '-'
   - entity: sensor.plug_1_power
     name: Plug 1
     color:
@@ -225,6 +239,7 @@ There are a lot of settings you can customize your sensors with:
 | `cutoff`                       |        number         |             `0`              |                                            10                                            | Any entity with a value below or equal to this will not be displayed or counted.                                                           |
 | `offset`                       |        string         |            *none*            |                                            1d                                            | Offset state into the past [see more](#offset).                                                                                            |
 | `corner`                       |      CornerType       |           `square`           |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                      |
+| `state_content_separator`      |        string         |           `' ⸱ '`            |                                           '-'                                            | This string is added between state content items in legend and line.                                                                       |
 | `position`                     |     PositionType      |            `left`            |                                           none                                           | Position of the main label [see examples](#position)                                                                                       |
 | `text_size`                    |        number         |            `2.5`             |                                            2                                             | Font size of the main value (in rem).                                                                                                      |
 | `text_style`                   |     TextStyleType     |            *none*            |                                     ['weight-bold']                                      | Text style of the Value [see examples and hierarchy](#style)                                                                               |
@@ -232,6 +247,7 @@ There are a lot of settings you can customize your sensors with:
 | `line_text_size`               |        number         |             `1`              |                                           1.5                                            | Font size of the state content in the line (in rem)                                                                                        |
 | `line_text_style`              |     TextStyleType     |            *none*            |                                     ['shadow-hard']                                      | Text style of the State content inside the Line [see examples and hierarchy](#style)                                                       |
 | `line_text_overflow`           |   TextOverflowType    |          `tooltip`           |                                           fade                                           | What happens when the text in the line overflows [see examples](#overflow)                                                                 |
+| `overflow_direction`           | OverflowDirectionType |                              |                                                                                          |                                                                                                                                            |
 | `color`                        |       ColorType       |       *primary-color*        |                                         #00aafa                                          | The color of the gauge. And the untracked legend.                                                                                          |
 | `color_bg`                     |       ColorType       | *secondary-background-color* |                                       [40, 40, 40]                                       | The background color of the gauge. Only visible if the gauge is not filled (max is entity).                                                |
 | `tap_action`                   |     Action Config     |         *more-info*          | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                |
@@ -241,6 +257,7 @@ There are a lot of settings you can customize your sensors with:
 | `legend_all`                   |         bool          |           `false`            |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge) [example](#legend_all)                                          |
 | `legend_position`              |     PositionType      |       `bottom-center`        |                                          right                                           | Position of the legend [see examples](#legend)                                                                                             |
 | `legend_alignment`             |     AlignmentType     |           `center`           |                                      space-between                                       | Alignment of the legend items [see examples](#legend)                                                                                      |
+| `legend_indicator`             |     IndicatorType     |       `icon-fallback`        |                                          circle                                          | What indicator will be left of the text in the legend.                                                                                     |
 | `legend_text_size`             |        number         |             `1`              |                                           1.5                                            | Font size of the legend text (in rem) - not including icon                                                                                 |
 | `legend_text_style`            |     TextStyleType     |            *none*            |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                         |
 | `show_delta`                   |         bool          |           `false`            |                                           true                                           | Show the state, sum and delta of all the devices in respect to the main entity. [example](#delta)                                          |
@@ -274,13 +291,15 @@ The types are used in the configuration. The type is used to define what kind of
 |      CornerType       | Single: `square`, `lite-rounded`, `medium-rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
 |     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                                                                                                                                                                                                                                                                  |
 |     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
-|   TextOverflowType    | Single: `ellipsis`, `clip`, `tooltip`, `fade`                                                                                                                                                                                                                                                                                                                       |
+|   TextOverflowType    | Single: `ellipsis`, `clip`, `tooltip`, `tooltip-segment`, `fade`                                                                                                                                                                                                                                                                                                    |
+| OverflowDirectionType | Single: `left`, `right`                                                                                                                                                                                                                                                                                                                                             |
 |       ColorType       | An array of three numbers (RGB), HEX string or `auto`.                                                                                                                                                                                                                                                                                                              |
 |     ActionConfig      | Event cased by an Action. See more [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables)                                                                                                                                                                                                                                         |
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
 |   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
 |  StatisticsFunction   | Single: `max`, `mean`, `min`, `state`, `sum`, `change`                                                                                                                                                                                                                                                                                                              |
-|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`, `icon`                                                                                                                                                                                                                                                                                 |
+|     IndicatorType     | Single: `circle`, `icon`, `icon-fallback`, `none`                                                                                                                                                                                                                                                                                                                   |
+|     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`, `icon`                                                                                                                                                                                                                                                                                 | 
 
 </div>
 
@@ -308,6 +327,7 @@ The only required field is `entity`. The rest of the fields are optional. Color 
 | `precision`          |    number     | *main precision* |                                            1                                             | Will override main precision pre entity.                                                                                                             |
 | `state_content`      | StateContent  |    `['name']`    |                                    ['name', 'state']                                     | State content in the legend. Order matters. Info will be separated by a dot.                                                                         |
 | `line_state_content` | StateContent  |      *none*      |                                 ['percentage', 'state']                                  | State content in the line. Order matters. Info will be separated by a dot.                                                                           |
+| `legend_indicator`   | IndicatorType | `icon-fallback`  |                                          circle                                          | What indicator will be left of the text in the legend.                                                                                               |
 | `tap_action`         | Action Config |   *more-info*    | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Single tap action for item.                                                                                                                          |
 | `hold_action`        | Action Config |   *more-info*    | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Hold action for item.                                                                                                                                |
 | `double_tap_action`  | Action Config |      *none*      | [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables) | Double tap action for item.                                                                                                                          |
@@ -569,11 +589,25 @@ untracked_legend_label: Untracked
 ### `line_text_overflow: clip`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/clip.png" alt="clip">
 
+### `line_text_overflow: fade`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/fade.png" alt="fade">
+
 ### `line_text_overflow: tooltip`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/tooltip.png" alt="tooltip">
 
-### `line_text_overflow: fade`
+### `line_text_overflow: tooltip-segment`
+Each of the state content parts will disappear one by one when the text is too long. The first part will be removed, then the second part and so on.
+
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/tooltip-segment.png" alt="tooltip-segment">
+
+## Overflow Direction
+
+### `line_text_overflow_direction: right`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/fade.png" alt="fade">
+
+### `line_text_overflow_direction: left`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/overflow/fade-direction-left.png" alt="fade">
+
 
 </div>
 
@@ -698,10 +732,23 @@ Some entities only support `mean`, `min` and `max` (For example `sensor.plug_1_p
 
 </div>
 
+<div id="issues">
+
+## Issues / Feedback / Suggestions
+
+If you find a bug or have a suggestion, please let me know on the [GitHub issues page](https://github.com/Tomer27cz/energy-line-gauge/issues). I am happy about every feedback and will try to fix the issue as soon as possible.
+
+</div>
+
+<div id="contribute">
+
+## Contribute
+
+If you want to contribute to the project, you can do so by forking the repository and creating a pull request. I am happy about every contribution, whether it is a bug fix, a new feature or a documentation improvement.
+
+</div>
 <hr/>
 
-**If you find a Bug or have some suggestions, let me know <a href="https://github.com/Tomer27cz/energy-line-gauge/issues">here</a>! I'm happy about every feedback.**
+## **All contributions are welcome!**
 
-**Contributions are welcome!**
-
-**If you like the card, consider starring it.**
+## **If you like the card, consider ⭐ starring it.**

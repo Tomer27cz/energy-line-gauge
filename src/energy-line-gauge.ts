@@ -368,7 +368,6 @@ export class EnergyLineGauge extends LitElement {
     };
 
     const renderLabel = (
-      text: string,
       template: any,
       color: [number, number, number] | undefined,
       size: number,
@@ -378,7 +377,6 @@ export class EnergyLineGauge extends LitElement {
     ) => html`
     <div
       class="device-line-label line-text-position-${position}"
-      data-full-text="${text}"
       style="color: rgba(${color}); font-size: ${size}rem; ${overflowStyle} ${textStyle}">
       ${template}
     </div>
@@ -405,6 +403,7 @@ export class EnergyLineGauge extends LitElement {
         id="line-${device.entity.replace(".", "-")}"
         class="device-line"
         style="background-color: ${lineColor}; width: ${width}%"
+        title="${label?.text}"
         @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
         .actionHandler=${actionHandler({
           hasHold: hasAction(device.hold_action),
@@ -412,7 +411,6 @@ export class EnergyLineGauge extends LitElement {
       })}
       >
         ${showLabel && label ? renderLabel(
-        label.text,
         label.template,
         lineTextColor,
         this._config.line_text_size ?? 1,
@@ -434,9 +432,11 @@ export class EnergyLineGauge extends LitElement {
     <div class="device-line-container">
       ${deviceLines}
       ${showUntracked && untrackedLabel ? html`
-        <div class="untracked-line" style="width: ${untrackedWidth}%">
+        <div 
+          class="untracked-line" 
+          style="width: ${untrackedWidth}%"
+          title="${untrackedLabel.text}">
           ${renderLabel(
-            untrackedLabel.text,
             untrackedLabel.template,
             untrackedTextColor,
             this._config.line_text_size ?? 1,
@@ -583,10 +583,6 @@ export class EnergyLineGauge extends LitElement {
     }
   }
   private _checkLabelOverflow(labelElement: HTMLElement): void {
-    const parentContainer = labelElement.closest('.device-line, .untracked-line') as HTMLElement | null;
-    const text = labelElement.dataset.text || labelElement.textContent?.trim() || "";
-
-    (parentContainer ? parentContainer : labelElement).setAttribute('title', text);
     if (!['visible', ''].includes(labelElement.style.visibility)) {
       labelElement.style.visibility = 'visible';
     }
@@ -635,38 +631,37 @@ export class EnergyLineGauge extends LitElement {
 
     const shouldReverse = (
       this._config.overflow_direction === 'left' &&
-      ['clip', 'fade', 'ellipsis'].includes(this._config.line_text_overflow??'')
+      ['clip', 'fade', 'ellipsis'].includes(this._config.line_text_overflow ?? '')
     );
     const sortedContent = shouldReverse ? [...stateContent].reverse() : stateContent;
 
-    const templates: TemplateResult[] = [];
-    const texts: string[] = [];
+    const templateParts: TemplateResult[] = [];
+    const textParts: string[] = [];
 
     for (let i = 0; i < sortedContent.length; i++) {
-      const value = sortedContent[i];
-      const { template, text } = partRenderer.call(this, value, rendererContext);
+      const { template, text } = partRenderer.call(this, sortedContent[i], rendererContext);
 
-      if (template !== undefined && text !== undefined) {
-        templates.push(html`<span class="label-part">${template}</span>`);
-        texts.push(text);
-
-        if (i < sortedContent.length - 1) {
-          templates.push(html`<span class="label-separator">${this._config.state_content_separator ?? ''}</span>`);
-          texts.push(this._config.state_content_separator ?? '');
+      if (template !== undefined) {
+        if (templateParts.length > 0) { // If not the first template part, add separator before it
+          templateParts.push(html`<span class="label-separator">${this._config.state_content_separator ?? ''}</span>`);
         }
+        templateParts.push(html`<span class="label-part">${template}</span>`);
+      }
+
+      if (text !== undefined && text.trim() !== '') {
+        textParts.push(text);
       }
     }
 
-    if (templates.length === 0) {
+    if (templateParts.length === 0 && textParts.length === 0) {
       return line ? undefined : { template: rendererContext.defaultLabel, text: rendererContext.defaultLabel };
     }
 
     return {
-      template: html`${templates}`,
-      text: texts.join(''),
+      template: html`${templateParts}`, // Lit handles rendering an array of TemplateResults
+      text: textParts.join(this._config.state_content_separator ?? ''), // Join collected text parts with the separator
     };
   }
-
 
   // Entity Label ------------------------------------------------------------------------------------------------------
 
@@ -707,7 +702,7 @@ export class EnergyLineGauge extends LitElement {
       case 'icon':
         const icon = this._entityIcon(device);
         template = html`<ha-icon icon="${icon}"></ha-icon>`;
-        text = `[icon:${icon}]`;
+        text = '';
         break;
       default:
         text = '';
