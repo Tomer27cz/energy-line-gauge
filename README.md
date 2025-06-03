@@ -11,7 +11,7 @@
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Tomer27cz/energy-line-gauge/latest/total)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Tomer27cz/energy-line-gauge)
 
-<a href="https://www.buymeacoffee.com/tomer27" target="_blank">
+<a href="https://www.buymeacoffee.com/tomer27" target="_blank" rel="noopener noreferrer">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px; width: auto; cursor: pointer;" />
 </a>
 
