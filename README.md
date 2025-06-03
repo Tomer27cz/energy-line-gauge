@@ -59,8 +59,6 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
     * [Untracked State Content](#untracked_state_content)
 * [Offset](#offset)
 * [Statistics](#statistics)
-
-
 * [Issues](#issues)
 * [Contribute](#contribute)
 
