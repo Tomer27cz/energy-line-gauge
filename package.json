@@ -1,6 +1,6 @@
 {
   "name": "energy-line-gauge",
-  "version": "2.2.3",
+  "version": "2.2.3-dev",
   "license": "MIT",
   "author": "Tomer27cz",
   "description": "A customizable line gauge with a legend, optionally showing device power use as a percentage of a main entity.",
@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
+    "color-string": "^2.0.1",
     "custom-card-helpers": "1.9.0",
     "lit": "2.8.0",
     "memoize-one": "^6.0.0",

@@ -27,12 +27,15 @@ import {
 
   StatisticsPeriodType,
   StatisticsFunctionType,
+
+  ColorType,
+  RGBColor,
 } from './types';
 
-import { toRGB, toHEX, COLORS } from './color';
+import { toRGB, COLORS } from './color';
 
 // Some values are undefined but set programmatically in the code - comment
-const DEFAULTS = {
+export const CONFIG_DEFAULTS = {
   entity: undefined, // string
 
   // Title
@@ -43,6 +46,9 @@ const DEFAULTS = {
   title_position: 'top-left' as PositionType,
   title_text_size: 2,
   title_text_style: undefined,
+
+  title_text_color: 'primary' as ColorType,
+  subtitle_text_color: 'secondary' as ColorType,
 
   // MIN/MAX
   min: 0,
@@ -57,6 +63,7 @@ const DEFAULTS = {
   position: 'left' as PositionType,
   text_size: 2.5,
   text_style: undefined,
+  text_color: 'primary' as ColorType,
 
   // Styling
   corner: 'square' as CornerType,
@@ -68,6 +75,7 @@ const DEFAULTS = {
   line_text_position: 'left' as LinePositionType,
   line_text_size: 1,
   line_text_style: undefined,
+  line_text_color: 'auto' as ColorType,
   line_text_overflow: 'tooltip' as TextOverflowType,
   overflow_direction: 'right' as OverflowDirectionType,
 
@@ -85,6 +93,7 @@ const DEFAULTS = {
   legend_indicator: 'icon-fallback' as IndicatorType,
   legend_text_size: 1,
   legend_text_style: undefined,
+  legend_text_color: 'secondary' as ColorType,
 
   // Show Delta
   show_delta: false,
@@ -110,7 +119,7 @@ const DEFAULTS = {
   entities: [],
 }
 
-const ENTITY_DEFAULTS = {
+export const ENTITY_DEFAULTS = {
   entity: undefined,
 
   // Entity
@@ -131,6 +140,9 @@ const ENTITY_DEFAULTS = {
   // Styling
   legend_indicator: undefined,
 
+  legend_text_color: undefined,
+  line_text_color: undefined,
+
   // Actions
   tap_action: undefined,
   hold_action: undefined,
@@ -138,100 +150,93 @@ const ENTITY_DEFAULTS = {
 }
 
 export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
-  const rootStyle = getComputedStyle(document.documentElement);
-  const defaultColor = toRGB(rootStyle.getPropertyValue('--primary-color').trim());
-  const defaultBgColor = toRGB(rootStyle.getPropertyValue('--secondary-background-color').trim());
-
   return {
     ...config,
 
     // Title
-    title: config.title ?? DEFAULTS.title,
-    subtitle: config.subtitle ?? DEFAULTS.subtitle,
-    header: config.header ?? DEFAULTS.header,
+    title: config.title ?? CONFIG_DEFAULTS.title,
+    subtitle: config.subtitle ?? CONFIG_DEFAULTS.subtitle,
+    header: config.header ?? CONFIG_DEFAULTS.header,
 
-    title_position: validatedValue(config.title_position, POSITION_TYPES, DEFAULTS.title_position),
-    title_text_size: config.title_text_size ?? DEFAULTS.title_text_size,
-    title_text_style: config.title_text_style ?? DEFAULTS.title_text_style,
+    title_position: validatedValue(config.title_position, POSITION_TYPES, CONFIG_DEFAULTS.title_position),
+    title_text_size: config.title_text_size ?? CONFIG_DEFAULTS.title_text_size,
+    title_text_style: config.title_text_style ?? CONFIG_DEFAULTS.title_text_style,
 
     // MIN/MAX
-    min: config.min ?? DEFAULTS.min,
+    min: config.min ?? CONFIG_DEFAULTS.min,
     max: config.max ?? config.entity, // entity
 
     // Value
-    precision: config.precision ?? DEFAULTS.precision,
-    unit: config.unit ?? DEFAULTS.unit,
-    cutoff: config.cutoff ?? DEFAULTS.cutoff,
-    offset: config.offset ? parseDurationToMilliseconds(config.offset) : DEFAULTS.offset,
+    precision: config.precision ?? CONFIG_DEFAULTS.precision,
+    unit: config.unit ?? CONFIG_DEFAULTS.unit,
+    cutoff: config.cutoff ?? CONFIG_DEFAULTS.cutoff,
+    offset: config.offset ? parseDurationToMilliseconds(config.offset) : CONFIG_DEFAULTS.offset,
 
-    position: validatedValue(config.position, POSITION_TYPES, DEFAULTS.position),
-    text_size: config.text_size ?? DEFAULTS.text_size,
-    text_style: config.text_style ?? DEFAULTS.text_style,
+    position: validatedValue(config.position, POSITION_TYPES, CONFIG_DEFAULTS.position),
+    text_size: config.text_size ?? CONFIG_DEFAULTS.text_size,
+    text_style: config.text_style ?? CONFIG_DEFAULTS.text_style,
 
     // Styling
-    corner: validatedValue(config.corner, CORNER_TYPES, DEFAULTS.corner),
-    state_content_separator: config.state_content_separator ?? DEFAULTS.state_content_separator,
-    color: validateColor(config.color ?? config.colour, defaultColor), // --primary-color
-    color_bg: validateColor(config.color_bg ?? config.colour_bg, defaultBgColor), // --secondary-background-color
+    corner: validatedValue(config.corner, CORNER_TYPES, CONFIG_DEFAULTS.corner),
+    state_content_separator: config.state_content_separator ?? CONFIG_DEFAULTS.state_content_separator,
+    color: validateColor(config.color ?? config.colour, toRGB('var(--primary-color)')), // --primary-color
+    color_bg: validateColor(config.color_bg ?? config.colour_bg, toRGB('var(--secondary-background-color)')), // --secondary-background-color
 
     // Line Text
-    line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, DEFAULTS.line_text_position),
-    line_text_size: config.line_text_size ?? DEFAULTS.line_text_size,
-    line_text_style: config.line_text_style ?? DEFAULTS.line_text_style,
-    line_text_overflow: validatedValue(config.line_text_overflow, TEXT_OVERFLOW_TYPES, DEFAULTS.line_text_overflow),
-    overflow_direction: validatedValue(config.overflow_direction, OVERFLOW_DIRECTION_TYPES, DEFAULTS.overflow_direction),
+    line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, CONFIG_DEFAULTS.line_text_position),
+    line_text_size: config.line_text_size ?? CONFIG_DEFAULTS.line_text_size,
+    line_text_style: config.line_text_style ?? CONFIG_DEFAULTS.line_text_style,
+    line_text_overflow: validatedValue(config.line_text_overflow, TEXT_OVERFLOW_TYPES, CONFIG_DEFAULTS.line_text_overflow),
+    overflow_direction: validatedValue(config.overflow_direction, OVERFLOW_DIRECTION_TYPES, CONFIG_DEFAULTS.overflow_direction),
 
     // Actions
-    tap_action: config.tap_action ?? DEFAULTS.tap_action,
-    hold_action: config.hold_action ?? DEFAULTS.hold_action,
-    double_tap_action: config.double_tap_action ?? DEFAULTS.double_tap_action,
+    tap_action: config.tap_action ?? CONFIG_DEFAULTS.tap_action,
+    hold_action: config.hold_action ?? CONFIG_DEFAULTS.hold_action,
+    double_tap_action: config.double_tap_action ?? CONFIG_DEFAULTS.double_tap_action,
 
     // Legend
-    legend_hide: config.legend_hide ?? DEFAULTS.legend_hide,
-    legend_all: config.legend_all ?? DEFAULTS.legend_all,
+    legend_hide: config.legend_hide ?? CONFIG_DEFAULTS.legend_hide,
+    legend_all: config.legend_all ?? CONFIG_DEFAULTS.legend_all,
 
-    legend_position: validatedValue(config.legend_position, POSITION_TYPES, DEFAULTS.legend_position),
-    legend_alignment: validatedValue(config.legend_alignment, LEGEND_ALIGNMENT_TYPES, DEFAULTS.legend_alignment),
-    legend_indicator: validatedValue(config.legend_indicator, INDICATOR_TYPES, DEFAULTS.legend_indicator),
-    legend_text_size: config.legend_text_size ?? DEFAULTS.legend_text_size,
-    legend_text_style: config.legend_text_style ?? DEFAULTS.legend_text_style,
+    legend_position: validatedValue(config.legend_position, POSITION_TYPES, CONFIG_DEFAULTS.legend_position),
+    legend_alignment: validatedValue(config.legend_alignment, LEGEND_ALIGNMENT_TYPES, CONFIG_DEFAULTS.legend_alignment),
+    legend_indicator: validatedValue(config.legend_indicator, INDICATOR_TYPES, CONFIG_DEFAULTS.legend_indicator),
+    legend_text_size: config.legend_text_size ?? CONFIG_DEFAULTS.legend_text_size,
+    legend_text_style: config.legend_text_style ?? CONFIG_DEFAULTS.legend_text_style,
 
     // Show Delta
-    show_delta: config.show_delta ?? DEFAULTS.show_delta,
-    delta_position: validatedValue(config.delta_position, POSITION_TYPES, DEFAULTS.delta_position),
+    show_delta: config.show_delta ?? CONFIG_DEFAULTS.show_delta,
+    delta_position: validatedValue(config.delta_position, POSITION_TYPES, CONFIG_DEFAULTS.delta_position),
 
     // Untracked Legend
     untracked_legend: !!(config.untracked_legend ?? config.entities), // if entities are set, untracked_legend is true
-    untracked_legend_label: config.untracked_legend_label ?? DEFAULTS.untracked_legend_label,
-    untracked_legend_icon: config.untracked_legend_icon ?? DEFAULTS.untracked_legend_icon,
-    untracked_state_content: validateArray(config.untracked_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? DEFAULTS.untracked_state_content,
-    untracked_line_state_content: validateArray(config.untracked_line_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? DEFAULTS.untracked_line_state_content,
+    untracked_legend_label: config.untracked_legend_label ?? CONFIG_DEFAULTS.untracked_legend_label,
+    untracked_legend_icon: config.untracked_legend_icon ?? CONFIG_DEFAULTS.untracked_legend_icon,
+    untracked_state_content: validateArray(config.untracked_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? CONFIG_DEFAULTS.untracked_state_content,
+    untracked_line_state_content: validateArray(config.untracked_line_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? CONFIG_DEFAULTS.untracked_line_state_content,
 
     // Suppress Warnings
-    suppress_warnings: config.suppress_warnings ?? DEFAULTS.suppress_warnings,
+    suppress_warnings: config.suppress_warnings ?? CONFIG_DEFAULTS.suppress_warnings,
 
     // Statistics
-    statistics: config.statistics ?? DEFAULTS.statistics,
-    statistics_day_offset: config.statistics_day_offset ?? DEFAULTS.statistics_day_offset,
-    statistics_period: validatedValue(config.statistics_period, STATISTICS_PERIOD_TYPES, DEFAULTS.statistics_period),
-    statistics_function: validatedValue(config.statistics_function, STATISTICS_FUNCTION_TYPES, DEFAULTS.statistics_function),
+    statistics: config.statistics ?? CONFIG_DEFAULTS.statistics,
+    statistics_day_offset: config.statistics_day_offset ?? CONFIG_DEFAULTS.statistics_day_offset,
+    statistics_period: validatedValue(config.statistics_period, STATISTICS_PERIOD_TYPES, CONFIG_DEFAULTS.statistics_period),
+    statistics_function: validatedValue(config.statistics_function, STATISTICS_FUNCTION_TYPES, CONFIG_DEFAULTS.statistics_function),
 
     entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities,
   };
 };
 
 export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
-  const usedColors = new Set(
-    entities.map(e => toHEX(e.color)?.toUpperCase()).filter(Boolean)
-  );
+  const usedColors = new Set(entities.map(e => e.color).filter(Boolean));
 
   return entities.map(entity => {
     let color = entity.color ?? (entity as any).colour;
 
     if (!color || color === "auto") {
-      const available = COLORS.find(c => !usedColors.has(c.toUpperCase()));
-      color = toRGB(available);
-      usedColors.add(available?.toUpperCase() || "");
+      color = COLORS.find(c => !usedColors.has(c));
+      usedColors.add(color);
     }
 
     return {
@@ -304,10 +309,7 @@ function validateArray<T extends readonly string[]>(
   return values.filter((item): item is T[number] => allowed.includes(item as T[number]));
 }
 
-function validateColor(
-  color: string | [number, number, number] | undefined,
-  defaultValue: [number, number, number] | undefined
-): [number, number, number] | undefined {
+function validateColor(color: ColorType, defaultValue: RGBColor | undefined): RGBColor | undefined {
   if (!color) return defaultValue;
   if (color === "auto") return defaultValue;
   if (Array.isArray(color)) return color as [number, number, number];

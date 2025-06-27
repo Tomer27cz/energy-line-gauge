@@ -1,5 +1,5 @@
 import { css } from 'lit';
-import { TextStyleType } from './types';
+import { ColorType, TextStyleType } from './types';
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
 export const configElementStyle = css`
@@ -376,7 +376,7 @@ export const styles = css`
     }
 `;
 
-export function getTextStyle(style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: string | undefined): string {
+export function getTextStyle(style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: ColorType | undefined): string {
   if (!style) {return '';}
 
   const uniqueStyles = new Set(style);
@@ -435,7 +435,7 @@ export function getTextStyle(style: TextStyleType | undefined, textSize?: number
 
   // Shadow
   if (uniqueStyles.has('shadow-neon')) {
-    const neonColor = baseColor || '#fff';
+    const neonColor = `rgba(${baseColor})` || 'rgba(255,255,255,1)';
     styleMap['color'] = neonColor;
     styleMap['text-shadow'] = [
       `0 0 ${s*5}px ${neonColor}`,

@@ -13,6 +13,12 @@ export interface ELGConfig extends LovelaceCardConfig {
   title_text_size?: number;
   title_text_style?: TextStyleType;
 
+  title_text_color?: ColorType;
+  title_text_colour?: ColorType; // For British English support
+
+  subtitle_text_color?: ColorType;
+  subtitle_text_colour?: ColorType; // For British English support
+
   // MIN/MAX
   min?: number | string;
   max?: number | string;
@@ -27,19 +33,26 @@ export interface ELGConfig extends LovelaceCardConfig {
   text_size?: number;
   text_style?: TextStyleType;
 
+  text_color?: ColorType;
+  text_colour?: ColorType; // For British English support
+
   // Styling
   corner?: CornerType;
   state_content_separator?: string;
 
-  color?: [number, number, number] | string;
-  color_bg?: [number, number, number] | string;
-  colour?: [number, number, number] | string; // For British English support
-  colour_bg?: [number, number, number] | string; // For British English support
+  color?: ColorType;
+  color_bg?: ColorType;
+  colour?: ColorType; // For British English support
+  colour_bg?: ColorType; // For British English support
 
   // Line Text
   line_text_position?: LinePositionType;
   line_text_size?: number;
   line_text_style?: TextStyleType;
+
+  line_text_color?: ColorType;
+  line_text_colour?: ColorType; // For British English support
+
   line_text_overflow?: TextOverflowType;
   overflow_direction?: OverflowDirectionType;
 
@@ -57,6 +70,9 @@ export interface ELGConfig extends LovelaceCardConfig {
   legend_indicator?: IndicatorType;
   legend_text_size?: number;
   legend_text_style?: TextStyleType;
+
+  legend_text_color?: ColorType;
+  legend_text_colour?: ColorType; // For British English support
 
   // Show Delta
   show_delta?: boolean;
@@ -78,6 +94,9 @@ export interface ELGConfig extends LovelaceCardConfig {
   statistics_period?: StatisticsPeriodType;
   statistics_function?: StatisticsFunctionType;
 
+  // Config Version
+  config_version?: number;
+
   entities: ELGEntity[];
 }
 
@@ -87,8 +106,8 @@ export interface ELGEntity {
   // Title
   name?: string;
   icon?: string;
-  color?: [number, number, number] | 'auto';
-  colour?: [number, number, number] | 'auto'; // For British English support
+  color?: ColorType;
+  colour?: ColorType; // For British English support
 
   // Value
   cutoff?: number;
@@ -102,6 +121,12 @@ export interface ELGEntity {
 
   // Styling
   legend_indicator?: IndicatorType;
+
+  legend_text_color?: ColorType;
+  legend_text_colour?: ColorType; // For British English support
+
+  line_text_color?: ColorType;
+  line_text_colour?: ColorType; // For British English support
 
   // Actions
   tap_action?: ActionConfig;
@@ -134,6 +159,8 @@ export interface RendererContext {
 export interface DeviceRendererContext extends RendererContext {
   device: ELGEntity;
 }
+
+
 
 // State Content Types -------------------------------------------------------------------------------------------------
 
@@ -307,3 +334,9 @@ export type ELGHistoryStatistics = {
 }
 
 export type ELGHistoryStatisticsBucket = HassStatisticEntry
+
+// Color Types ---------------------------------------------------------------------------------------------------------
+
+export type RGBColor = [number, number, number] | [number, number, number, number]; // RGBA color with alpha channel
+
+export type ColorType = RGBColor | string | undefined; // Can be RGB array, HEX string, or undefined
