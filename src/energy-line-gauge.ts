@@ -509,9 +509,7 @@ export class EnergyLineGauge extends LitElement {
     const titlePosition = this._config.title_position ?? "top-left";
     const legendPosition = this._config.legend_position ?? "bottom-center";
     const deltaPosition = this._config.delta_position ?? "bottom-center";
-    const valuePosition = this._config.position ?? "left";
-
-    const cornerStyle = this._config.corner ?? "square";
+    let valuePosition = this._config.position ?? "left";
 
     const titleTextSize = this._config.title_text_size ?? 2;
     const textSize = this._config.text_size ?? 2.5;
@@ -519,33 +517,43 @@ export class EnergyLineGauge extends LitElement {
     const displayTitle: boolean = !!((this._config.title || this._config.subtitle) && titlePosition !== 'none');
     const displayLegend: boolean = (this._config.entities && this._config.entities.length > 0 && legendPosition !== 'none');
     const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
-    const displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
+    let displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
 
     const titleColor = getTextColor(this._config.title_text_color, CONFIG_DEFAULTS.title_text_color);
     const valueColor = getTextColor(this._config.text_color, CONFIG_DEFAULTS.text_color);
 
+    const cornerStyle = this._config.corner ?? "square";
     const titleStyle = getTextStyle(this._config.title_text_style, titleTextSize, titleColor);
     const valueStyle = getTextStyle(this._config.text_style, textSize, valueColor);
 
+    if (!displayTitle) {valuePosition = "left";}
+    if (["in-title-right", "in-title-left"].includes(valuePosition)) {displayValue = false;}
+
+    const valueTemplate = html`
+      <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: rgba(${valueColor})">
+        ${this._calcStateMain().toFixed(this._config.precision)}
+        ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
+      </div>
+    `;
+    const titleTemplate = html`
+      <div class="title-value-position-${valuePosition == 'in-title-left' ? 'left' : valuePosition == 'in-title-right' ? 'right' : 'none'}">
+        ${["in-title-right", "in-title-left"].includes(valuePosition) ? valueTemplate : ''}
+        <div>
+          ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}; color: rgba(${titleColor})">${this._config.title}</div>` : ''}
+          ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}">${this._config.subtitle}</div>` : ''}
+        </div>
+      </div>  
+    `;
+
     return html`
       <div class="gauge-position-frame position-${titlePosition}">
-        ${displayTitle ? html`
-          <div>
-            ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}; color: rgba(${titleColor})">${this._config.title}</div>` : ''}
-            ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}">${this._config.subtitle}</div>` : ''}
-          </div>
-        ` : ''}
+        ${displayTitle ? titleTemplate : ''}
         <div class="gauge-position-frame position-${legendPosition}">
           ${displayLegend ? this._createLegend() : ''}
           <div class="gauge-position-frame position-${deltaPosition}">
             ${displayDelta ? this._createDelta() : ''}
             <div class="gauge-position-frame position-${valuePosition}">
-              ${displayValue ? html`
-                <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: rgba(${valueColor})">
-                  ${this._calcStateMain().toFixed(this._config.precision)}
-                  ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
-                </div>
-              ` : ''}
+              ${displayValue ? valueTemplate : ''}
               <div class="gauge-line line-corner-${cornerStyle}">
                 <div class="main-line" style="width: ${this._mainObject?.width}%;"></div>
                 ${this._createDeviceLines()}

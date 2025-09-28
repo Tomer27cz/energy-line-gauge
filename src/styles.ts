@@ -200,6 +200,30 @@ export const styles = css`
     .position-bottom-right {
         align-items: flex-end;
     }
+  
+    /*Title/Value Position ---------------------------------*/
+    .title-value-position-left {
+      width: auto;
+      flex-direction: row;
+      align-items: center;
+      display: flex;
+      flex-wrap: nowrap;
+      flex-grow: 1;
+      gap: 1rem;
+    }
+    .title-value-position-right {
+      width: auto;
+      flex-direction: row-reverse;
+      align-items: center;
+      display: flex;
+      flex-wrap: nowrap;
+      flex-grow: 1;
+      gap: 1rem;
+    }
+    .title-value-position-right .gauge-value,
+    .title-value-position-left .gauge-value {
+      margin-bottom: 0.5rem;
+    }
     
     /*Gauge line -------------------------------------------*/
 

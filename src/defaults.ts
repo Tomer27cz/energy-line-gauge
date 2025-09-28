@@ -7,6 +7,7 @@ import {
   TEXT_OVERFLOW_TYPES,
   OVERFLOW_DIRECTION_TYPES,
   POSITION_TYPES,
+  VALUE_POSITION_TYPES,
   INDICATOR_TYPES,
   LINE_POSITION_TYPES,
   LEGEND_ALIGNMENT_TYPES,
@@ -20,6 +21,7 @@ import {
   TextOverflowType,
   OverflowDirectionType,
   PositionType,
+  ValuePositionType,
   IndicatorType,
   LinePositionType,
   LegendAlignmentType,
@@ -62,7 +64,7 @@ export const CONFIG_DEFAULTS = {
   cutoff: 0,
   offset: undefined, // parsed
 
-  position: 'left' as PositionType,
+  position: 'left' as ValuePositionType,
   text_size: 2.5,
   text_style: undefined,
   text_color: 'primary' as ColorType,
@@ -176,7 +178,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     cutoff: config.cutoff ?? CONFIG_DEFAULTS.cutoff,
     offset: config.offset ? parseDurationToMilliseconds(config.offset) : CONFIG_DEFAULTS.offset,
 
-    position: validatedValue(config.position, POSITION_TYPES, CONFIG_DEFAULTS.position),
+    position: validatedValue(config.position, VALUE_POSITION_TYPES, CONFIG_DEFAULTS.position),
     text_size: config.text_size ?? CONFIG_DEFAULTS.text_size,
     text_style: config.text_style ?? CONFIG_DEFAULTS.text_style,
 

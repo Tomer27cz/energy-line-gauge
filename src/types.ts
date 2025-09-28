@@ -29,7 +29,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   cutoff?: number; // Cutoff value for the entity state
   offset?: string | number; // Offset values into the past - duration string (e.g., "1h", "30m", "15s")
 
-  position?: PositionType;
+  position?: ValuePositionType;
   text_size?: number;
   text_style?: TextStyleType;
 
@@ -174,6 +174,7 @@ export const OVERFLOW_DIRECTION_TYPES = ['left', 'right'] as const;
 export const INDICATOR_TYPES = ['circle', 'icon', 'icon-fallback', 'none'] as const;
 
 export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
+export const VALUE_POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right', 'in-title-right', 'in-title-left'] as const; // -middle & -center are equivalent
 export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
 export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 
@@ -191,6 +192,7 @@ export type OverflowDirectionType = typeof OVERFLOW_DIRECTION_TYPES[number];
 export type IndicatorType = typeof INDICATOR_TYPES[number];
 
 export type PositionType = typeof POSITION_TYPES[number];
+export type ValuePositionType = typeof VALUE_POSITION_TYPES[number];
 export type LinePositionType = typeof LINE_POSITION_TYPES[number];
 export type LegendAlignmentType = typeof LEGEND_ALIGNMENT_TYPES[number];
 

@@ -128,6 +128,9 @@ title_position: top-left
 title_text_size: 2
 title_text_style: shadow-light
 
+title_text_color: gray
+subtitle_text_color: black
+
 min: 0
 max: sensor.glow_power_consumption
 
@@ -139,6 +142,7 @@ offset: 1d
 position: left
 text_size: 2.5
 text_style: weight-bold
+text_color: auto
 
 corner: 'square'
 state_content_separator: '|'
@@ -244,7 +248,7 @@ There are a lot of settings you can customize your sensors with:
 | `state_content_separator`      |        string         |            `' ⸱ '`            |                                           '-'                                            | This string is added between state content items in legend and line.                                                                       |
 | `line_separator`               |         bool          |            `false`            |                                          `true`                                          | Separates the line segments with the background color.                                                                                     |
 | `line_separator_width`         |  SeparatorWidthType   |          `total050`           |                                        `each008`                                         | Wisth of separators. Total - Percentage gets divide, Each - Each separator gets fixed percentage                                           |
-| `position`                     |     PositionType      |            `left`             |                                           none                                           | Position of the main label [see examples](#position)                                                                                       |
+| `position`                     |   ValuePositionType   |            `left`             |                                           none                                           | Position of the main label [see examples](#position)                                                                                       |
 | `text_size`                    |        number         |             `2.5`             |                                            2                                             | Font size of the main value (in rem).                                                                                                      |
 | `text_style`                   |     TextStyleType     |            *none*             |                                     ['weight-bold']                                      | Text style of the Value [see examples and hierarchy](#style)                                                                               |
 | `text_color`                   |       ColorType       |  `var(--primary-text-color)`  |                                          white                                           | Text color of the Value                                                                                                                    |
@@ -294,6 +298,7 @@ The types are used in the configuration. The type is used to define what kind of
 |         bool          | `true` or `false`                                                                                                                                                                                                                                                                                                                                                   |
 |       entityID        | String containing an entity id. Example: `sensor.plug_1_power`                                                                                                                                                                                                                                                                                                      |
 |     PositionType      | Single: `left`, `right`, `none`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                              |
+|   ValuePositionType   | Single: `left`, `right`, `none`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`, `in-title-right`, `in-title-left`                                                                                                                                                                                                           |
 |   LinePositionType    | Single: `left`, `right`, `none`, `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                    |
 |      CornerType       | Single: `square`, `lite-rounded`, `medium-rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
 |  SeparatorWidthType   | Single: `total020`, `total030`, `total040`, `total050`, `total060`, `total070`, `total080`, `total090`, `total100`, `each002`, `each004`, `each006`, `each008`, `each010`, `each012`, `each014`, `each016`, `each018`, `each020` [mode]{num}{num}.{num}                                                                                                             |
@@ -489,6 +494,13 @@ untracked_legend_label: Untracked
 ### `position: bottom-right` `title_position: bottom-right`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/bottom-right.png" alt="bottom-right">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/title_position/bottom-right.png" alt="bottom-right">
+
+### `position: in-title-right` `title_position: top-center`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/in-title-right.png" alt="in-title-right">
+
+### `position: in-title-left` `title_position: top-center`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/in-title-left.png" alt="int-title-left">
+
 
 ## Legend
 
