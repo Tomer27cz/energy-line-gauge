@@ -3,6 +3,7 @@ import {
   ELGEntity,
 
   CORNER_TYPES,
+  LINE_SEPARATOR_WIDTH_TYPES,
   TEXT_OVERFLOW_TYPES,
   OVERFLOW_DIRECTION_TYPES,
   POSITION_TYPES,
@@ -15,6 +16,7 @@ import {
   STATISTICS_FUNCTION_TYPES,
 
   CornerType,
+  LineSeparatorWidthType,
   TextOverflowType,
   OverflowDirectionType,
   PositionType,
@@ -68,6 +70,8 @@ export const CONFIG_DEFAULTS = {
   // Styling
   corner: 'square' as CornerType,
   state_content_separator: ' ⸱ ',
+  line_separator: false,
+  line_separator_width: 'total050' as LineSeparatorWidthType,
   color: undefined, // --primary-color
   color_bg: undefined, // --secondary-background-color
 
@@ -179,6 +183,8 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     // Styling
     corner: validatedValue(config.corner, CORNER_TYPES, CONFIG_DEFAULTS.corner),
     state_content_separator: config.state_content_separator ?? CONFIG_DEFAULTS.state_content_separator,
+    line_separator: config.line_separator ?? CONFIG_DEFAULTS.line_separator,
+    line_separator_width: validatedValue(config.line_separator_width, LINE_SEPARATOR_WIDTH_TYPES, CONFIG_DEFAULTS.line_separator_width),
     color: validateColor(config.color ?? config.colour, toRGB('var(--primary-color)')), // --primary-color
     color_bg: validateColor(config.color_bg ?? config.colour_bg, toRGB('var(--secondary-background-color)')), // --secondary-background-color
 

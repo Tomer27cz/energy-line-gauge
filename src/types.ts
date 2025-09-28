@@ -39,6 +39,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Styling
   corner?: CornerType;
   state_content_separator?: string;
+  line_separator?: boolean;
+  line_separator_width?: LineSeparatorWidthType;
 
   color?: ColorType;
   color_bg?: ColorType;
@@ -165,6 +167,7 @@ export interface DeviceRendererContext extends RendererContext {
 // State Content Types -------------------------------------------------------------------------------------------------
 
 export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;
+export const LINE_SEPARATOR_WIDTH_TYPES = ['total020', 'total030', 'total040', 'total050', 'total060', 'total070', 'total080', 'total090', 'total100', 'each002', 'each004', 'each006', 'each008', 'each010', 'each012', 'each014', 'each016', 'each018', 'each020'] as const; // [mode][width], width = {number}{number}.{number}
 export const TEXT_STYLE_TYPES = ['weight-lighter', 'weight-bold', 'weight-bolder', 'style-italic', 'decoration-underline', 'decoration-overline', 'decoration-line-through', 'transform-uppercase', 'transform-lowercase', 'transform-capitalize', 'family-monospace', 'shadow-light', 'shadow-medium', 'shadow-heavy', 'shadow-hard', 'shadow-neon', 'black-outline', 'white-outline'] as const;
 export const TEXT_OVERFLOW_TYPES = ['ellipsis', 'clip', 'tooltip', 'tooltip-segment', 'fade'] as const;
 export const OVERFLOW_DIRECTION_TYPES = ['left', 'right'] as const;
@@ -181,6 +184,7 @@ export const STATISTICS_PERIOD_TYPES = ['5minute', 'hour', 'day', 'week', 'month
 export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean', 'min', 'state', 'sum'] as const;
 
 export type CornerType = typeof CORNER_TYPES[number];
+export type LineSeparatorWidthType = typeof LINE_SEPARATOR_WIDTH_TYPES[number];
 export type TextStyleType = typeof TEXT_STYLE_TYPES[number][];
 export type TextOverflowType = typeof TEXT_OVERFLOW_TYPES[number];
 export type OverflowDirectionType = typeof OVERFLOW_DIRECTION_TYPES[number];

@@ -56,6 +56,28 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       { value: "circular", label: "Circular" },
     ];
 
+    const lineSeparatorWidthOptions = [
+      { value: "total020", label: "Total 2%" },
+      { value: "total030", label: "Total 3%" },
+      { value: "total040", label: "Total 4%" },
+      { value: "total050", label: "Total 5% (default)" },
+      { value: "total060", label: "Total 6%" },
+      { value: "total070", label: "Total 7%" },
+      { value: "total080", label: "Total 8%" },
+      { value: "total090", label: "Total 9%" },
+      { value: "total100", label: "Total 10%" },
+      { value: "each002", label: "Each 0.2%" },
+      { value: "each004", label: "Each 0.4%" },
+      { value: "each006", label: "Each 0.6%" },
+      { value: "each008", label: "Each 0.8%" },
+      { value: "each010", label: "Each 1.0%" },
+      { value: "each012", label: "Each 1.2%" },
+      { value: "each014", label: "Each 1.4%" },
+      { value: "each016", label: "Each 1.6%" },
+      { value: "each018", label: "Each 1.8%" },
+      { value: "each020", label: "Each 2.0%" },
+    ];
+
     const indicatorOptions = [
       { value: "circle", label: "Circle" },
       { value: "icon", label: "Icon" },
@@ -191,6 +213,14 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             schema: [
               { name: "color", required: false, selector: { color_rgb: {} } },
               { name: "color_bg", required: false, selector: { color_rgb: {} } },
+            ],
+          },
+
+          {
+            type: "grid",
+            schema: [
+              { name: "line_separator", required: false, selector: { boolean: {} } },
+              { name: "line_separator_width", required: false, selector: { select: { mode: "dropdown", options: lineSeparatorWidthOptions }}},
             ],
           },
 
@@ -516,6 +546,17 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       color_bg: {
         tryLocalize: "ui.panel.lovelace.editor.edit_view.tab_background",
         fallback: "Background Color",
+      },
+
+      // Line Separator
+      line_separator: {
+        tryLocalize: () => "Line Separator",
+        fallback: "Line Separator",
+      },
+      // Line Separator Width
+      line_separator_width: {
+        tryLocalize: () => "Line Separator Width",
+        fallback: "Line Separator Width",
       },
 
       // ---------------------------------------------------- Value ----------------------------------------------------

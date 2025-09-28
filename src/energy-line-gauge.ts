@@ -72,6 +72,7 @@ export class EnergyLineGauge extends LitElement {
   private _entitiesObject: Record<string, ELGEntityState> = {};
   private _entitiesTotalObject!: ELGState;
 
+  private _lineSeparatorWidth: number = 0;
   private _resizeObserver!: ResizeObserver;
 
   private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
@@ -216,6 +217,7 @@ export class EnergyLineGauge extends LitElement {
     let stateSum: number = 0;
     let percentageSum: number = 0;
     let widthSum: number = 0;
+    let renderedLines: number = 0;
 
     for (const device of this._config.entities ?? []) {
       if (!this._validate(device.entity)) continue;
@@ -231,6 +233,8 @@ export class EnergyLineGauge extends LitElement {
       stateSum += state;
       percentageSum += percentage;
       widthSum += width;
+
+      if (width > 0) {renderedLines += 1;}
 
       this._entitiesObject[device.entity] = {
         state: state,
@@ -251,6 +255,37 @@ export class EnergyLineGauge extends LitElement {
       width: mainWidth - widthSum,
       percentage: (mainState - stateSum) / mainState,
     };
+
+    if (this._config.line_separator && renderedLines > 0) {
+      const calculateTotalSeparatorWidth = (configString: string, numberOfSeparators: number): number => {
+        const firstDigitIndex = configString.search(/\d/);
+        if (firstDigitIndex === -1) {console.error(`Invalid config: ${configString}.`); return 0}
+
+        const mode = configString.substring(0, firstDigitIndex);
+        const value = parseInt(configString.substring(firstDigitIndex), 10) / 10;
+
+        if (isNaN(value)) {console.error(`Invalid value parsed from: ${configString}`); return 0}
+
+        switch (mode) {
+          case "total":
+            return value;
+          case "each":
+            return numberOfSeparators * value;
+          default:
+            return 5;
+        }
+      };
+
+      const numberOfSeparators = this._untrackedObject.width > 0 ? renderedLines : Math.max(0, renderedLines - 1);
+      const totalSeparatorWidth: number = calculateTotalSeparatorWidth(this._config.line_separator_width??"total050", numberOfSeparators);
+
+      this._lineSeparatorWidth = totalSeparatorWidth / numberOfSeparators;
+
+      for (const deviceKey in this._entitiesObject) {
+        if (this._entitiesObject[deviceKey].width == 0) continue;
+        this._entitiesObject[deviceKey].width *= 1-(totalSeparatorWidth*0.01);
+      }
+    }
 
     return html`
       <ha-card
@@ -390,19 +425,32 @@ export class EnergyLineGauge extends LitElement {
     const overflowType = this._config.line_text_overflow ?? "tooltip";
     const overflowDir = this._config.overflow_direction ?? "right";
 
-    const deviceLines = this._config.entities.map((device: ELGEntity) => {
-      if (!this._entitiesObject[device.entity]) {return html``;}
+    // noinspection JSMismatchedCollectionQueryUpdate
+    const lineParts: TemplateResult[] = [];
 
-      const width = this._entitiesObject[device.entity].width;
-      const showLabel = width > 0 && position !== "none";
+    // noinspection CssUnresolvedCustomProperty
+    const separatorTemplate = !this._config.line_separator || this._lineSeparatorWidth === 0
+      ? html``
+      : html`<div class="device-line-separator" style="background-color: var(--background-color); width: ${this._lineSeparatorWidth}%;"></div>`;
+
+    const visibleEntities = this._config.entities.filter(device =>
+      this._entitiesObject[device.entity] && this._entitiesObject[device.entity].width > 0
+    );
+
+    visibleEntities.forEach((device: ELGEntity, index: number) => {
+      if (index > 0) {lineParts.push(separatorTemplate)}
+
+      const entityState = this._entitiesObject[device.entity];
+      const width = entityState.width;
+      const showLabel = position !== "none";
       const lineColor = toRGB(device.color);
-      const lineTextColor = getTextColor(this._config.line_text_color, CONFIG_DEFAULTS.line_text_color, device.color)
+      const lineTextColor = getTextColor(this._config.line_text_color, CONFIG_DEFAULTS.line_text_color, device.color);
       const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, lineColor);
       const label = this._entityLabel(device, true);
       const overflowStyle = getOverflowStyle(overflowType, overflowDir);
 
       // noinspection HtmlUnknownAttribute
-      return html`
+      lineParts.push(html`
       <div
         id="line-${device.entity.replace(".", "-")}"
         class="device-line"
@@ -423,7 +471,7 @@ export class EnergyLineGauge extends LitElement {
         position
       ) : html``}
       </div>
-    `;
+      `);
     });
 
     // Untracked Line
@@ -432,12 +480,12 @@ export class EnergyLineGauge extends LitElement {
     const untrackedTextColor = getTextColor(this._config.line_text_color, CONFIG_DEFAULTS.line_text_color, this._config.color)
     const untrackedLabel = this._untrackedLabel(true);
 
-    return html`
-    <div class="device-line-container">
-      ${deviceLines}
-      ${showUntracked && untrackedLabel ? html`
-        <div 
-          class="untracked-line" 
+    if (untrackedWidth > 0 && visibleEntities.length > 0) {lineParts.push(separatorTemplate)}
+
+    if (showUntracked && untrackedLabel) {
+      lineParts.push(html`
+        <div
+          class="untracked-line"
           style="width: ${untrackedWidth}%"
           title="${untrackedLabel.text}">
           ${renderLabel(
@@ -449,9 +497,13 @@ export class EnergyLineGauge extends LitElement {
             position
           )}
         </div>
-      ` : html``}
-    </div>
-  `;
+      `);}
+
+    return html`
+      <div class="device-line-container">
+        ${lineParts}
+      </div>
+    `;
   }
   _createInnerHtml() {
     const titlePosition = this._config.title_position ?? "top-left";
