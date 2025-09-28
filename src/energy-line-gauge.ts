@@ -339,7 +339,7 @@ export class EnergyLineGauge extends LitElement {
 
     switch (legendType) {
       case 'state':
-        return html`<div class="indicator-state" style="${textStyle}">${this._entitiesObject[device.entity]?.state}</div>`;
+        return html`<div class="indicator-state" style="${textStyle}">${this._formatValueDevice(device)}</div>`;
       case 'percentage':
         const percentage = this._entitiesObject[device.entity]?.percentage ?? 0;
         return html`<div class="indicator-state" style="${textStyle}">${(percentage * 100).toFixed(0)}%</div>`;

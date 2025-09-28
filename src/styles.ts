@@ -339,6 +339,7 @@ export const styles = css`
 
     .chart-legend {
         text-align: center;
+        width: 100%;
     }
     .chart-legend ul {
         display: inline-flex;
