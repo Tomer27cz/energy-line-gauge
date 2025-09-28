@@ -153,7 +153,7 @@ export function getTextColor(
 ): RGBColor | undefined {
   if (textColorType === 'auto' && defaultColor === 'auto') return textColor(backgroundColor);
 
-  if (textColorType === 'auto') {
+  if (textColorType === 'auto' || !textColorType) {
     textColorType = defaultColor;
   }
 

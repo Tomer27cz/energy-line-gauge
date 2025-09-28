@@ -331,23 +331,53 @@ export class EnergyLineGauge extends LitElement {
       </li>`
   }
   _createLegendIndicator(device: ELGEntity, color: RGBColor | undefined): TemplateResult {
-    const legendType = device.legend_indicator ?? this._config.legend_indicator ?? "circle";
-    const hasIcon = !!device.icon;
+    const legendType = device.legend_indicator ?? this._config.legend_indicator ?? 'circle';
+    const textSize = (this._config.legend_text_size ?? this._config.text_size ?? 1) * 1.1;
 
-    if (legendType === 'none') return html``;
+    if (legendType === 'none') {return html``;}
+    const textStyle = `color: rgba(${color}); font-size: ${textSize}rem;`;
 
-    if (legendType === 'icon') {
-      if (!hasIcon) return html``;
-      return html`<ha-icon style="color: rgba(${color})" icon="${device.icon}"></ha-icon>`;
+    switch (legendType) {
+      case 'state':
+        return html`<div class="indicator-state" style="${textStyle}">${this._entitiesObject[device.entity]?.state}</div>`;
+      case 'percentage':
+        const percentage = this._entitiesObject[device.entity]?.percentage ?? 0;
+        return html`<div class="indicator-state" style="${textStyle}">${(percentage * 100).toFixed(0)}%</div>`;
+      case 'name': {
+        return html`<div class="indicator-state" style="${textStyle}">${this._entityName(device)}</div>`;
+      }
+
+      case 'icon':
+      // @ts-ignore
+      case 'icon-fallback':
+        // If no icon is defined, fall through to the default case to render a bullet.
+        if (device.icon) {return this._createIcon(device, textSize, color);}
+        if (legendType === 'icon') {return html``;}
+      // fallthrough
+
+      default: {
+        const backgroundColor = color ? `rgba(${color.slice(0, 3).join(',')}, 0.5)` : 'transparent';
+        const bulletStyle = `
+        background-color: ${backgroundColor};
+        border-color: rgba(${color});
+        width: ${textSize}rem;
+        height: ${textSize}rem;
+      `;
+        return html`<div class="bullet" style="${bulletStyle}"></div>`;
+      }
     }
+  }
+  _createIcon(device: ELGEntity, textSize?: number, color?: RGBColor | undefined): TemplateResult {
+    const icon = this._entityIcon(device);
+    if (!icon) {return html``;}
 
-    if (legendType === 'icon-fallback' && hasIcon) {
-      return html`<ha-icon style="color: rgba(${color})" icon="${device.icon}"></ha-icon>`;
-    }
-
-    const backgroundColor = color ? `rgba(${color.slice(0, 3).join(',')}, 0.5)` : 'transparent';
-
-    return html`<div class="bullet" style="background-color: ${backgroundColor};border-color: rgba(${color});"></div>`;
+    return html`<ha-icon 
+      style="
+        ${color ? `color: rgba(${color});` : ''}
+        ${textSize ? `--mdc-icon-size: ${textSize*1.25}rem;` : ''}
+      "
+      icon="${icon}"
+    ></ha-icon>`;
   }
   _createLegend() {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
@@ -364,6 +394,7 @@ export class EnergyLineGauge extends LitElement {
           if (this._entitiesObject[device.entity].width <= 0 && !this._config.legend_all) {return html``;}
           
           const labelResult = this._entityLabel(device, false);
+          const deviceTextColor = getTextColor(device.legend_text_color, textColor);
           
           // noinspection HtmlUnknownAttribute
           return html`
@@ -377,7 +408,7 @@ export class EnergyLineGauge extends LitElement {
               id="legend-${device.entity.replace('.', '-')}"
             >
               ${this._createLegendIndicator(device, toRGB(device.color))}
-              <div class="label" style="font-size: ${textSize}rem; ${textStyle}; color: rgba(${textColor})">
+              <div class="label" style="font-size: ${textSize}rem; ${textStyle}; color: rgba(${deviceTextColor})">
                 ${labelResult?.template}
               </div>
             </li>`;
@@ -444,7 +475,10 @@ export class EnergyLineGauge extends LitElement {
       const width = entityState.width;
       const showLabel = position !== "none";
       const lineColor = toRGB(device.color);
-      const lineTextColor = getTextColor(this._config.line_text_color, CONFIG_DEFAULTS.line_text_color, device.color);
+      const lineTextColor = getTextColor(
+        device.line_text_color ? device.line_text_color : this._config.line_text_color,
+        CONFIG_DEFAULTS.line_text_color,
+        device.color);
       const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, lineColor);
       const label = this._entityLabel(device, true);
       const overflowStyle = getOverflowStyle(overflowType, overflowDir);
@@ -706,7 +740,7 @@ export class EnergyLineGauge extends LitElement {
     const textParts: string[] = [];
 
     for (let i = 0; i < sortedContent.length; i++) {
-      const { template, text } = partRenderer.call(this, sortedContent[i], rendererContext);
+      const { template, text } = partRenderer.call(this, sortedContent[i], rendererContext, line);
 
       if (template !== undefined) {
         if (templateParts.length > 0) { // If not the first template part, add separator before it
@@ -732,12 +766,13 @@ export class EnergyLineGauge extends LitElement {
 
   // Entity Label ------------------------------------------------------------------------------------------------------
 
-  private _entityPartRenderer(value: string, context: DeviceRendererContext): LabelRenderResult {
+  private _entityPartRenderer(value: string, context: DeviceRendererContext, line: boolean): LabelRenderResult {
     let template: TemplateResult | string | undefined;
     let text: string;
 
     const device = context.device;
     const stateObj = this._entitiesObject[device.entity].stateObject;
+    const textSize = line ? this._config.line_text_size ?? 1 : this._config.legend_text_size ?? this._config.text_size ?? 1;
 
     const renderRelativeTime = (datetime: string) => {
       const date = new Date(datetime);
@@ -767,8 +802,7 @@ export class EnergyLineGauge extends LitElement {
         template = html`${text}`;
         break;
       case 'icon':
-        const icon = this._entityIcon(device);
-        template = html`<ha-icon icon="${icon}"></ha-icon>`;
+        template = this._createIcon(device, textSize);
         text = '';
         break;
       default:

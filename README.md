@@ -177,6 +177,7 @@ legend_alignment: center
 legend_indicator: icon-fallback
 legend_text_size: 1
 legend_text_style: italic
+legend_text_color: gray
 
 show_delta: false
 delta_position: bottom-center
@@ -311,7 +312,7 @@ The types are used in the configuration. The type is used to define what kind of
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`                                                                                                                                                                                                                                                                                                                         |
 |   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
 |  StatisticsFunction   | Single: `max`, `mean`, `min`, `state`, `sum`, `change`                                                                                                                                                                                                                                                                                                              |
-|     IndicatorType     | Single: `circle`, `icon`, `icon-fallback`, `none`                                                                                                                                                                                                                                                                                                                   |
+|     IndicatorType     | Single: `circle`, `icon`, `icon-fallback`, `none`, `name`, `state`, `percentage`                                                                                                                                                                                                                                                                                    |
 |     StateContent      | Array of any: `state`, `name`, `last_changed`, `last_updated`, `percentage`, `icon`                                                                                                                                                                                                                                                                                 | 
 
 </div>

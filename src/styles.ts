@@ -373,6 +373,10 @@ export const styles = css`
         width: 16px;
         direction: var(--direction);
     }
+  .indicator-state {
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
     
     /*Delta -------------------------------------------------*/
     

@@ -83,6 +83,9 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       { value: "icon", label: "Icon" },
       { value: "icon-fallback", label: "Icon Fallback (default)" },
       { value: "none", label: "None" },
+      { value: "name", label: "Name" },
+      { value: "state", label: "State" },
+      { value: "percentage", label: "Percentage" },
     ];
 
     const createDefaultedOptions = (baseOptions: ReadonlyArray<{ value: string, label: string }>, defaultValue: string) => {
@@ -309,10 +312,11 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               {
                 type: "grid",
                 schema: [
-                  { name: "legend_text_style", type: "multi_select", options: styleOptions },
+                  { name: "legend_text_color", required: false, selector: { color_rgb: {} } },
                   { name: "legend_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
                 ],
               },
+              { name: "legend_text_style", type: "multi_select", options: styleOptions },
             ]
           },
 
@@ -350,7 +354,14 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                   { name: "overflow_direction", required: false, selector: { select: { mode: "dropdown", options: overflowDirectionOptions }}},
                 ],
               },
-              { name: "line_text_style", type: "multi_select", options: styleOptions },
+              {
+                type: "grid",
+                schema: [
+                  { name: "line_text_style", type: "multi_select", options: styleOptions },
+                  { name: "line_text_color", required: false, selector: { color_rgb: {} } },
+                ],
+              },
+
             ]
           },
         ],
@@ -684,15 +695,21 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         fallback: "Legend Alignment",
       },
 
-      // Style
-      legend_text_style: {
-        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
-        fallback: "Style",
+      // Text Color
+      legend_text_color: {
+        tryLocalize: "Text Color",
+        fallback: "Text Color",
       },
       // Size (rem)
       legend_text_size: {
         tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
         fallback: "Size (rem)",
+      },
+
+      // Style
+      legend_text_style: {
+        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
+        fallback: "Style",
       },
 
       // ---------------------------------------------------------------------------------------------------------------
@@ -749,6 +766,11 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       line_text_style: {
         tryLocalize: 'ui.panel.lovelace.editor.elements.style',
         fallback: "Style",
+      },
+      // Text Color
+      line_text_color: {
+        tryLocalize: "Text Color",
+        fallback: "Text Color",
       },
 
       // ---------------------------------------------------------------------------------------------------------------

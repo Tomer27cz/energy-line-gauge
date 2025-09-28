@@ -30,6 +30,9 @@ export class ItemEditor extends LitElement {
       { value: 'icon', label: "Icon" },
       { value: 'icon-fallback', label: "Icon Fallback (default)" },
       { value: 'none', label: "None" },
+      { value: 'name', label: "Name" },
+      { value: 'state', label: "State" },
+      { value: 'percentage', label: "Percentage" },
     ]
 
     const multiplierOptions = [
@@ -85,6 +88,13 @@ export class ItemEditor extends LitElement {
                 required: false,
                 default: ["name"],
               },
+              { name: "legend_text_color", required: false, selector: {color_rgb: {}}},
+            ]
+          },
+
+          {
+            type: "grid",
+            schema: [
               {
                 type: "multi_select",
                 options: stateContentOptions,
@@ -92,6 +102,7 @@ export class ItemEditor extends LitElement {
                 required: false,
                 default: [],
               },
+              { name: "line_text_color", required: false, selector: {color_rgb: {}}},
             ]
           },
         ],
@@ -205,16 +216,26 @@ export class ItemEditor extends LitElement {
 
       // ------------------------------------------------ State Content ------------------------------------------------
 
-      // State Content
+      // Legend
       state_content: {
-        tryLocalize: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
-        fallback: "State Content",
+        tryLocalize: "Legend",
+        fallback: "Legend",
+      },
+      // Legend Text Color
+      legend_text_color: {
+        tryLocalize: "Legend Text Color",
+        fallback: "Legend Text Color",
       },
 
-      // State Content (Line)
+      // Line
       line_state_content: {
-        tryLocalize: (hass) => `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
-        fallback: "State Content (Line)",
+        tryLocalize: "Line",
+        fallback: "Line",
+      },
+      // Line Text Color
+      line_text_color: {
+        tryLocalize: "Line Text Color",
+        fallback: "Line Text Color",
       },
 
       // ---------------------------------------------------------------------------------------------------------------

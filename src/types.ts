@@ -153,6 +153,7 @@ export interface LabelRenderResult {
 export type PartRenderer = (
   value: string,
   context: any,
+  line: boolean
 ) => LabelRenderResult;
 
 export interface RendererContext {
@@ -171,7 +172,7 @@ export const LINE_SEPARATOR_WIDTH_TYPES = ['total020', 'total030', 'total040', '
 export const TEXT_STYLE_TYPES = ['weight-lighter', 'weight-bold', 'weight-bolder', 'style-italic', 'decoration-underline', 'decoration-overline', 'decoration-line-through', 'transform-uppercase', 'transform-lowercase', 'transform-capitalize', 'family-monospace', 'shadow-light', 'shadow-medium', 'shadow-heavy', 'shadow-hard', 'shadow-neon', 'black-outline', 'white-outline'] as const;
 export const TEXT_OVERFLOW_TYPES = ['ellipsis', 'clip', 'tooltip', 'tooltip-segment', 'fade'] as const;
 export const OVERFLOW_DIRECTION_TYPES = ['left', 'right'] as const;
-export const INDICATOR_TYPES = ['circle', 'icon', 'icon-fallback', 'none'] as const;
+export const INDICATOR_TYPES = ['circle', 'icon', 'icon-fallback', 'none', 'name', 'state', 'percentage'] as const;
 
 export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
 export const VALUE_POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right', 'in-title-right', 'in-title-left'] as const; // -middle & -center are equivalent
