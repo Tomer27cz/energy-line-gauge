@@ -72,8 +72,11 @@ export const CONFIG_DEFAULTS = {
   // Styling
   corner: 'square' as CornerType,
   state_content_separator: ' ⸱ ',
+
   line_separator: false,
   line_separator_width: 'total050' as LineSeparatorWidthType,
+  line_separator_color: undefined, // --card-background-color
+
   color: undefined, // --primary-color
   color_bg: undefined, // --secondary-background-color
 
@@ -109,6 +112,7 @@ export const CONFIG_DEFAULTS = {
   untracked_legend: false,
   untracked_legend_label: undefined,
   untracked_legend_icon: undefined,
+  untracked_legend_indicator: 'icon-fallback' as IndicatorType,
 
   untracked_state_content: ['name'] as UntrackedStateContentType,
   untracked_line_state_content: undefined,
@@ -185,8 +189,11 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     // Styling
     corner: validatedValue(config.corner, CORNER_TYPES, CONFIG_DEFAULTS.corner),
     state_content_separator: config.state_content_separator ?? CONFIG_DEFAULTS.state_content_separator,
+
     line_separator: config.line_separator ?? CONFIG_DEFAULTS.line_separator,
     line_separator_width: validatedValue(config.line_separator_width, LINE_SEPARATOR_WIDTH_TYPES, CONFIG_DEFAULTS.line_separator_width),
+    line_separator_color: validateColor(config.line_separator_color ?? config.line_separator_colour, toRGB('var(--card-background-color)')), // --card-background-color
+
     color: validateColor(config.color ?? config.colour, toRGB('var(--primary-color)')), // --primary-color
     color_bg: validateColor(config.color_bg ?? config.colour_bg, toRGB('var(--secondary-background-color)')), // --secondary-background-color
 
@@ -220,6 +227,8 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     untracked_legend: !!(config.untracked_legend ?? config.entities), // if entities are set, untracked_legend is true
     untracked_legend_label: config.untracked_legend_label ?? CONFIG_DEFAULTS.untracked_legend_label,
     untracked_legend_icon: config.untracked_legend_icon ?? CONFIG_DEFAULTS.untracked_legend_icon,
+    untracked_legend_indicator: validatedValue(config.untracked_legend_indicator, INDICATOR_TYPES, CONFIG_DEFAULTS.untracked_legend_indicator),
+
     untracked_state_content: validateArray(config.untracked_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? CONFIG_DEFAULTS.untracked_state_content,
     untracked_line_state_content: validateArray(config.untracked_line_state_content, UNTRACKED_STATE_CONTENT_TYPES) ?? CONFIG_DEFAULTS.untracked_line_state_content,
 

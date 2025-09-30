@@ -33,7 +33,7 @@ import {
   LabelRenderResult,
   PartRenderer,
   RendererContext,
-  DeviceRendererContext, RGBColor,
+  DeviceRendererContext, RGBColor, IndicatorType,
 } from './types';
 import { styles, getTextStyle } from './styles';
 import { actionHandler } from './action-handler';
@@ -278,13 +278,15 @@ export class EnergyLineGauge extends LitElement {
 
       const numberOfSeparators = this._untrackedObject.width > 0 ? renderedLines : Math.max(0, renderedLines - 1);
       const totalSeparatorWidth: number = calculateTotalSeparatorWidth(this._config.line_separator_width??"total050", numberOfSeparators);
+      const multiplier = 1-(totalSeparatorWidth*0.01);
 
       this._lineSeparatorWidth = totalSeparatorWidth / numberOfSeparators;
 
       for (const deviceKey in this._entitiesObject) {
         if (this._entitiesObject[deviceKey].width == 0) continue;
-        this._entitiesObject[deviceKey].width *= 1-(totalSeparatorWidth*0.01);
+        this._entitiesObject[deviceKey].width *= multiplier;
       }
+      this._untrackedObject.width *= multiplier;
     }
 
     return html`
@@ -317,21 +319,17 @@ export class EnergyLineGauge extends LitElement {
     if (!this._config.untracked_legend) {return html``;}
     const untrackedLabelResult = this._untrackedLabel();
     const color = toRGB(this._config.color);
-    const backgroundColor = color ? `rgba(${color.slice(0, 3).join(',')}, 0.5)` : 'transparent';
 
     return html`
       <li title="${this._config.untracked_legend_label || untrackedLabelResult?.text}" id="legend-untracked" style="display: inline-grid;">
-        ${this._config.untracked_legend_icon ?
-          html`<ha-icon style="color: rgba(${toRGB(this._config.color)})" icon="${this._config.untracked_legend_icon}"></ha-icon>` :
-          html`<div class="bullet" style="background-color: ${backgroundColor};border-color: rgba(${color});"></div>`
-        }
+        ${this._createLegendIndicator(undefined, color)}
         <div class="label" style="font-size: ${size}rem; ${style}; color: rgba(${textColor})">
           ${untrackedLabelResult?.template}
         </div>
       </li>`
   }
-  _createLegendIndicator(device: ELGEntity, color: RGBColor | undefined): TemplateResult {
-    const legendType = device.legend_indicator ?? this._config.legend_indicator ?? 'circle';
+  _createLegendIndicator(device: ELGEntity | undefined, color: RGBColor | undefined): TemplateResult {
+    const legendType: IndicatorType = (device ? device.legend_indicator : this._config.untracked_legend_indicator) ?? this._config.legend_indicator ?? 'circle';
     const textSize = (this._config.legend_text_size ?? this._config.text_size ?? 1) * 1.1;
 
     if (legendType === 'none') {return html``;}
@@ -339,19 +337,23 @@ export class EnergyLineGauge extends LitElement {
 
     switch (legendType) {
       case 'state':
-        return html`<div class="indicator-state" style="${textStyle}">${this._formatValueDevice(device)}</div>`;
+        return html`<div class="indicator-state" style="${textStyle}">${device ? this._formatValueDevice(device) : this._formatValueMain(this._untrackedObject?.state)}</div>`;
       case 'percentage':
-        const percentage = this._entitiesObject[device.entity]?.percentage ?? 0;
+        const percentage = device ? this._entitiesObject[device.entity]?.percentage ?? 0 : this._untrackedObject?.percentage ?? 0;
         return html`<div class="indicator-state" style="${textStyle}">${(percentage * 100).toFixed(0)}%</div>`;
       case 'name': {
-        return html`<div class="indicator-state" style="${textStyle}">${this._entityName(device)}</div>`;
+        return html`<div class="indicator-state" style="${textStyle}">${device ? this._entityName(device) : this._config.untracked_legend_label ?? this.hass.localize('ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption')}</div>`;
       }
 
       case 'icon':
       // @ts-ignore
       case 'icon-fallback':
         // If no icon is defined, fall through to the default case to render a bullet.
-        if (device.icon) {return this._createIcon(device, textSize, color);}
+        if (device) {
+          if (device.icon) {return this._createIcon(device, textSize, color);}
+        } else {
+          if (this._config.untracked_legend_icon) {return this._createIcon(undefined, textSize, color);}
+        }
         if (legendType === 'icon') {return html``;}
       // fallthrough
 
@@ -367,8 +369,8 @@ export class EnergyLineGauge extends LitElement {
       }
     }
   }
-  _createIcon(device: ELGEntity, textSize?: number, color?: RGBColor | undefined): TemplateResult {
-    const icon = this._entityIcon(device);
+  _createIcon(device: ELGEntity | undefined, textSize?: number, color?: RGBColor | undefined): TemplateResult {
+    const icon = device ? this._entityIcon(device) : this._config.untracked_legend_icon;
     if (!icon) {return html``;}
 
     return html`<ha-icon 
@@ -462,7 +464,7 @@ export class EnergyLineGauge extends LitElement {
     // noinspection CssUnresolvedCustomProperty
     const separatorTemplate = !this._config.line_separator || this._lineSeparatorWidth === 0
       ? html``
-      : html`<div class="device-line-separator" style="background-color: var(--background-color); width: ${this._lineSeparatorWidth}%;"></div>`;
+      : html`<div class="device-line-separator" style="background-color: rgba(${this._config.line_separator_color}); width: ${this._lineSeparatorWidth}%;"></div>`;
 
     const visibleEntities = this._config.entities.filter(device =>
       this._entitiesObject[device.entity] && this._entitiesObject[device.entity].width > 0
@@ -510,28 +512,25 @@ export class EnergyLineGauge extends LitElement {
 
     // Untracked Line
     const untrackedWidth = this._untrackedObject?.width ?? 0;
-    const showUntracked = untrackedWidth > 0 && (this._config.untracked_line_state_content?.length ?? 0) > 0;
     const untrackedTextColor = getTextColor(this._config.line_text_color, CONFIG_DEFAULTS.line_text_color, this._config.color)
     const untrackedLabel = this._untrackedLabel(true);
 
     if (untrackedWidth > 0 && visibleEntities.length > 0) {lineParts.push(separatorTemplate)}
-
-    if (showUntracked && untrackedLabel) {
-      lineParts.push(html`
-        <div
-          class="untracked-line"
-          style="width: ${untrackedWidth}%"
-          title="${untrackedLabel.text}">
-          ${renderLabel(
-            untrackedLabel.template,
-            untrackedTextColor,
-            this._config.line_text_size ?? 1,
-            overflowType === 'tooltip-segment' ? 'overflow: hidden;' : '',
-            getTextStyle(this._config.line_text_style, this._config.line_text_size, untrackedTextColor),
-            position
-          )}
-        </div>
-      `);}
+    lineParts.push(html`
+      <div
+        class="untracked-line"
+        style="width: ${untrackedWidth}%"
+        title="${untrackedLabel?.text}">
+        ${renderLabel(
+          untrackedLabel?.template,
+          untrackedTextColor,
+          this._config.line_text_size ?? 1,
+          overflowType === 'tooltip-segment' ? 'overflow: hidden;' : '',
+          getTextStyle(this._config.line_text_style, this._config.line_text_size, untrackedTextColor),
+          position
+        )}
+      </div>
+    `);
 
     return html`
       <div class="device-line-container">
@@ -826,9 +825,11 @@ export class EnergyLineGauge extends LitElement {
 
   // Untracked Label ---------------------------------------------------------------------------------------------------
 
-  private _untrackedPartRenderer(value: string, context: RendererContext): LabelRenderResult {
+  private _untrackedPartRenderer(value: string, context: RendererContext, line: boolean): LabelRenderResult {
     let template: TemplateResult | string;
     let text: string;
+
+    const textSize = line ? this._config.line_text_size ?? 1 : this._config.legend_text_size ?? this._config.text_size ?? 1;
 
     switch (value) {
       case 'name':
@@ -842,6 +843,10 @@ export class EnergyLineGauge extends LitElement {
       case 'percentage':
         text = `${(this._untrackedObject.percentage * 100).toFixed(0)}%`;
         template = html`${text}`;
+        break;
+      case 'icon':
+        template = this._createIcon(undefined, textSize);
+        text = '';
         break;
       default:
         text = '';

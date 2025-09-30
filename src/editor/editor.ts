@@ -161,6 +161,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
       ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
       ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
+      ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
     ];
 
     const statisticsPeriods = [
@@ -240,6 +241,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               { name: "line_separator_width", required: false, selector: { select: { mode: "dropdown", options: lineSeparatorWidthOptions }}},
             ],
           },
+          { name: "line_separator_color", required: false, selector: { color_rgb: {} } },
 
           {
             type: "expandable",
@@ -396,14 +398,22 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         name: "expandable_untracked", // Untracked consumption
         flatten: true,
         schema: [
-          { name: "untracked_legend", required: false, selector: { boolean: {} } },
           {
             type: "grid",
             schema: [
+              { name: "untracked_legend", required: false, selector: { boolean: {} } },
               { name: "untracked_legend_label", required: false, selector: { text: {} } },
+            ],
+          },
+
+          {
+            type: "grid",
+            schema: [
+              { name: "untracked_legend_indicator", required: false, selector: { select: { mode: "dropdown", options: indicatorOptions }}},
               { name: "untracked_legend_icon", required: false, selector: { icon: {} } },
             ],
           },
+
           {
             type: "grid",
             schema: [
@@ -599,6 +609,12 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       line_separator_width: {
         tryLocalize: () => "Line Separator Width",
         fallback: "Line Separator Width",
+      },
+
+      // Line Separator Color
+      line_separator_color: {
+        tryLocalize: () => "Line Separator Color",
+        fallback: "Line Separator Color",
       },
 
       // ---------------------------------------------------- Value ----------------------------------------------------
@@ -827,6 +843,11 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       untracked_legend_icon: {
         tryLocalize: "ui.panel.lovelace.editor.card.generic.icon",
         fallback: "Icon",
+      },
+      // Legend Indicator
+      untracked_legend_indicator: {
+        tryLocalize: () => "Legend Indicator",
+        fallback: "Legend Indicator",
       },
 
       // State content

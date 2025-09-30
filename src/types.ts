@@ -39,8 +39,11 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Styling
   corner?: CornerType;
   state_content_separator?: string;
+
   line_separator?: boolean;
   line_separator_width?: LineSeparatorWidthType;
+  line_separator_color?: ColorType;
+  line_separator_colour?: ColorType; // For British English support
 
   color?: ColorType;
   color_bg?: ColorType;
@@ -84,6 +87,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   untracked_legend?: boolean;
   untracked_legend_label?: string;
   untracked_legend_icon?: string;
+  untracked_legend_indicator?: IndicatorType;
+
   untracked_state_content?: UntrackedStateContentType;
   untracked_line_state_content?: UntrackedStateContentType;
 
@@ -180,7 +185,7 @@ export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left
 export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
 
 export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage', 'icon'] as const;
-export const UNTRACKED_STATE_CONTENT_TYPES = ['name', 'state', 'percentage'] as const;
+export const UNTRACKED_STATE_CONTENT_TYPES = ['name', 'state', 'percentage', 'icon'] as const;
 
 export const STATISTICS_PERIOD_TYPES = ['5minute', 'hour', 'day', 'week', 'month'] as const;
 export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean', 'min', 'state', 'sum'] as const;
