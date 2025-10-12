@@ -20,6 +20,7 @@ import {
   LabelConfigEntry,
   DEFAULT_ACTIONS
 } from '../types';
+import { localize, setupLocalize } from '../localize/localize';
 
 import './item-editor';
 import './items-editor';
@@ -48,44 +49,46 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
   private _schema = memoizeOne(() => {
     if (!this.hass) return [];
 
+    const sl = setupLocalize(this.hass);
+
     const cornerOptions = [
-      { value: "square", label: "Square (default)" },
-      { value: "lite-rounded", label: "Lite Rounded" },
-      { value: "medium-rounded", label: "Medium Rounded" },
-      { value: "rounded", label: "Rounded" },
-      { value: "circular", label: "Circular" },
+      { value: "square", label: sl('cornerOptions.square') },
+      { value: "lite-rounded", label: sl('cornerOptions.lite-rounded') },
+      { value: "medium-rounded", label: sl('cornerOptions.medium-rounded') },
+      { value: "rounded", label: sl('cornerOptions.rounded') },
+      { value: "circular", label: sl('cornerOptions.circular') },
     ];
 
     const lineSeparatorWidthOptions = [
-      { value: "total020", label: "Total 2%" },
-      { value: "total030", label: "Total 3%" },
-      { value: "total040", label: "Total 4%" },
-      { value: "total050", label: "Total 5% (default)" },
-      { value: "total060", label: "Total 6%" },
-      { value: "total070", label: "Total 7%" },
-      { value: "total080", label: "Total 8%" },
-      { value: "total090", label: "Total 9%" },
-      { value: "total100", label: "Total 10%" },
-      { value: "each002", label: "Each 0.2%" },
-      { value: "each004", label: "Each 0.4%" },
-      { value: "each006", label: "Each 0.6%" },
-      { value: "each008", label: "Each 0.8%" },
-      { value: "each010", label: "Each 1.0%" },
-      { value: "each012", label: "Each 1.2%" },
-      { value: "each014", label: "Each 1.4%" },
-      { value: "each016", label: "Each 1.6%" },
-      { value: "each018", label: "Each 1.8%" },
-      { value: "each020", label: "Each 2.0%" },
+      { value: "total020", label: sl('lineSeparatorWidthOptions.total020') },
+      { value: "total030", label: sl('lineSeparatorWidthOptions.total030') },
+      { value: "total040", label: sl('lineSeparatorWidthOptions.total040') },
+      { value: "total050", label: sl('lineSeparatorWidthOptions.total050') },
+      { value: "total060", label: sl('lineSeparatorWidthOptions.total060') },
+      { value: "total070", label: sl('lineSeparatorWidthOptions.total070') },
+      { value: "total080", label: sl('lineSeparatorWidthOptions.total080') },
+      { value: "total090", label: sl('lineSeparatorWidthOptions.total090') },
+      { value: "total100", label: sl('lineSeparatorWidthOptions.total100') },
+      { value: "each002", label: sl('lineSeparatorWidthOptions.each002') },
+      { value: "each004", label: sl('lineSeparatorWidthOptions.each004') },
+      { value: "each006", label: sl('lineSeparatorWidthOptions.each006') },
+      { value: "each008", label: sl('lineSeparatorWidthOptions.each008') },
+      { value: "each010", label: sl('lineSeparatorWidthOptions.each010') },
+      { value: "each012", label: sl('lineSeparatorWidthOptions.each012') },
+      { value: "each014", label: sl('lineSeparatorWidthOptions.each014') },
+      { value: "each016", label: sl('lineSeparatorWidthOptions.each016') },
+      { value: "each018", label: sl('lineSeparatorWidthOptions.each018') },
+      { value: "each020", label: sl('lineSeparatorWidthOptions.each020') },
     ];
 
     const indicatorOptions = [
-      { value: "circle", label: "Circle" },
-      { value: "icon", label: "Icon" },
-      { value: "icon-fallback", label: "Icon Fallback (default)" },
-      { value: "none", label: "None" },
-      { value: "name", label: "Name" },
-      { value: "state", label: "State" },
-      { value: "percentage", label: "Percentage" },
+      { value: "circle", label: sl('indicatorOptions.circle') },
+      { value: "icon", label: sl('indicatorOptions.icon') },
+      { value: "icon-fallback", label: sl('indicatorOptions.icon-fallback') + " (default)" },
+      { value: "none", label: sl('indicatorOptions.none') },
+      { value: "name", label: sl('indicatorOptions.name') },
+      { value: "state", label: sl('indicatorOptions.state') },
+      { value: "percentage", label: sl('indicatorOptions.percentage') },
     ];
 
     const createDefaultedOptions = (baseOptions: ReadonlyArray<{ value: string, label: string }>, defaultValue: string) => {
@@ -96,89 +99,89 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       });
     };
     const _basePositionOptions = [
-      { value: "left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center left") },
-      { value: "right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center right") },
-      { value: "none", label: this.hass.localize("ui.panel.lovelace.editor.action-editor.actions.none") },
-      { value: "top-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top left") },
-      { value: "top-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top center") },
-      { value: "top-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.top right") },
-      { value: "bottom-left", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom left") },
-      { value: "bottom-center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom center") },
-      { value: "bottom-right", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.bottom right") },
+      { value: "left", label: sl("positionOptions.left") },
+      { value: "right", label: sl("positionOptions.right") },
+      { value: "none", label: sl("positionOptions.none") },
+      { value: "top-left", label: sl("positionOptions.top-left") },
+      { value: "top-center", label: sl("positionOptions.top-center") },
+      { value: "top-right", label: sl("positionOptions.top-right") },
+      { value: "bottom-left", label: sl("positionOptions.bottom-left") },
+      { value: "bottom-center", label: sl("positionOptions.bottom-center") },
+      { value: "bottom-right", label: sl("positionOptions.bottom-right") },
     ];
 
     const positionOptions = createDefaultedOptions(_basePositionOptions, "left");
-    const linePositionOptions = positionOptions.concat({ value: "center", label: this.hass.localize("ui.panel.lovelace.editor.edit_view.background.alignment.options.center") });
-    const valuePositionOptions = positionOptions.concat({ value: "in-title-right", label: "In Title (Right)" }, { value: "in-title-left", label: "In Title (Left)" });
+    const linePositionOptions = positionOptions.concat({ value: "center", label: sl("positionOptions.center") });
+    const valuePositionOptions = positionOptions.concat({ value: "in-title-right", label: sl("positionOptions.in-title-right") }, { value: "in-title-left", label: sl("positionOptions.in-title-left") });
 
     const titlePositionOptions = createDefaultedOptions(_basePositionOptions, "top-left");
     const deltaPositionOptions = createDefaultedOptions(_basePositionOptions, "bottom-center");
     const legendPositionOptions = createDefaultedOptions(_basePositionOptions, "bottom-center");
 
     const alignmentOptions = [
-      { value: "left", label: 'Left' },
-      { value: "right", label: 'Right' },
-      { value: "center", label: 'Center (default)' },
-      { value: "space-around", label: 'Space Around' },
-      { value: "space-between", label: 'Space Between' },
-      { value: "space-evenly", label: 'Space Evenly' },
+      { value: "left", label: sl("alignmentOptions.left") },
+      { value: "right", label: sl("alignmentOptions.right") },
+      { value: "center", label: sl("alignmentOptions.center") },
+      { value: "space-around", label: sl("alignmentOptions.space-around") },
+      { value: "space-between", label: sl("alignmentOptions.space-between") },
+      { value: "space-evenly", label: sl("alignmentOptions.space-evenly") },
     ];
 
     const styleOptions = [
-      ["weight-lighter", "Lighter Weight"],
-      ["weight-bold", "Bold Weight"],
-      ["weight-bolder", "Bolder Weight"],
-      ["style-italic", "Italic"],
-      ["decoration-underline", "Underline"],
-      ["decoration-overline", "Overline"],
-      ["decoration-line-through", "Line Through"],
-      ["transform-uppercase", "Uppercase"],
-      ["transform-lowercase", "Lowercase"],
-      ["transform-capitalize", "Capitalize"],
-      ["family-monospace", "Monospace"],
-      ["shadow-light", "Light Shadow"],
-      ["shadow-medium", "Medium Shadow"],
-      ["shadow-heavy", "Heavy Shadow"],
-      ["shadow-hard", "Hard Shadow"],
-      ["shadow-neon", "Neon Shadow"],
-      ["black-outline", "Black Outline"],
-      ["white-outline", "White Outline"]
+      ["weight-lighter", sl("styleOptions.weight-lighter")],
+      ["weight-bold", sl("styleOptions.weight-bold")],
+      ["weight-bolder", sl("styleOptions.weight-bolder")],
+      ["style-italic", sl("styleOptions.style-italic")],
+      ["decoration-underline", sl("styleOptions.decoration-underline")],
+      ["decoration-overline", sl("styleOptions.decoration-overline")],
+      ["decoration-line-through", sl("styleOptions.decoration-line-through")],
+      ["transform-uppercase", sl("styleOptions.transform-uppercase")],
+      ["transform-lowercase", sl("styleOptions.transform-lowercase")],
+      ["transform-capitalize", sl("styleOptions.transform-capitalize")],
+      ["family-monospace", sl("styleOptions.family-monospace")],
+      ["shadow-light", sl("styleOptions.shadow-light")],
+      ["shadow-medium", sl("styleOptions.shadow-medium")],
+      ["shadow-heavy", sl("styleOptions.shadow-heavy")],
+      ["shadow-hard", sl("styleOptions.shadow-hard")],
+      ["shadow-neon", sl("styleOptions.shadow-neon")],
+      ["black-outline", sl("styleOptions.black-outline")],
+      ["white-outline", sl("styleOptions.white-outline")],
     ];
 
     const overflowOptions = [
-      { value: "ellipsis", label: "Ellipsis (default)" }, // Ellipsis
-      { value: "clip", label: "Clip" }, // Clip
-      { value: "fade", label: "Fade" }, // Fade
-      { value: "tooltip", label: "Tooltip" }, // Tooltip
-      { value: "tooltip-segment", label: "Tooltip Segment" }, // Tooltip Segment
+      { value: "ellipsis", label: sl("overflowOptions.ellipsis") },
+      { value: "clip", label: sl("overflowOptions.clip") },
+      { value: "fade", label: sl("overflowOptions.fade") },
+      { value: "tooltip", label: sl("overflowOptions.tooltip") },
+      { value: "tooltip-segment", label: sl("overflowOptions.tooltip-segment") },
     ];
     const overflowDirectionOptions = [
-      { value: "right", label: "Right (default)" }, // Right (default)
-      { value: "left", label: "Left" }, // Left
+      { value: "right", label: sl("overflowDirectionOptions.right") },
+      { value: "left", label: sl("overflowDirectionOptions.left") },
     ];
 
     const untrackedStateContent = [
-      ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
-      ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
-      ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
-      ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
+      ["name", sl("untrackedStateContent.name")],
+      ["state", sl("untrackedStateContent.state")],
+      ["percentage", sl("untrackedStateContent.percentage")],
+      ["icon", sl("untrackedStateContent.icon")],
     ];
 
     const statisticsPeriods = [
-      { value: "5minute", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.5minute")}, // 5 Minutes
-      { value: "hour", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.hour")}, // Hour
-      { value: "day", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.day")}, // Day
-      { value: "week", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.week")}, // Week
-      { value: "month", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.periods.month")}, // Month
+      { value: "5minute", label: sl("statisticsPeriods.5minute")},
+      { value: "hour", label: sl("statisticsPeriods.hour")},
+      { value: "day", label: sl("statisticsPeriods.day")},
+      { value: "week", label: sl("statisticsPeriods.week")},
+      { value: "month", label: sl("statisticsPeriods.month")},
     ];
 
     const statisticsFunctions = [
-      { value: "change", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.change")}, // Change
-      { value: "max", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.max")}, // Max
-      { value: "mean", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.mean")}, // Mean
-      { value: "min", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.min")}, // Min
-      { value: "state", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.state")}, // State
-      { value: "sum", label: this.hass.localize("ui.panel.lovelace.editor.card.statistics-graph.stat_type_labels.sum")}, // Sum
+      { value: "change", label: sl("statisticsFunctions.change")},
+      { value: "max", label: sl("statisticsFunctions.max")},
+      { value: "mean", label: sl("statisticsFunctions.mean")},
+      { value: "min", label: sl("statisticsFunctions.min")},
+      { value: "state", label: sl("statisticsFunctions.state")},
+      { value: "sum", label: sl("statisticsFunctions.sum")},
     ];
 
     return [
@@ -539,404 +542,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
   private _computeLabelCallback = (schema: any) => {
     if (!this.hass) return "";
 
-    const labelMap: Record<string, LabelConfigEntry> = {
-      // Entity (required)
-      entity: {
-        tryLocalize: (hass) =>
-          `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
-        fallback: "Entity (required)"
-      },
-
-      // Title
-      title: {
-        tryLocalize: "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
-        fallback: "Title"
-      },
-      // Subtitle
-      subtitle: {
-        tryLocalize: "ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle",
-        fallback: "Subtitle"
-      },
-
-      // Minimum
-      min: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.minimum",
-        fallback: "Minimum",
-      },
-      // Maximum
-      max: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.maximum",
-        fallback: "Maximum",
-      },
-
-      // ------------------------------------------- Appearance --------------------------------------------------------
-      expandable_appearance: {
-        tryLocalize: "ui.panel.lovelace.editor.card.map.appearance",
-        fallback: "Appearance",
-      },
-
-      // Suppress Warnings
-      suppress_warnings: {
-        tryLocalize: () => "Suppress Warnings",
-        fallback: "Suppress Warnings",
-      },
-      // Theme
-      corner: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.theme",
-        fallback: "Theme",
-      },
-
-      // Legend Indicator
-      legend_indicator: {
-        tryLocalize: () => "Legend Indicator",
-        fallback: "Legend Indicator",
-      },
-      // State Content Separator
-      state_content_separator: {
-        tryLocalize: () => "State Content Separator",
-        fallback: "State Content Separator",
-      },
-
-      // Line
-      color: {
-        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line",
-        fallback: "Line Color",
-      },
-      // Background
-      color_bg: {
-        tryLocalize: "ui.panel.lovelace.editor.edit_view.tab_background",
-        fallback: "Background Color",
-      },
-
-      // Height
-      line_height: {
-        tryLocalize: () => "Height",
-        fallback: "Height",
-      },
-
-      // Line Separator
-      line_separator: {
-        tryLocalize: () => "Line Separator",
-        fallback: "Line Separator",
-      },
-      // Line Separator Width
-      line_separator_width: {
-        tryLocalize: () => "Line Separator Width",
-        fallback: "Line Separator Width",
-      },
-
-      // Line Separator Color
-      line_separator_color: {
-        tryLocalize: () => "Line Separator Color",
-        fallback: "Line Separator Color",
-      },
-
-      // ---------------------------------------------------- Value ----------------------------------------------------
-      expandable_appearance_value: {
-        tryLocalize: "ui.panel.config.zwave_js.node_config.value",
-        fallback: "Value",
-      },
-
-      // Position
-      position: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
-        fallback: "Position",
-      },
-      // Size (rem)
-      text_size: {
-        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
-        fallback: "Size (rem)",
-      },
-
-      // Style
-      text_style: {
-        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
-        fallback: "Style",
-      },
-      // Value
-      text_color: {
-        tryLocalize: "ui.panel.config.zwave_js.node_config.value",
-        fallback: "Value",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ---------------------------------------------------- Title ----------------------------------------------------
-      expandable_appearance_title: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.heading.heading_style_options.title',
-        fallback: "Title",
-      },
-
-      // Position
-      title_position: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
-        fallback: "Position",
-      },
-      // Size (rem)
-      title_text_size: {
-        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
-        fallback: "Size (rem)",
-      },
-
-      // Style
-      title_text_style: {
-        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
-        fallback: "Style",
-      },
-
-      // Title
-      title_text_color: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.heading.heading_style_options.title',
-        fallback: "Title",
-      },
-      // Subtitle
-      subtitle_text_color: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle',
-        fallback: "Subtitle",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // --------------------------------------------------- Legend ----------------------------------------------------
-      expandable_appearance_legend: {
-        tryLocalize: "Legend",
-        fallback: "Legend",
-      },
-
-      // Hide legend
-      legend_hide: {
-        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.hide_legend",
-        fallback: "Hide Legend",
-      },
-      // Show all
-      legend_all: {
-        tryLocalize: 'ui.panel.config.category.filter.show_all',
-        fallback: "Show All",
-      },
-
-      // Position
-      legend_position: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
-        fallback: "Position",
-      },
-      // Legend Alignment
-      legend_alignment: {
-        tryLocalize: () => "Legend Alignment",
-        fallback: "Legend Alignment",
-      },
-
-      // Text Color
-      legend_text_color: {
-        tryLocalize: "Text Color",
-        fallback: "Text Color",
-      },
-      // Size (rem)
-      legend_text_size: {
-        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
-        fallback: "Size (rem)",
-      },
-
-      // Style
-      legend_text_style: {
-        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
-        fallback: "Style",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ---------------------------------------------------- Delta ----------------------------------------------------
-      expandable_appearance_delta: {
-        tryLocalize: () => "Delta",
-        fallback: "Delta",
-      },
-
-      // Show stat
-      show_delta: {
-        tryLocalize: "ui.panel.lovelace.editor.card.statistic.stat_types",
-        fallback: "Show Delta",
-      },
-      // Position
-      delta_position: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
-        fallback: "Position",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // --------------------------------------------- State content (Line) --------------------------------------------
-      expandable_appearance_line_text: {
-        tryLocalize: (hass) =>
-        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
-        fallback: "State Content (Line)",
-      },
-
-      // Position
-      line_text_position: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.entities.secondary_info_values.position',
-        fallback: "Position",
-      },
-      // Size (rem)
-      line_text_size: {
-        tryLocalize: (hass) => `${hass.localize("ui.panel.config.zwave_js.node_config.size")} (rem)`,
-        fallback: "Size (rem)",
-      },
-
-      // Overflow
-      line_text_overflow: {
-        tryLocalize: () => "Overflow",
-        fallback: "Overflow",
-      },
-      // Overflow Direction
-      overflow_direction: {
-        tryLocalize: () => "Overflow Direction",
-        fallback: "Overflow Direction",
-      },
-
-      // Style
-      line_text_style: {
-        tryLocalize: 'ui.panel.lovelace.editor.elements.style',
-        fallback: "Style",
-      },
-      // Text Color
-      line_text_color: {
-        tryLocalize: "Text Color",
-        fallback: "Text Color",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ----------------------------------------------- Value ---------------------------------------------------------
-      expandable_value: {
-        tryLocalize: 'ui.panel.config.zwave_js.node_config.value',
-        fallback: "Value",
-      },
-
-      // Unit
-      unit: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.unit",
-        fallback: "Unit",
-      },
-      // Display Precision
-      precision: {
-        tryLocalize: "ui.dialogs.entity_registry.editor.precision",
-        fallback: "Display Precision",
-      },
-
-      // Lower limit
-      cutoff: {
-        tryLocalize: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
-        fallback: "Lower Limit",
-      },
-      // Offset (optional)
-      offset: {
-        tryLocalize: "ui.panel.config.automation.editor.triggers.type.calendar.offset",
-        fallback: "Offset (optional)",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ----------------------------------------- Untracked consumption -----------------------------------------------
-      expandable_untracked: {
-        tryLocalize: 'ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption',
-        fallback: "Untracked Consumption",
-      },
-
-      // Untracked consumption
-      untracked_legend: {
-        tryLocalize: "ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption",
-        fallback: "Untracked Consumption",
-      },
-
-      // Name
-      untracked_legend_label: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.name",
-        fallback: "Name",
-      },
-      // Icon
-      untracked_legend_icon: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.icon",
-        fallback: "Icon",
-      },
-      // Legend Indicator
-      untracked_legend_indicator: {
-        tryLocalize: () => "Legend Indicator",
-        fallback: "Legend Indicator",
-      },
-
-      // State content
-      untracked_state_content: {
-        tryLocalize: "ui.panel.lovelace.editor.card.heading.entity_config.state_content",
-        fallback: "State Content",
-      },
-      // State content (Line)
-      untracked_line_state_content: {
-        tryLocalize: (hass) =>
-        `${hass.localize("ui.panel.lovelace.editor.card.heading.entity_config.state_content")} (${hass.localize("ui.panel.lovelace.editor.card.statistics-graph.chart_type_labels.line")})`,
-        fallback: "State Content (Line)",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ------------------------------------------------ Statistic ----------------------------------------------------
-      expandable_statistic: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.statistics-graph.picked_statistic',
-        fallback: "Statistic",
-      },
-
-      // Statistic
-      statistics: {
-        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.picked_statistic",
-        fallback: "Statistic",
-      },
-      // Offset (optional) (Day)
-      statistics_day_offset: {
-        tryLocalize: () => "Offset (optional) (Day)",
-        fallback: "Offset (optional) (Day)",
-      },
-      // Period
-      statistics_period: {
-        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.period",
-        fallback: "Period",
-      },
-      // Show stat types
-      statistics_function: {
-        tryLocalize: "ui.panel.lovelace.editor.card.statistics-graph.stat_types",
-        fallback: "Show Stat Types",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ----------------------------------------------- Interactions --------------------------------------------------
-      expandable_interactions: {
-        tryLocalize: 'ui.panel.lovelace.editor.card.generic.interactions',
-        fallback: "Interactions",
-      },
-
-      // Tap action
-      tap_action: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.tap_action",
-        fallback: "Tap Action",
-      },
-      // Hold action
-      hold_action: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.hold_action",
-        fallback: "Hold Action",
-      },
-      // Double tap action
-      double_tap_action: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.double_tap_action",
-        fallback: "Double Tap Action",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-    };
-
-    const entry: LabelConfigEntry = labelMap[schema.name];
-    if (!entry) return schema.name;
-
-    const label = typeof entry.tryLocalize === "function" ? entry.tryLocalize(this.hass) : this.hass.localize(entry.tryLocalize);
-    return label || entry.fallback || schema.name;
+    return localize(schema.name, this.hass);
   };
 
   private _entitiesChanged(ev: CustomEvent<ELGEntity[]>): void {

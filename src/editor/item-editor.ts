@@ -4,6 +4,8 @@ import memoizeOne  from 'memoize-one';
 
 import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 
+import { localize, setupLocalize } from '../localize/localize';
+
 import { ELGEntity, DEFAULT_ACTIONS, LabelConfigEntry } from '../types';
 import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 
@@ -16,23 +18,25 @@ export class ItemEditor extends LitElement {
   private _schema = memoizeOne(() =>  {
     if (!this.hass) return [];
 
+    const sl = setupLocalize(this.hass);
+
     const stateContentOptions = [
-      ["name", this.hass.localize("ui.components.state-content-picker.name")], // Name
-      ["state", this.hass.localize("ui.components.state-content-picker.state")], // State
-      ["last_changed", this.hass.localize("ui.components.state-content-picker.last_changed")], // Last Changed
-      ["last_updated", this.hass.localize("ui.components.state-content-picker.last_updated")], // Last Updated
-      ["percentage", this.hass.localize("ui.panel.lovelace.editor.edit_section.settings.column_span") + " [%]"], // Width [%]
-      ["icon", this.hass.localize("ui.panel.lovelace.editor.card.generic.icon")], // Icon
+      ["name", sl('stateContentOptions.name')],
+      ["state", sl('stateContentOptions.state')],
+      ["last_changed", sl('stateContentOptions.last_changed')],
+      ["last_updated", sl('stateContentOptions.last_updated')],
+      ["percentage", sl('stateContentOptions.percentage')],
+      ["icon", sl('stateContentOptions.icon')],
     ];
 
     const indicatorOptions = [
-      { value: 'circle', label: "Circle" },
-      { value: 'icon', label: "Icon" },
-      { value: 'icon-fallback', label: "Icon Fallback (default)" },
-      { value: 'none', label: "None" },
-      { value: 'name', label: "Name" },
-      { value: 'state', label: "State" },
-      { value: 'percentage', label: "Percentage" },
+      { value: 'circle', label: sl('indicatorOptions.circle') },
+      { value: 'icon', label: sl('indicatorOptions.icon') },
+      { value: 'icon-fallback', label: sl('indicatorOptions.icon_fallback') },
+      { value: 'none', label: sl('indicatorOptions.none') },
+      { value: 'name', label: sl('indicatorOptions.name') },
+      { value: 'state', label: sl('indicatorOptions.state') },
+      { value: 'percentage', label: sl('indicatorOptions.percentage') },
     ]
 
     const multiplierOptions = [
@@ -185,117 +189,7 @@ export class ItemEditor extends LitElement {
   private _computeLabelCallback = (schema: any) => {
     if (!this.hass) return "";
 
-    const labelMap: Record<string, LabelConfigEntry> = {
-      // Entity (required)
-      entity: {
-        tryLocalize: (hass) => `${hass.localize("ui.panel.lovelace.editor.card.generic.entity")} (${hass.localize("ui.panel.lovelace.editor.card.config.required")})`,
-        fallback: "Entity (required)",
-      },
-
-      // Name
-      name: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.name",
-        fallback: "Name",
-      },
-      // RGB Color
-      color: {
-        tryLocalize: "ui.components.selectors.selector.types.color_rgb",
-        fallback: "Color",
-      },
-
-      // Legend Indicator
-      legend_indicator: {
-        tryLocalize: () => "Legend Indicator",
-        fallback: "Legend Indicator",
-      },
-      // Icon
-      icon: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.icon",
-        fallback: "Icon",
-      },
-
-      // ------------------------------------------------ State Content ------------------------------------------------
-
-      // Legend
-      state_content: {
-        tryLocalize: "Legend",
-        fallback: "Legend",
-      },
-      // Legend Text Color
-      legend_text_color: {
-        tryLocalize: "Legend Text Color",
-        fallback: "Legend Text Color",
-      },
-
-      // Line
-      line_state_content: {
-        tryLocalize: "Line",
-        fallback: "Line",
-      },
-      // Line Text Color
-      line_text_color: {
-        tryLocalize: "Line Text Color",
-        fallback: "Line Text Color",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // ---------------------------------------------------- Unit -----------------------------------------------------
-
-      // Unit
-      unit: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.unit",
-        fallback: "Unit",
-      },
-      // Unit system
-      multiplier: {
-        tryLocalize: "ui.panel.config.core.section.core.core_config.unit_system",
-        fallback: "Unit System",
-      },
-      // Precision
-      precision: {
-        tryLocalize: "ui.dialogs.entity_registry.editor.precision",
-        fallback: "Precision",
-      },
-      // Lower Limit
-      cutoff: {
-        tryLocalize: "ui.panel.config.automation.editor.triggers.type.numeric_state.lower_limit",
-        fallback: "Lower Limit",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-
-      // -------------------------------------------------- Interactions -----------------------------------------------
-
-      // Interactions
-      interactions: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.interactions",
-        fallback: "Interactions",
-      },
-      // Tap Action
-      tap_action: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.tap_action",
-        fallback: "Tap Action",
-      },
-      // Hold Action
-      hold_action: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.hold_action",
-        fallback: "Hold Action",
-      },
-      // Double Tap Action
-      double_tap_action: {
-        tryLocalize: "ui.panel.lovelace.editor.card.generic.double_tap_action",
-        fallback: "Double Tap Action",
-      },
-
-      // ---------------------------------------------------------------------------------------------------------------
-    };
-
-    const entry: LabelConfigEntry = labelMap[schema.name];
-    if (!entry) return schema.name;
-
-    const label = typeof entry.tryLocalize === "function" ? entry.tryLocalize(this.hass) : this.hass.localize(entry.tryLocalize);
-    return label || entry.fallback || schema.name;
+    return localize(`itemEditor.${schema.name}`, this.hass);
   };
 
   private _valueChanged(ev: any): void {

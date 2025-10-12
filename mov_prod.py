@@ -2,12 +2,53 @@ import shutil
 import os
 import sys
 import datetime
+import json
 
 # This is really dumb, but it works for now
 #
 # Just replacing the file on the server with the new one
 # This script is used to copy the energy-line-gauge.js file to the Home Assistant community folder
 # and replace the version string in the file with the current date and time
+
+def check_languages():
+    print("Checking languages...")
+
+    any_missing_keys = False
+
+    # check what languages are in "src/localize/languages" folder
+    languages = []
+    for file in os.listdir("src/localize/languages"):
+        if file.endswith(".json"):
+            languages.append(file[:-5])
+
+    # compare with the "en.json" file
+    # compare the keys for each language, print out how many keys are missing and in what languages
+
+    with open("src/localize/languages/en.json", "r", encoding="utf-8") as f:
+        en_data = json.load(f)
+        en_keys = set(en_data.keys())
+
+    for lang in languages:
+        if lang == "en":
+            continue
+        with open(f"src/localize/languages/{lang}.json", "r", encoding="utf-8") as f:
+            lang_data = json.load(f)
+            lang_keys = set(lang_data.keys())
+            missing_keys = en_keys - lang_keys
+            if missing_keys:
+                any_missing_keys = True
+                print(f"Language '{lang}' is missing {len(missing_keys)} keys")
+            else:
+                print(f"Language '{lang}' has all keys.")
+
+    if any_missing_keys:
+        print("\nMISSING KEYS, PLEASE FIX!")
+        override = input("Continue anyway? (y/n): ")
+        if override.lower() != 'y':
+            sys.exit(1)
+        print("Continuing anyway...\n")
+    else:
+        print("Language check COMPLETE.")
 
 def replace_string_in_file(file_path, old_string, new_string):
     try:
@@ -59,4 +100,5 @@ def copy_file():
 
 
 if __name__ == "__main__":
+    check_languages()
     copy_file()
