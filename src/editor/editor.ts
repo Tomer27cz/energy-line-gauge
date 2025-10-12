@@ -84,7 +84,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     const indicatorOptions = [
       { value: "circle", label: sl('indicatorOptions.circle') },
       { value: "icon", label: sl('indicatorOptions.icon') },
-      { value: "icon-fallback", label: sl('indicatorOptions.icon-fallback') + " (default)" },
+      { value: "icon-fallback", label: sl('indicatorOptions.icon-fallback') },
       { value: "none", label: sl('indicatorOptions.none') },
       { value: "name", label: sl('indicatorOptions.name') },
       { value: "state", label: sl('indicatorOptions.state') },
@@ -92,9 +92,11 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     ];
 
     const createDefaultedOptions = (baseOptions: ReadonlyArray<{ value: string, label: string }>, defaultValue: string) => {
+      const defaultLabelString = sl("default");
+
       return baseOptions.map(option => {
-        let label = option.label.replace(" (default)", "");
-        if (option.value === defaultValue) {label += " (default)";}
+        let label = option.label.replace(defaultLabelString, "");
+        if (option.value === defaultValue) {label += defaultLabelString;}
         return { value: option.value, label };
       });
     };

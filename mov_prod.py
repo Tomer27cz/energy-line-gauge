@@ -11,7 +11,7 @@ import json
 # and replace the version string in the file with the current date and time
 
 def check_languages():
-    print("Checking languages...")
+    print("\nChecking languages...")
 
     any_missing_keys = False
 
@@ -37,7 +37,7 @@ def check_languages():
             missing_keys = en_keys - lang_keys
             if missing_keys:
                 any_missing_keys = True
-                print(f"Language '{lang}' is missing {len(missing_keys)} keys")
+                print(f"Language '{lang}' is missing {len(missing_keys)} keys: {missing_keys}")
             else:
                 print(f"Language '{lang}' has all keys.")
 
@@ -48,7 +48,7 @@ def check_languages():
             sys.exit(1)
         print("Continuing anyway...\n")
     else:
-        print("Language check COMPLETE.")
+        print("Language check COMPLETE.\n")
 
 def replace_string_in_file(file_path, old_string, new_string):
     try:

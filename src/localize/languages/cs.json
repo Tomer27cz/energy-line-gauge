@@ -96,6 +96,7 @@
     "double_tap_action": "Akce na dvojité klepnutí"
   },
 
+  "default": " (výchozí)",
   "cornerOptions": {
     "square": "Hranatý (výchozí)",
     "lite-rounded": "Mírně zaoblený",

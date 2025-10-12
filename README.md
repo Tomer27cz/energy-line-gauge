@@ -144,6 +144,7 @@ text_size: 2.5
 text_style: weight-bold
 text_color: auto
 
+line_height: 3
 corner: 'square'
 state_content_separator: '|'
 line_separator: true
@@ -247,6 +248,7 @@ There are a lot of settings you can customize your sensors with:
 | `unit`                         |        string         |             *none*             |                                            W                                             | This string will be appended to the end of the value.                                                                                      |
 | `cutoff`                       |        number         |              `0`               |                                            10                                            | Any entity with a value below or equal to this will not be displayed or counted.                                                           |
 | `offset`                       |        string         |             *none*             |                                            1d                                            | Offset state into the past [see more](#offset).                                                                                            |
+| `line_height`                  |        number         |              `3`               |                                            2                                             | Height of the line in rem.                                                                                                                 |
 | `corner`                       |      CornerType       |            `square`            |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                      |
 | `state_content_separator`      |        string         |            `' ⸱ '`             |                                           '-'                                            | This string is added between state content items in legend and line.                                                                       |
 | `line_separator`               |         bool          |            `false`             |                                          true`                                           | Separates the line segments with the background color.                                                                                     |
