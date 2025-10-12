@@ -69,6 +69,7 @@ export const styles = css`
         --gauge-card-width: 300px;
         --color: var(--primary-color);
         --background-color: var(--secondary-background-color);
+        --line-height: 3rem;
 
         width: 95%;
         box-sizing:border-box;
@@ -229,7 +230,7 @@ export const styles = css`
 
     .gauge-line {
         width: 100%;
-        height: 3rem;
+        height: var(--line-height);
         background-color: var(--background-color);
     }
     .main-line {
@@ -242,8 +243,8 @@ export const styles = css`
     .device-line-container {
         display: flex;
         position: relative;
-        top: -3rem;
-        height: 3rem;
+        top: calc(-1 * var(--line-height));
+        height: var(--line-height);
         width: 100%;
     }
     
@@ -315,15 +316,15 @@ export const styles = css`
     /*Theme  --------------------------------------------------*/
     
     .line-corner-lite-rounded {
-        border-radius: 0.25rem;
+        border-radius: calc(var(--line-height) / 12);
         overflow: hidden;
     }
     .line-corner-medium-rounded {
-        border-radius: 0.5rem;
+        border-radius: calc(var(--line-height) / 6);
         overflow: hidden;
     }
     .line-corner-rounded {
-        border-radius: 0.75rem;
+        border-radius: calc(var(--line-height) / 4);
         overflow: hidden;
     }
     .line-corner-square {
@@ -331,7 +332,7 @@ export const styles = css`
         overflow: hidden;
     }
     .line-corner-circular {
-        border-radius: 1.5rem;
+        border-radius: calc(var(--line-height) / 2);
         overflow: hidden;
     }
     

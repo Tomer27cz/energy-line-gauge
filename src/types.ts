@@ -37,6 +37,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   text_colour?: ColorType; // For British English support
 
   // Styling
+  line_height?: number;
   corner?: CornerType;
   state_content_separator?: string;
 

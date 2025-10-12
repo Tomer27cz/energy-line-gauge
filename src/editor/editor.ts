@@ -213,7 +213,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           {
             type: "grid",
             schema: [
-              { name: "suppress_warnings", required: false, selector: { boolean: {} } },
+              { name: "line_height", required: false, selector: { number: { min: 0.5, max: 10, step: 0.1, mode: "box" } } },
               { name: "corner", required: false, selector: { select: { mode: "dropdown", options: cornerOptions }}},
             ],
           },
@@ -237,11 +237,19 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           {
             type: "grid",
             schema: [
+              { name: "suppress_warnings", required: false, selector: { boolean: {} } },
               { name: "line_separator", required: false, selector: { boolean: {} } },
-              { name: "line_separator_width", required: false, selector: { select: { mode: "dropdown", options: lineSeparatorWidthOptions }}},
+
             ],
           },
-          { name: "line_separator_color", required: false, selector: { color_rgb: {} } },
+
+          {
+            type: "grid",
+            schema: [
+              { name: "line_separator_width", required: false, selector: { select: { mode: "dropdown", options: lineSeparatorWidthOptions }}},
+              { name: "line_separator_color", required: false, selector: { color_rgb: {} } },
+            ],
+          },
 
           {
             type: "expandable",
@@ -598,6 +606,12 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       color_bg: {
         tryLocalize: "ui.panel.lovelace.editor.edit_view.tab_background",
         fallback: "Background Color",
+      },
+
+      // Height
+      line_height: {
+        tryLocalize: () => "Height",
+        fallback: "Height",
       },
 
       // Line Separator

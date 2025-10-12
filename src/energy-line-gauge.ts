@@ -109,10 +109,6 @@ export class EnergyLineGauge extends LitElement {
       entityFilter
     );
 
-    const rootStyle = getComputedStyle(document.documentElement);
-    const defaultColor = toRGB(rootStyle.getPropertyValue('--primary-color').trim());
-    const defaultBgColor = toRGB(rootStyle.getPropertyValue('--secondary-background-color').trim());
-
     return {
       type: "custom:energy-line-gauge",
       entity: foundEntities[0],
@@ -121,8 +117,8 @@ export class EnergyLineGauge extends LitElement {
       min: 0,
       max: 100,
 
-      color: defaultColor,
-      color_bg: defaultBgColor,
+      color: 'var(--primary-color)',
+      color_bg: 'var(--secondary-background-color)',
 
       untracked_legend: true,
       untracked_state_content: ["name"],
@@ -267,12 +263,9 @@ export class EnergyLineGauge extends LitElement {
         if (isNaN(value)) {console.error(`Invalid value parsed from: ${configString}`); return 0}
 
         switch (mode) {
-          case "total":
-            return value;
-          case "each":
-            return numberOfSeparators * value;
-          default:
-            return 5;
+          case "total": return value;
+          case "each": return numberOfSeparators * value;
+          default: return 5;
         }
       };
 
@@ -300,7 +293,12 @@ export class EnergyLineGauge extends LitElement {
         tabindex="0"
         .label=${this._config.label}
       >
-        <div class="line-gauge-card" style="--color: rgba(${toRGB(this._config.color)}); --background-color: rgba(${toRGB(this._config.color_bg)})"">
+        <div class="line-gauge-card" 
+             style="
+             --color: rgba(${toRGB(this._config.color)}); 
+             --background-color: rgba(${toRGB(this._config.color_bg)});
+             --line-height: ${this._config.line_height ?? 3}rem;
+        ">
           ${this._createInnerHtml()}
         </div>
       </ha-card>

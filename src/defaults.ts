@@ -70,6 +70,7 @@ export const CONFIG_DEFAULTS = {
   text_color: 'primary' as ColorType,
 
   // Styling
+  line_height: 3,
   corner: 'square' as CornerType,
   state_content_separator: ' ⸱ ',
 
@@ -187,6 +188,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     text_style: config.text_style ?? CONFIG_DEFAULTS.text_style,
 
     // Styling
+    line_height: config.line_height ?? CONFIG_DEFAULTS.line_height,
     corner: validatedValue(config.corner, CORNER_TYPES, CONFIG_DEFAULTS.corner),
     state_content_separator: config.state_content_separator ?? CONFIG_DEFAULTS.state_content_separator,
 
