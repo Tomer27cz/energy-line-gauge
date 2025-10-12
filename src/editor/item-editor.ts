@@ -32,7 +32,7 @@ export class ItemEditor extends LitElement {
     const indicatorOptions = [
       { value: 'circle', label: sl('indicatorOptions.circle') },
       { value: 'icon', label: sl('indicatorOptions.icon') },
-      { value: 'icon-fallback', label: sl('indicatorOptions.icon_fallback') },
+      { value: 'icon-fallback', label: sl('indicatorOptions.icon-fallback') },
       { value: 'none', label: sl('indicatorOptions.none') },
       { value: 'name', label: sl('indicatorOptions.name') },
       { value: 'state', label: sl('indicatorOptions.state') },
@@ -188,6 +188,9 @@ export class ItemEditor extends LitElement {
 
   private _computeLabelCallback = (schema: any) => {
     if (!this.hass) return "";
+    if (schema.name === "" || schema.name === undefined) {
+      return "";
+    }
 
     return localize(`itemEditor.${schema.name}`, this.hass);
   };

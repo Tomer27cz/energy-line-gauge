@@ -187,7 +187,7 @@
     "right": "Vpravo (výchozí)",
     "left": "Vlevo"
   },
-  "untrackedStateContentOptions": {
+  "untrackedStateContent": {
     "name": "Název",
     "state": "Stav",
     "percentage": "Šířka [%]",

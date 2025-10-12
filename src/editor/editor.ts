@@ -543,6 +543,9 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
 
   private _computeLabelCallback = (schema: any) => {
     if (!this.hass) return "";
+    if (schema.name === "" || schema.name === undefined) {
+      return "";
+    }
 
     return localize(schema.name, this.hass);
   };

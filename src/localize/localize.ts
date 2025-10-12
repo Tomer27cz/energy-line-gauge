@@ -18,6 +18,8 @@ function getTranslatedString(key: string, lang: string): string | undefined {
 }
 
 export function localize(key: string, hass: HomeAssistant): string {
+  if (!key) return '';
+
   const language: string = hass.locale.language ?? 'en';
 
   const userTranslation: string | undefined = getTranslatedString(key, language);
