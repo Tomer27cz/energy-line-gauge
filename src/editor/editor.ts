@@ -92,7 +92,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     ];
 
     const createDefaultedOptions = (baseOptions: ReadonlyArray<{ value: string, label: string }>, defaultValue: string) => {
-      const defaultLabelString = sl("default");
+      const defaultLabelString = ` (${sl("default")})`;
 
       return baseOptions.map(option => {
         let label = option.label.replace(defaultLabelString, "");

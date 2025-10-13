@@ -14,6 +14,7 @@ def check_languages():
     print("\nChecking languages...")
 
     any_missing_keys = False
+    any_additional_keys = False
 
     # check what languages are in "src/localize/languages" folder
     languages = []
@@ -34,15 +35,47 @@ def check_languages():
         with open(f"src/localize/languages/{lang}.json", "r", encoding="utf-8") as f:
             lang_data = json.load(f)
             lang_keys = set(lang_data.keys())
+
             missing_keys = en_keys - lang_keys
+            additional_keys = lang_keys - en_keys
+
             if missing_keys:
                 any_missing_keys = True
                 print(f"Language '{lang}' is missing {len(missing_keys)} keys: {missing_keys}")
-            else:
+
+            if additional_keys:
+                any_additional_keys = True
+                print(f"Language '{lang}' has {len(additional_keys)} additional keys: {additional_keys}")
+
+            if not missing_keys and not additional_keys:
                 print(f"Language '{lang}' has all keys.")
+
+    with open(f"src/localize/defaults.json", "r", encoding="utf-8") as f:
+        lang_data = json.load(f)
+        lang_keys = set(lang_data.keys())
+
+        missing_keys = en_keys - lang_keys
+        additional_keys = lang_keys - en_keys
+
+        if missing_keys:
+            any_missing_keys = True
+            print(f"Defaults missing {len(missing_keys)} keys: {missing_keys}")
+
+        if additional_keys:
+            any_additional_keys = True
+            print(f"Defaults have {len(additional_keys)} additional keys: {additional_keys}")
+
+        if not missing_keys and not additional_keys:
+            print(f"Defaults have all keys.")
 
     if any_missing_keys:
         print("\nMISSING KEYS, PLEASE FIX!")
+        override = input("Continue anyway? (y/n): ")
+        if override.lower() != 'y':
+            sys.exit(1)
+        print("Continuing anyway...\n")
+    elif any_additional_keys:
+        print("\nADDITIONAL KEYS, PLEASE FIX!")
         override = input("Continue anyway? (y/n): ")
         if override.lower() != 'y':
             sys.exit(1)

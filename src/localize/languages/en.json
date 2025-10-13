@@ -96,7 +96,7 @@
     "double_tap_action": "Double Tap Action"
   },
 
-  "default": " (default)",
+  "default": "default",
   "cornerOptions": {
     "square": "Square (default)",
     "lite-rounded": "Lite Rounded",

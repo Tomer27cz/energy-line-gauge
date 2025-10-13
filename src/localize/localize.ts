@@ -1,5 +1,7 @@
 import { HomeAssistant } from 'custom-card-helpers';
 
+import * as defaults from './defaults.json';
+
 import * as en from './languages/en.json';
 import * as cs from './languages/cs.json';
 
@@ -8,6 +10,19 @@ const languages: any = {
   cs: cs,
   en: en,
 };
+
+function getHassTranslatedString(key: string, hass: HomeAssistant,): string | undefined {
+  const hassKey = key
+    .split('.')
+    .reduce((obj: any, part: string) => obj?.[part], defaults);
+
+  if (hassKey === undefined) {return undefined;}
+
+  const localized = hass.localize(hassKey);
+  if (!localized || localized === hassKey) {return undefined;}
+
+  return localized;
+}
 
 function getTranslatedString(key: string, lang: string): string | undefined {
   try {
@@ -25,6 +40,11 @@ export function localize(key: string, hass: HomeAssistant): string {
   const userTranslation: string | undefined = getTranslatedString(key, language);
   if (userTranslation) {
     return userTranslation;
+  }
+
+  const hassTranslation: string | undefined = getHassTranslatedString(key, hass);
+  if (hassTranslation) {
+    return hassTranslation;
   }
 
   const fallbackTranslation: string | undefined = getTranslatedString(key, 'en');
