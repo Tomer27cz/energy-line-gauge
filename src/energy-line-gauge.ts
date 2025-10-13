@@ -42,6 +42,7 @@ import { CONFIG_DEFAULTS, setConfigDefaults } from './defaults';
 import { toRGB, getTextColor } from './color';
 
 import './editor/editor';
+import { deepEqual } from './deep-equal';
 
 console.info(
   `%c ENERGY LINE GAUGE %c ${version} `,
@@ -153,6 +154,39 @@ export class EnergyLineGauge extends LitElement {
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
     }
+  }
+
+  protected shouldUpdate(changedProps: PropertyValues): boolean {
+    if (!this._config) {
+      return true;
+    }
+
+    if (changedProps.has('_config')) {
+      const oldConfig = changedProps.get('_config') as ELGConfig;
+
+      if (!deepEqual(this._config, oldConfig)) {
+        return true;
+      }
+    }
+
+    if (changedProps.has('hass')) {
+      const oldHass = changedProps.get('hass') as HomeAssistant | undefined;
+
+      if (!oldHass) {
+        return true;
+      }
+
+      const entities = this._allConfigEntities();
+      for (const entity of entities) {
+        if (oldHass.states[entity] !== this.hass.states[entity]) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    return true;
   }
 
   protected updated(changedProperties: PropertyValues): void {
