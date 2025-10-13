@@ -252,7 +252,7 @@ There are a lot of settings you can customize your sensors with:
 | `corner`                       |      CornerType       |            `square`            |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                      |
 | `state_content_separator`      |        string         |            `' ⸱ '`             |                                           '-'                                            | This string is added between state content items in legend and line.                                                                       |
 | `line_separator`               |         bool          |            `false`             |                                          true`                                           | Separates the line segments with the background color.                                                                                     |
-| `line_separator_width`         |  SeparatorWidthType   |           `total050`           |                                         each008                                          | Wisth of separators. Total - Percentage gets divide, Each - Each separator gets fixed percentage                                           |
+| `line_separator_width`         |  SeparatorWidthType   |           `total050`           |                                         each008                                          | Width of separators. Total - Percentage gets divide, Each - Each separator gets fixed percentage [see more](#line_separators).             |
 | `line_separator_color`         |       ColorType       | `var(--card-background-color)` |                                          white                                           | Color of the line separators.                                                                                                              |
 | `position`                     |   ValuePositionType   |             `left`             |                                           none                                           | Position of the main label [see examples](#position)                                                                                       |
 | `text_size`                    |        number         |             `2.5`              |                                            2                                             | Font size of the main value (in rem).                                                                                                      |
@@ -273,7 +273,7 @@ There are a lot of settings you can customize your sensors with:
 | `legend_all`                   |         bool          |            `false`             |                                          false                                           | Display all the entities regardless of the cutoff. (does not affect gauge) [example](#legend_all)                                          |
 | `legend_position`              |     PositionType      |        `bottom-center`         |                                          right                                           | Position of the legend [see examples](#legend)                                                                                             |
 | `legend_alignment`             |     AlignmentType     |            `center`            |                                      space-between                                       | Alignment of the legend items [see examples](#legend)                                                                                      |
-| `legend_indicator`             |     IndicatorType     |        `icon-fallback`         |                                          circle                                          | Colored part next-to the legend text.                                                                                                      |
+| `legend_indicator`             |     IndicatorType     |        `icon-fallback`         |                                          circle                                          | Colored part next-to the legend text. [see examples](#legend)                                                                              |
 | `legend_text_size`             |        number         |              `1`               |                                           1.5                                            | Font size of the legend text (in rem) - not including icon                                                                                 |
 | `legend_text_style`            |     TextStyleType     |             *none*             |                                    ['black-outline']                                     | Text style of the legend text [see examples and hierarchy](#style)                                                                         |
 | `legend_text_color`            |       ColorType       | `var(--secondary-text-color)`  |                                           gray                                           | Color of the subtitle text.                                                                                                                |
@@ -282,7 +282,7 @@ There are a lot of settings you can customize your sensors with:
 | `untracked_legend`             |         bool          |             `true`             |                                          false                                           | Show the legend for untracked consumption.                                                                                                 |
 | `untracked_legend_label`       |        string         |    `Untracked consumption`     |                                        Untracked                                         | The label for the untracked legend. (default is translated)                                                                                |
 | `untracked_legend_icon`        |        string         |             *none*             |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored)                                                                 |
-| `untracked_legend_indicator`   |     IndicatorType     |        `icon-fallback`         |                                          state                                           | Colored part next-to the legend text.                                                                                                      |
+| `untracked_legend_indicator`   |     IndicatorType     |        `icon-fallback`         |                                          state                                           | Colored part next-to the legend text. [see examples](#legend)                                                                              |
 | `untracked_state_content`      | UntrackedStateContent |           `['name']`           |                                        ['state']                                         | What info will be shown after the circle or icon. Order matters. Info will be separated by a dot. [see examples](#untracked_state_content) |
 | `untracked_line_state_content` | UntrackedStateContent |             *none*             |                                      ['percentage']                                      | Info will be shown in the line. Order matters. Info will be separated by a dot. [see examples](#untracked_state_content)                   |
 | `suppress_warnings`            |         bool          |            `false`             |                                           true                                           | Do not show the warnings, such as "Entity unavailable" or "Entity not found"                                                               |
@@ -465,8 +465,6 @@ untracked_legend_label: Untracked
 
 ## Position
 
-<hr/>
-
 ### `position: none` `title_position: none` `legend_position: none` `line_text_position: none`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/none.png" alt="none">
 
@@ -525,7 +523,7 @@ untracked_legend_label: Untracked
 ### `legend_position: bottom-*` `legend_alignment: center`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_position/bottom.png" alt="bottom">
 
-### Legend Alignment
+## Legend Alignment
 
 ### `legend_alignment: left`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/left.png" alt="left">
@@ -545,6 +543,30 @@ untracked_legend_label: Untracked
 ### `legend_alignment: space-evenly`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-evenly.png" alt="space-evenly">
 
+## Legend Indicator
+
+### `legend_indicator: circle`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/circle.png" alt="circle">
+
+### `legend_indicator: icon`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/icon.png" alt="icon">
+
+### `legend_indicator: icon-fallback`
+If no icon is set, it will show a circle.
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/icon.png" alt="icon-fallback">
+
+### `legend_indicator: none`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/none.png" alt="none">
+
+### `legend_indicator: name`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/name.png" alt="name">
+
+### `legend_indicator: state`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/state.png" alt="state">
+
+### `legend_indicator: percentage`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/percentage.png" alt="percentage">
+
 
 </div>
 </div>
@@ -552,8 +574,6 @@ untracked_legend_label: Untracked
 <div id="theme">
 
 ## Theme
-
-<hr/>
 
 ### `corner: square`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/theme/square.png" alt="square">
@@ -754,6 +774,21 @@ The statistics only support `sensors` with state_class of `measurement`, `total`
 - `statistics_function` is the function used to calculate the statistics. The default is `mean`. The options are `change`, `max`, `mean`, `min`, `state`, `sum`.
 
 Some entities only support `mean`, `min` and `max` (For example `sensor.plug_1_power` - state_class: measurement). And some entities only support `change`, `state` and `sum` (For example `sensor.plug_1_summitation_delivered` - state_class: total). A warning will be shown if the entity does not support the selected function: `No statistics found.`.
+
+</div>
+
+## Line Separators
+
+<div id="line_separators">
+
+Added in [v2.2.4](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.2.4). Feature request [#14](https://github.com/Tomer27cz/energy-line-gauge/issues/14).
+
+You can add gaps between segments in the line. The gaps can be customized with `line_separator_width` and `line_separator_color`.
+
+### `line_separator_width` - Separator width options: [mode]{num}{num}.{num}
+
+- `total020` → `total100` (2% - 10% of the total line width)
+- `each002` → `each020` (0.2% - 2% of each segment width) |
 
 </div>
 

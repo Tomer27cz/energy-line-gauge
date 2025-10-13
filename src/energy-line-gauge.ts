@@ -875,7 +875,7 @@ export class EnergyLineGauge extends LitElement {
     return this._formatValue(value, this._config.precision, this._config.unit);
   }
   private _formatValueDevice(device: ELGEntity): string {
-    return this._formatValue(this._entitiesObject[device.entity].state, device.precision ?? this._config.precision, device.unit);
+    return this._formatValue(this._entitiesObject[device.entity].state, device.precision ?? this._config.precision, device.unit ?? this._config.unit);
   }
 
   // Validation --------------------------------------------------------------------------------------------------------
