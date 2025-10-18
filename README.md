@@ -12,12 +12,16 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Tomer27cz/energy-line-gauge)
 
 <a href="https://www.buymeacoffee.com/tomer27" target="_blank" rel="noopener noreferrer">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px; width: auto; cursor: pointer;" />
+  <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/default-yellow.png" alt="Buy Me A Coffee" style="cursor: pointer;" />
 </a>
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
 <p align="center">
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/main.png" alt="Main Image"/>
+</p>
+
+<p align="center">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/energy.png" alt="Energy"/>
 </p>
 
 <p align="center">
@@ -553,6 +557,7 @@ untracked_legend_label: Untracked
 
 ### `legend_indicator: icon-fallback`
 If no icon is set, it will show a circle.
+
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_indicator/icon.png" alt="icon-fallback">
 
 ### `legend_indicator: none`
@@ -788,7 +793,7 @@ You can add gaps between segments in the line. The gaps can be customized with `
 ### `line_separator_width` - Separator width options: [mode]{num}{num}.{num}
 
 - `total020` → `total100` (2% - 10% of the total line width)
-- `each002` → `each020` (0.2% - 2% of each segment width) |
+- `each002` → `each020` (0.2% - 2% of each segment width)
 
 </div>
 
