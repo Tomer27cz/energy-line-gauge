@@ -51,8 +51,8 @@ export const CONFIG_DEFAULTS = {
   title_text_size: 2,
   title_text_style: undefined,
 
-  title_text_color: 'primary' as ColorType,
-  subtitle_text_color: 'secondary' as ColorType,
+  title_text_color: 'var(--primary-text-color)' as ColorType,
+  subtitle_text_color: 'var(--secondary-text-color)' as ColorType,
 
   // MIN/MAX
   min: 0,
@@ -67,7 +67,7 @@ export const CONFIG_DEFAULTS = {
   position: 'left' as ValuePositionType,
   text_size: 2.5,
   text_style: undefined,
-  text_color: 'primary' as ColorType,
+  text_color: 'var(--primary-text-color)' as ColorType,
 
   // Styling
   line_height: 3,
@@ -76,16 +76,16 @@ export const CONFIG_DEFAULTS = {
 
   line_separator: false,
   line_separator_width: 'total050' as LineSeparatorWidthType,
-  line_separator_color: undefined, // --card-background-color
+  line_separator_color: 'var(--card-background-color)',
 
-  color: undefined, // --primary-color
-  color_bg: undefined, // --secondary-background-color
+  color: 'var(--primary-color)',
+  color_bg: 'var(--secondary-background-color)',
 
   // Line Text
   line_text_position: 'left' as LinePositionType,
   line_text_size: 1,
   line_text_style: undefined,
-  line_text_color: 'auto' as ColorType,
+  line_text_color: 'var(--primary-text-color)' as ColorType,
   line_text_overflow: 'tooltip' as TextOverflowType,
   overflow_direction: 'right' as OverflowDirectionType,
 
@@ -103,7 +103,7 @@ export const CONFIG_DEFAULTS = {
   legend_indicator: 'icon-fallback' as IndicatorType,
   legend_text_size: 1,
   legend_text_style: undefined,
-  legend_text_color: 'secondary' as ColorType,
+  legend_text_color: 'var(--secondary-text-color)' as ColorType,
 
   // Show Delta
   show_delta: false,
@@ -173,6 +173,9 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     title_text_size: config.title_text_size ?? CONFIG_DEFAULTS.title_text_size,
     title_text_style: config.title_text_style ?? CONFIG_DEFAULTS.title_text_style,
 
+    title_text_color: validateColor(config.title_text_color ?? config.title_text_colour, CONFIG_DEFAULTS.title_text_color),
+    subtitle_text_color: validateColor(config.subtitle_text_color ?? config.subtitle_text_colour, CONFIG_DEFAULTS.subtitle_text_color),
+
     // MIN/MAX
     min: config.min ?? CONFIG_DEFAULTS.min,
     max: config.max ?? config.entity, // entity
@@ -187,6 +190,8 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     text_size: config.text_size ?? CONFIG_DEFAULTS.text_size,
     text_style: config.text_style ?? CONFIG_DEFAULTS.text_style,
 
+    text_color: validateColor(config.text_color ?? config.text_colour, CONFIG_DEFAULTS.text_color),
+
     // Styling
     line_height: config.line_height ?? CONFIG_DEFAULTS.line_height,
     corner: validatedValue(config.corner, CORNER_TYPES, CONFIG_DEFAULTS.corner),
@@ -194,15 +199,16 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 
     line_separator: config.line_separator ?? CONFIG_DEFAULTS.line_separator,
     line_separator_width: validatedValue(config.line_separator_width, LINE_SEPARATOR_WIDTH_TYPES, CONFIG_DEFAULTS.line_separator_width),
-    line_separator_color: validateColor(config.line_separator_color ?? config.line_separator_colour, toRGB('var(--card-background-color)')), // --card-background-color
+    line_separator_color: validateColor(config.line_separator_color ?? config.line_separator_colour, CONFIG_DEFAULTS.line_separator_color),
 
-    color: validateColor(config.color ?? config.colour, toRGB('var(--primary-color)')), // --primary-color
-    color_bg: validateColor(config.color_bg ?? config.colour_bg, toRGB('var(--secondary-background-color)')), // --secondary-background-color
+    color: validateColor(config.color ?? config.colour, CONFIG_DEFAULTS.color),
+    color_bg: validateColor(config.color_bg ?? config.colour_bg, CONFIG_DEFAULTS.color_bg),
 
     // Line Text
     line_text_position: validatedValue(config.line_text_position, LINE_POSITION_TYPES, CONFIG_DEFAULTS.line_text_position),
     line_text_size: config.line_text_size ?? CONFIG_DEFAULTS.line_text_size,
     line_text_style: config.line_text_style ?? CONFIG_DEFAULTS.line_text_style,
+    line_text_color: validateColor(config.line_text_color ?? config.line_text_colour, undefined), // undefined to allow automatic handling instead of default
     line_text_overflow: validatedValue(config.line_text_overflow, TEXT_OVERFLOW_TYPES, CONFIG_DEFAULTS.line_text_overflow),
     overflow_direction: validatedValue(config.overflow_direction, OVERFLOW_DIRECTION_TYPES, CONFIG_DEFAULTS.overflow_direction),
 
@@ -220,6 +226,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     legend_indicator: validatedValue(config.legend_indicator, INDICATOR_TYPES, CONFIG_DEFAULTS.legend_indicator),
     legend_text_size: config.legend_text_size ?? CONFIG_DEFAULTS.legend_text_size,
     legend_text_style: config.legend_text_style ?? CONFIG_DEFAULTS.legend_text_style,
+    legend_text_color: validateColor(config.legend_text_color ?? config.legend_text_colour, CONFIG_DEFAULTS.legend_text_color),
 
     // Show Delta
     show_delta: config.show_delta ?? CONFIG_DEFAULTS.show_delta,
@@ -264,7 +271,7 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
       // Entity
       name: entity.name ?? ENTITY_DEFAULTS.name,
       icon: entity.icon ?? ENTITY_DEFAULTS.icon,
-      color: color,
+      color: validateColor(color, ENTITY_DEFAULTS.color),
 
       // Value
       cutoff: entity.cutoff ?? ENTITY_DEFAULTS.cutoff,
@@ -278,6 +285,9 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
 
       // Styling
       legend_indicator: validatedValue(entity.legend_indicator, INDICATOR_TYPES, ENTITY_DEFAULTS.legend_indicator),
+
+      legend_text_color: validateColor(entity.legend_text_color ?? entity.legend_text_colour, ENTITY_DEFAULTS.legend_text_color),
+      line_text_color: validateColor(entity.line_text_color ?? entity.line_text_colour, ENTITY_DEFAULTS.line_text_color),
 
       // Actions
       tap_action: entity.tap_action ?? ENTITY_DEFAULTS.tap_action,
@@ -328,9 +338,9 @@ function validateArray<T extends readonly string[]>(
   return values.filter((item): item is T[number] => allowed.includes(item as T[number]));
 }
 
-function validateColor(color: ColorType, defaultValue: RGBColor | undefined): RGBColor | undefined {
+function validateColor(color: ColorType, defaultValue: ColorType): ColorType | undefined {
   if (!color) return defaultValue;
   if (color === "auto") return defaultValue;
-  if (Array.isArray(color)) return color as [number, number, number];
-  return toRGB(color);
+  if (Array.isArray(color)) return `rgba(${color})`;
+  return color;
 }

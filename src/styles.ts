@@ -231,12 +231,12 @@ export const styles = css`
     .gauge-line {
         width: 100%;
         height: var(--line-height);
-        background-color: var(--background-color);
+        background: var(--background-color);
     }
     .main-line {
         width: 0;
         height: 100%;
-        background-color: var(--color);
+        background: var(--color);
         transition: width 1s ease-out;
     }
     
@@ -465,7 +465,7 @@ export function getTextStyle(style: TextStyleType | undefined, textSize?: number
 
   // Shadow
   if (uniqueStyles.has('shadow-neon')) {
-    const neonColor = `rgba(${baseColor})` || 'rgba(255,255,255,1)';
+    const neonColor = `${baseColor}` || 'rgba(255,255,255,1)';
     styleMap['color'] = neonColor;
     styleMap['text-shadow'] = [
       `0 0 ${s*5}px ${neonColor}`,

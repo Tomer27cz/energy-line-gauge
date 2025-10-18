@@ -33,7 +33,11 @@ import {
   LabelRenderResult,
   PartRenderer,
   RendererContext,
-  DeviceRendererContext, RGBColor, IndicatorType,
+  DeviceRendererContext,
+
+  RGBColor,
+  ColorType,
+  IndicatorType,
 } from './types';
 import { styles, getTextStyle } from './styles';
 import { actionHandler } from './action-handler';
@@ -89,7 +93,7 @@ export class EnergyLineGauge extends LitElement {
 
   // noinspection JSUnusedGlobalSymbols
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
-    await import('./editor/editor');
+    // await import('./editor/editor');
     return document.createElement('energy-line-gauge-editor') as LovelaceCardEditor;
   }
 
@@ -329,8 +333,8 @@ export class EnergyLineGauge extends LitElement {
       >
         <div class="line-gauge-card" 
              style="
-             --color: rgba(${toRGB(this._config.color)}); 
-             --background-color: rgba(${toRGB(this._config.color_bg)});
+             --color: ${this._config.color}; 
+             --background-color: ${this._config.color_bg};
              --line-height: ${this._config.line_height ?? 3}rem;
         ">
           ${this._createInnerHtml()}
@@ -347,7 +351,7 @@ export class EnergyLineGauge extends LitElement {
         <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(this._untrackedObject?.state)}</span></div>
       </div>`;
   }
-  _createUntrackedLegend(style: string, size: number, textColor?: RGBColor): TemplateResult {
+  _createUntrackedLegend(style: string, size: number, textColor?: ColorType): TemplateResult {
     if (!this._config.untracked_legend) {return html``;}
     const untrackedLabelResult = this._untrackedLabel();
     const color = toRGB(this._config.color);
@@ -355,7 +359,7 @@ export class EnergyLineGauge extends LitElement {
     return html`
       <li title="${this._config.untracked_legend_label || untrackedLabelResult?.text}" id="legend-untracked" style="display: inline-grid;">
         ${this._createLegendIndicator(undefined, color)}
-        <div class="label" style="font-size: ${size}rem; ${style}; color: rgba(${textColor})">
+        <div class="label" style="font-size: ${size}rem; ${style}; color: ${textColor}">
           ${untrackedLabelResult?.template}
         </div>
       </li>`
@@ -417,7 +421,7 @@ export class EnergyLineGauge extends LitElement {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
 
     const textSize = this._config.legend_text_size ?? this._config.text_size ?? 1;
-    const textColor = getTextColor(this._config.legend_text_color, CONFIG_DEFAULTS.legend_text_color);
+    const textColor = this._config.legend_text_color;
     const textStyle = getTextStyle(this._config.legend_text_style, textSize, textColor);
 
     return html`
@@ -428,7 +432,7 @@ export class EnergyLineGauge extends LitElement {
           if (this._entitiesObject[device.entity].width <= 0 && !this._config.legend_all) {return html``;}
           
           const labelResult = this._entityLabel(device, false);
-          const deviceTextColor = getTextColor(device.legend_text_color, textColor);
+          const deviceTextColor = device.legend_text_color ?? textColor;
           
           // noinspection HtmlUnknownAttribute
           return html`
@@ -442,7 +446,7 @@ export class EnergyLineGauge extends LitElement {
               id="legend-${device.entity.replace('.', '-')}"
             >
               ${this._createLegendIndicator(device, toRGB(device.color))}
-              <div class="label" style="font-size: ${textSize}rem; ${textStyle}; color: rgba(${deviceTextColor})">
+              <div class="label" style="font-size: ${textSize}rem; ${textStyle}; color: ${deviceTextColor}">
                 ${labelResult?.template}
               </div>
             </li>`;
@@ -479,50 +483,65 @@ export class EnergyLineGauge extends LitElement {
       textStyle: string,
       position: string
     ) => html`
-    <div
-      class="device-line-label line-text-position-${position}"
-      style="color: rgba(${color}); font-size: ${size}rem; ${overflowStyle} ${textStyle}">
-      ${template}
-    </div>
-  `;
+      <div
+        class="device-line-label line-text-position-${position}"
+        style="color: rgba(${color}); font-size: ${size}rem; ${overflowStyle} ${textStyle}">
+        ${template}
+      </div>
+    `;
 
     const position = this._config.line_text_position ?? "left";
     const overflowType = this._config.line_text_overflow ?? "tooltip";
     const overflowDir = this._config.overflow_direction ?? "right";
 
+    const overflowStyle = getOverflowStyle(overflowType, overflowDir);
+    const showLabel = position !== "none";
+
     // noinspection JSMismatchedCollectionQueryUpdate
     const lineParts: TemplateResult[] = [];
+    const separatorTemplate = !(!this._config.line_separator || this._lineSeparatorWidth === 0)
+      ? html`
+      <div class="device-line-separator" 
+        style="
+          background: ${this._config.line_separator_color}; 
+          width: ${this._lineSeparatorWidth}%;
+        "></div>`
+      : html``;
 
-    // noinspection CssUnresolvedCustomProperty
-    const separatorTemplate = !this._config.line_separator || this._lineSeparatorWidth === 0
-      ? html``
-      : html`<div class="device-line-separator" style="background-color: rgba(${this._config.line_separator_color}); width: ${this._lineSeparatorWidth}%;"></div>`;
-
-    const visibleEntities = this._config.entities.filter(device =>
-      this._entitiesObject[device.entity] && this._entitiesObject[device.entity].width > 0
-    );
-
+    const visibleEntities = this._config.entities.filter(device => this._entitiesObject[device.entity] && this._entitiesObject[device.entity].width > 0);
     visibleEntities.forEach((device: ELGEntity, index: number) => {
       if (index > 0) {lineParts.push(separatorTemplate)}
 
       const entityState = this._entitiesObject[device.entity];
       const width = entityState.width;
-      const showLabel = position !== "none";
-      const lineColor = toRGB(device.color);
-      const lineTextColor = getTextColor(
-        device.line_text_color ? device.line_text_color : this._config.line_text_color,
-        CONFIG_DEFAULTS.line_text_color,
-        device.color);
-      const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, lineColor);
+
+      const lineColor = device.color;
       const label = this._entityLabel(device, true);
-      const overflowStyle = getOverflowStyle(overflowType, overflowDir);
+
+      let renderedLabel: TemplateResult = html``;
+      if (showLabel && label) {
+        const textStyle = getTextStyle(this._config.line_text_style, this._config.line_text_size, lineColor);
+        const lineTextColor = getTextColor(
+          device.line_text_color ? device.line_text_color : this._config.line_text_color,
+          CONFIG_DEFAULTS.line_text_color,
+          device.color);
+
+        renderedLabel = renderLabel(
+          label.template,
+          lineTextColor,
+          this._config.line_text_size ?? 1,
+          overflowStyle,
+          textStyle,
+          position
+        )
+      }
 
       // noinspection HtmlUnknownAttribute
       lineParts.push(html`
       <div
         id="line-${device.entity.replace(".", "-")}"
         class="device-line"
-        style="background-color: rgba(${lineColor}); width: ${width}%"
+        style="background: ${lineColor}; width: ${width}%"
         title="${label?.text}"
         @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, device)}
         .actionHandler=${actionHandler({
@@ -530,14 +549,7 @@ export class EnergyLineGauge extends LitElement {
           hasDoubleClick: hasAction(device.double_tap_action),
       })}
       >
-        ${showLabel && label ? renderLabel(
-        label.template,
-        lineTextColor,
-        this._config.line_text_size ?? 1,
-        overflowStyle,
-        textStyle,
-        position
-      ) : html``}
+        ${showLabel && label ? renderedLabel : html``}
       </div>
       `);
     });
@@ -557,7 +569,7 @@ export class EnergyLineGauge extends LitElement {
           untrackedLabel?.template,
           untrackedTextColor,
           this._config.line_text_size ?? 1,
-          overflowType === 'tooltip-segment' ? 'overflow: hidden;' : '',
+          overflowStyle,
           getTextStyle(this._config.line_text_style, this._config.line_text_size, untrackedTextColor),
           position
         )}
@@ -584,8 +596,9 @@ export class EnergyLineGauge extends LitElement {
     const displayDelta: boolean = !!(this._config.show_delta && deltaPosition !== 'none');
     let displayValue: boolean = !!(this._config.entity && valuePosition !== 'none');
 
-    const titleColor = getTextColor(this._config.title_text_color, CONFIG_DEFAULTS.title_text_color);
-    const valueColor = getTextColor(this._config.text_color, CONFIG_DEFAULTS.text_color);
+    const titleColor = this._config.title_text_color;
+    const subtitleColor = this._config.subtitle_text_color;
+    const valueColor = this._config.text_color;
 
     const cornerStyle = this._config.corner ?? "square";
     const titleStyle = getTextStyle(this._config.title_text_style, titleTextSize, titleColor);
@@ -595,7 +608,7 @@ export class EnergyLineGauge extends LitElement {
     if (["in-title-right", "in-title-left"].includes(valuePosition)) {displayValue = false;}
 
     const valueTemplate = html`
-      <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: rgba(${valueColor})">
+      <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: ${valueColor}">
         ${this._calcStateMain().toFixed(this._config.precision)}
         ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
       </div>
@@ -604,8 +617,8 @@ export class EnergyLineGauge extends LitElement {
       <div class="title-value-position-${valuePosition == 'in-title-left' ? 'left' : valuePosition == 'in-title-right' ? 'right' : 'none'}">
         ${["in-title-right", "in-title-left"].includes(valuePosition) ? valueTemplate : ''}
         <div>
-          ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}; color: rgba(${titleColor})">${this._config.title}</div>` : ''}
-          ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}">${this._config.subtitle}</div>` : ''}
+          ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}; color: ${titleColor}">${this._config.title}</div>` : ''}
+          ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}; color: ${subtitleColor}">${this._config.subtitle}</div>` : ''}
         </div>
       </div>  
     `;

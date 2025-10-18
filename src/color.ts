@@ -138,9 +138,15 @@ export function toRGB(color: ColorType): RGBColor | undefined {
   return parsed ? parsed as RGBColor : undefined;
 }
 
-function textColor(backgroundColor: ColorType): RGBColor | undefined {
-  if (typeof backgroundColor === "string") {backgroundColor = toRGB(backgroundColor);}
-  if (!backgroundColor) {return undefined;}
+function calcTextColor(backgroundColor: ColorType): RGBColor | undefined {
+  if (typeof backgroundColor === "string") {
+    backgroundColor = toRGB(backgroundColor);
+  }
+
+  if (!backgroundColor) {
+    return undefined;
+  }
+
   const [r, g, b] = backgroundColor;
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 125 ? [0, 0, 0] : [255, 255, 255];
@@ -151,11 +157,9 @@ export function getTextColor(
   defaultColor?: ColorType,
   backgroundColor?: ColorType,
 ): RGBColor | undefined {
-  if (textColorType === 'auto' && defaultColor === 'auto') return textColor(backgroundColor);
+  if (textColorType) return toRGB(textColorType);
 
-  if (textColorType === 'auto' || !textColorType) {
-    textColorType = defaultColor;
-  }
+  const textColor = calcTextColor(backgroundColor);
 
-  return toRGB(textColorType);
+  return textColor ? textColor : toRGB(defaultColor);
 }
