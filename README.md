@@ -12,7 +12,7 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Tomer27cz/energy-line-gauge)
 
 <a href="https://www.buymeacoffee.com/tomer27" target="_blank" rel="noopener noreferrer">
-  <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/default-yellow.png" alt="Buy Me A Coffee" style="cursor: pointer;" />
+  <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/button.png" alt="Buy Me A Coffee" style="cursor: pointer;" />
 </a>
 
 <h1 align="center">A line Gauge with a focus on Energy Usage</h1>
