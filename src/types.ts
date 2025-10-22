@@ -43,6 +43,7 @@ export interface ELGConfig extends LovelaceCardConfig {
 
   line_separator?: boolean;
   line_separator_width?: LineSeparatorWidthType;
+
   line_separator_color?: ColorType;
   line_separator_colour?: ColorType; // For British English support
 
@@ -221,9 +222,10 @@ export const DEFAULT_ACTIONS = [
   "none",
 ];
 
-export interface LabelConfigEntry {
-  tryLocalize: string | ((hass: HomeAssistant) => string);
-  fallback: string;
+export interface ELGColorSelector {
+  color_elg: {
+    mode?: "test" | "test2";
+  } | null;
 }
 
 export interface EditorTarget extends EventTarget {

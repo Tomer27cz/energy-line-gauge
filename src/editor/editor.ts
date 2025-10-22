@@ -17,13 +17,13 @@ import {
   ELGConfig,
   HassCustomElement,
   ELGEntity,
-  LabelConfigEntry,
   DEFAULT_ACTIONS
 } from '../types';
 import { localize, setupLocalize } from '../localize/localize';
 
 import './item-editor';
 import './items-editor';
+import './color-editor';
 import { configElementStyle } from '../styles';
 
 @customElement('energy-line-gauge-editor')
@@ -234,7 +234,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           {
             type: "grid",
             schema: [
-              { name: "color", required: false, selector: { color_rgb: {} } },
+              { name: "color", required: false, selector: { color_elg: { mode: "test" } } },
               { name: "color_bg", required: false, selector: { color_rgb: {} } },
             ],
           },
@@ -577,7 +577,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     return html`
       <div class="header">
         <div class="back-title">
-          <mwc-icon-button @click=${this._goBack}>
+          <mwc-icon-button @click=${this._goBack_subElementEditor}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </mwc-icon-button>
         </div>
@@ -590,7 +590,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       `;
   }
 
-  private _goBack(): void {
+  private _goBack_subElementEditor(): void {
     this._subElementEditor = undefined;
   }
 
@@ -606,6 +606,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     }
   }
 
+  /**
+   * General config change
+   */
+
   private _valueChanged(ev: any): void {
     if (!this._config || !this.hass) {
       return;
@@ -614,15 +618,15 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     fireEvent(this, 'config-changed', { config: config });
   }
 
-    static get styles(): CSSResultGroup {
-        return [
-            configElementStyle,
-            css`
-              ha-form {
-                padding-bottom: 24px;
-                display: block;
-              }
-            `
-        ];
-    }
+  static get styles(): CSSResultGroup {
+    return [
+      configElementStyle,
+      css`
+        ha-form {
+          padding-bottom: 24px;
+          display: block;
+        }
+      `
+    ];
+  }
 }

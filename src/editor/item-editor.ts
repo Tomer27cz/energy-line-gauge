@@ -6,7 +6,7 @@ import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 
 import { localize, setupLocalize } from '../localize/localize';
 
-import { ELGEntity, DEFAULT_ACTIONS, LabelConfigEntry } from '../types';
+import { ELGEntity, DEFAULT_ACTIONS } from '../types';
 import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 
 @customElement('energy-line-gauge-item-editor')
