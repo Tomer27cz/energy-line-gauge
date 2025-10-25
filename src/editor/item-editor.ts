@@ -63,7 +63,7 @@ export class ItemEditor extends LitElement {
         type: "grid",
         schema: [
           { name: "name", required: false, selector: {text: {}}},
-          { name: "color", required: false, selector: {color_rgb: {}}},
+          { name: "color", required: false, selector: {color_elg: { mode: "line" }}},
         ]
       },
 
@@ -92,7 +92,7 @@ export class ItemEditor extends LitElement {
                 required: false,
                 default: ["name"],
               },
-              { name: "legend_text_color", required: false, selector: {color_rgb: {}}},
+              { name: "legend_text_color", required: false, selector: {color_elg: { mode: "text" }}},
             ]
           },
 
@@ -106,7 +106,7 @@ export class ItemEditor extends LitElement {
                 required: false,
                 default: [],
               },
-              { name: "line_text_color", required: false, selector: {color_rgb: {}}},
+              { name: "line_text_color", required: false, selector: {color_elg: { mode: "text" }}},
             ]
           },
         ],

@@ -234,8 +234,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
           {
             type: "grid",
             schema: [
-              { name: "color", required: false, selector: { color_elg: { mode: "test" } } },
-              { name: "color_bg", required: false, selector: { color_rgb: {} } },
+              { name: "color", required: false, selector: { color_elg: { mode: "line" } } },
+              { name: "color_bg", required: false, selector: { color_elg: { mode: "line" } } },
             ],
           },
 
@@ -252,7 +252,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             type: "grid",
             schema: [
               { name: "line_separator_width", required: false, selector: { select: { mode: "dropdown", options: lineSeparatorWidthOptions }}},
-              { name: "line_separator_color", required: false, selector: { color_rgb: {} } },
+              { name: "line_separator_color", required: false, selector: { color_elg: { mode: "line" } } },
             ],
           },
 
@@ -273,7 +273,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                 type: "grid",
                 schema: [
                   { name: "text_style", type: "multi_select", options: styleOptions },
-                  { name: "text_color", required: false, selector: { color_rgb: {} } },
+                  { name: "text_color", required: false, selector: { color_elg: { mode: "text" } } },
                 ],
               },
             ]
@@ -297,8 +297,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               {
                 type: "grid",
                 schema: [
-                  { name: "title_text_color", required: false, selector: { color_rgb: {} } },
-                  { name: "subtitle_text_color", required: false, selector: { color_rgb: {} } },
+                  { name: "title_text_color", required: false, selector: { color_elg: { mode: "text" } } },
+                  { name: "subtitle_text_color", required: false, selector: { color_elg: { mode: "text" } } },
                 ],
               },
 
@@ -327,7 +327,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               {
                 type: "grid",
                 schema: [
-                  { name: "legend_text_color", required: false, selector: { color_rgb: {} } },
+                  { name: "legend_text_color", required: false, selector: { color_elg: { mode: "text" } } },
                   { name: "legend_text_size", required: false, selector: { number: { min: 0.5, max: 5, step: 0.1, mode: "box" } } },
                 ],
               },
@@ -373,7 +373,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
                 type: "grid",
                 schema: [
                   { name: "line_text_style", type: "multi_select", options: styleOptions },
-                  { name: "line_text_color", required: false, selector: { color_rgb: {} } },
+                  { name: "line_text_color", required: false, selector: { color_elg: { mode: "text" } } },
                 ],
               },
 

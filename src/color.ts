@@ -138,6 +138,19 @@ export function toRGB(color: ColorType): RGBColor | undefined {
   return parsed ? parsed as RGBColor : undefined;
 }
 
+export function rgbToHex(color: RGBColor | undefined): string | undefined {
+  if (!color) return undefined;
+  const [r, g, b] = color;
+
+  const toHex = (c: number): string => {
+    const clamped = Math.max(0, Math.min(255, Math.round(c)));
+    const hex = clamped.toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  };
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
 function calcTextColor(backgroundColor: ColorType): RGBColor | undefined {
   if (typeof backgroundColor === "string") {
     backgroundColor = toRGB(backgroundColor);

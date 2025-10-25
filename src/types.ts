@@ -224,7 +224,7 @@ export const DEFAULT_ACTIONS = [
 
 export interface ELGColorSelector {
   color_elg: {
-    mode?: "test" | "test2";
+    mode?: "text" | "line" | "all";
   } | null;
 }
 
