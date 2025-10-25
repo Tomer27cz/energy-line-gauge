@@ -619,6 +619,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
   }
 
   static get styles(): CSSResultGroup {
+    // noinspection CssInvalidHtmlTagReference
     return [
       configElementStyle,
       css`

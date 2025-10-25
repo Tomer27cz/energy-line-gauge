@@ -33,10 +33,9 @@ import {
   StatisticsFunctionType,
 
   ColorType,
-  RGBColor,
 } from './types';
 
-import { toRGB, COLORS } from './color';
+import { COLORS } from './color';
 
 // Some values are undefined but set programmatically in the code - comment
 export const CONFIG_DEFAULTS = {

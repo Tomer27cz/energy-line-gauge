@@ -1,4 +1,4 @@
-import { ActionConfig, LovelaceCardConfig, HomeAssistant } from 'custom-card-helpers';
+import { ActionConfig, LovelaceCardConfig } from 'custom-card-helpers';
 import { TemplateResult } from 'lit';
 
 export interface ELGConfig extends LovelaceCardConfig {
@@ -237,9 +237,6 @@ export interface EditorTarget extends EventTarget {
   config: ActionConfig;
 }
 
-export interface HTMLElementValue extends HTMLElement {
-  value: string;
-}
 declare global {
   interface Window {
     loadCardHelpers: () => Promise<void>;

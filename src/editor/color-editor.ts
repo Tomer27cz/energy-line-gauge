@@ -8,7 +8,7 @@ import { ELGColorSelector, RGBColor, ELGConfig } from '../types';
 import { toRGB, rgbToHex } from '../color'
 import { setConfigDefaults } from '../defaults';
 
-type ColorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' | 'text_primary' | 'text_secondary' | 'text_disabled' | 'line_primary' | 'line_accent' | 'line_card_bg';
+type ColorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' | 'text_primary' | 'text_secondary' | 'text_disabled' | 'line_primary' | 'line_accent' | 'line_primary_bg' | 'line_secondary_bg' | 'line_card_bg';
 
 @customElement('ha-selector-color_elg')
 export class ColorEditor extends LitElement {
@@ -62,6 +62,8 @@ export class ColorEditor extends LitElement {
       'text_disabled': html`<span>Disabled Text</span>`,
       'line_primary': html`<span>Primary</span>`,
       'line_accent': html`<span>Accent</span>`,
+      'line_primary_bg': html`<span>Primary Background</span>`,
+      'line_secondary_bg': html`<span>Secondary Background</span>`,
       'line_card_bg': html`<span>Card Background</span>`,
 
       'custom_rgb': html`
@@ -146,6 +148,16 @@ export class ColorEditor extends LitElement {
                 <span>Accent</span>
               </ha-list-item>  
               
+              <ha-list-item value="line_primary_bg" ?selected=${this._mode === 'line_primary_bg'}>
+                ${this._renderColorPreview(toRGB('var(--primary-background-color)'))}
+                <span>Primary Background</span>
+              </ha-list-item>  
+              
+              <ha-list-item value="line_secondary_bg" ?selected=${this._mode === 'line_secondary_bg'}>
+                ${this._renderColorPreview(toRGB('var(--secondary-background-color)'))}
+                <span>Secondary Background</span>
+              </ha-list-item>
+              
               <ha-list-item value="line_card_bg" ?selected=${this._mode === 'line_card_bg'}>
                 ${this._renderColorPreview(toRGB('var(--card-background-color)'))}
                 <span>Card Background</span>
@@ -179,7 +191,7 @@ export class ColorEditor extends LitElement {
 
   private _renderColorPreview(color: RGBColor | undefined) {
     if (!color) {
-      return html`<ha-svg-icon .path=${mdiPalette} class="color-preview undefined"></ha-svg-icon>`;
+      return html`<ha-svg-icon .path=${mdiPalette} class="color-preview undefined-color"></ha-svg-icon>`;
     }
     return html`
       <div
@@ -208,6 +220,12 @@ export class ColorEditor extends LitElement {
         return;
       case 'var(--accent-color)':
         this._mode = 'line_accent';
+        return;
+      case 'var(--primary-background-color)':
+        this._mode = 'line_primary_bg';
+        return;
+      case 'var(--secondary-background-color)':
+        this._mode = 'line_secondary_bg';
         return;
       case 'var(--card-background-color)':
         this._mode = 'line_card_bg';
@@ -247,9 +265,11 @@ export class ColorEditor extends LitElement {
         case 0: this._mode = 'automatic'; break;
         case 1: this._mode = 'line_primary'; break;
         case 2: this._mode = 'line_accent'; break;
-        case 3: this._mode = 'line_card_bg'; break;
-        case 4: this._mode = 'custom_rgb'; break;
-        case 5: this._mode = 'custom_css'; break;
+        case 3: this._mode = 'line_primary_bg'; break;
+        case 4: this._mode = 'line_secondary_bg'; break;
+        case 5: this._mode = 'line_card_bg'; break;
+        case 6: this._mode = 'custom_rgb'; break;
+        case 7: this._mode = 'custom_css'; break;
       }
     } else {
       switch (ev.detail.index) {
@@ -266,6 +286,8 @@ export class ColorEditor extends LitElement {
       case 'text_disabled':this._setValue('var(--disabled-text-color)');break;
       case 'line_primary':this._setValue('var(--primary-color)');break;
       case 'line_accent':this._setValue('var(--accent-color)');break;
+      case 'line_primary_bg':this._setValue('var(--primary-background-color)');break;
+      case 'line_secondary_bg':this._setValue('var(--secondary-background-color)');break;
       case 'line_card_bg':this._setValue('var(--card-background-color)');break;
     }
   }
@@ -312,10 +334,14 @@ export class ColorEditor extends LitElement {
       text-align: left;
       flex: 1;
       height: 100%;
+      min-width: 0;
     }
     
     .input {
       flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .input span {
       line-height: 2rem;
@@ -333,7 +359,7 @@ export class ColorEditor extends LitElement {
       line-height: 1.25rem;
       padding-top: 0.25rem;
       padding-left: 1rem;
-      color: var(--mdc-text-field-label-ink-color,rgba(0,0,0,.6))
+      color: var(--mdc-text-field-label-ink-color,rgba(0,0,0,.6));
     }
     .color-display {
       flex: 0 0 0.3rem;
@@ -351,6 +377,10 @@ export class ColorEditor extends LitElement {
       justify-content: center;
       position: relative;
       vertical-align: middle;
+      border: 0.1rem solid var(--divider-color);
+    }
+    .undefined-color {
+      border: unset;
     }
     
     .remove-icon {
