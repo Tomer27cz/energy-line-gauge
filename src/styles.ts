@@ -1,4 +1,5 @@
 import { css } from 'lit';
+import memoizeOne from 'memoize-one';
 import { ColorType, TextStyleType } from './types';
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
@@ -68,7 +69,7 @@ export const styles = css`
     .line-gauge-card {
         --gauge-card-width: 300px;
         --color: var(--primary-color);
-        --background-color: var(--secondary-background-color);
+        --background: var(--secondary-background-color);
         --line-height: 3rem;
 
         width: 95%;
@@ -406,7 +407,7 @@ export const styles = css`
     }
 `;
 
-export function getTextStyle(style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: ColorType | undefined): string {
+export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: ColorType | undefined): string => {
   if (!style) {return '';}
 
   const uniqueStyles = new Set(style);
@@ -487,4 +488,4 @@ export function getTextStyle(style: TextStyleType | undefined, textSize?: number
   return Object.entries(styleMap)
     .map(([key, value]) => `${key}:${value}`)
     .join('; ');
-}
+});

@@ -396,7 +396,7 @@ export class EnergyLineGauge extends LitElement {
       default: {
         const backgroundColor = color ? `rgba(${color.slice(0, 3).join(',')}, 0.5)` : 'transparent';
         const bulletStyle = `
-        background-color: ${backgroundColor};
+        background: ${backgroundColor};
         border-color: rgba(${color});
         width: ${textSize}rem;
         height: ${textSize}rem;
