@@ -80,8 +80,8 @@ export class EnergyLineGauge extends LitElement {
   private _lineSeparatorWidth: number = 0;
   private _resizeObserver!: ResizeObserver;
 
-  private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
-  private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
+  @state() private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
+  @state() private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
   private _offsetTime: number | undefined = undefined;
   private _historyWindow: number = 60000;
 
@@ -1079,10 +1079,22 @@ export class EnergyLineGauge extends LitElement {
   // Statistics --------------------------------------------------------------------------------------------------------
 
   private _getStatisticsState(entityID: string): number | null | undefined {
-    if (!this._config.statistics) {return 0;}
-    if (!this._entitiesHistoryStatistics) {return 0;}
-    if (!this._entitiesHistoryStatistics.buckets) {return 0;}
-    if (!this._entitiesHistoryStatistics.buckets[entityID]) {return 0;}
+    if (!this._config.statistics) {
+      this._addWarning("_getStatisticsState when !statistics - contact developer")
+      return;
+    }
+    if (!this._entitiesHistoryStatistics) {
+      this._addWarning("no _entitiesHistoryStatistics");
+      return 0;
+    }
+    if (!this._entitiesHistoryStatistics.buckets) {
+      this._addWarning("no _entitiesHistoryStatistics.buckets");
+      return 0;
+    }
+    if (!this._entitiesHistoryStatistics.buckets[entityID]) {
+      console.info(`no _entitiesHistoryStatistics.buckets[${entityID}]`);
+      return 0;
+    }
 
     const buckets: ELGHistoryStatisticsBucket[] = this._entitiesHistoryStatistics.buckets[entityID];
     const currentTimestamp = Date.now() - Number(this._config.statistics_day_offset) * 24 * 60 * 60 * 1000;
@@ -1094,7 +1106,7 @@ export class EnergyLineGauge extends LitElement {
       );
     });
 
-    if (!currentBucket) {return 0;}
+    if (!currentBucket) {return;}
 
     switch (this._config.statistics_function) {
       case "mean": return currentBucket.mean;
