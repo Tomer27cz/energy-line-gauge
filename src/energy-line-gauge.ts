@@ -1092,7 +1092,7 @@ export class EnergyLineGauge extends LitElement {
       return 0;
     }
     if (!this._entitiesHistoryStatistics.buckets[entityID]) {
-      console.info(`no _entitiesHistoryStatistics.buckets[${entityID}]`);
+      this._addWarning(`no _entitiesHistoryStatistics.buckets[${entityID}]`);
       return 0;
     }
 
