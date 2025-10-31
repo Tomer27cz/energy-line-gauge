@@ -165,6 +165,9 @@ export class EnergyLineGauge extends LitElement {
       return true;
     }
 
+    if (changedProps.has('_entitiesHistoryOffset')) {return true;}
+    if (changedProps.has('_entitiesHistoryStatistics')) {return true;}
+
     if (changedProps.has('_config')) {
       const oldConfig = changedProps.get('_config') as ELGConfig;
 
@@ -174,6 +177,9 @@ export class EnergyLineGauge extends LitElement {
     }
 
     if (changedProps.has('hass')) {
+      if (this._config.statistics) {return false;}
+      if (this._config.offset) {return false;}
+
       const oldHass = changedProps.get('hass') as HomeAssistant | undefined;
 
       if (!oldHass) {
@@ -1080,19 +1086,19 @@ export class EnergyLineGauge extends LitElement {
 
   private _getStatisticsState(entityID: string): number | null | undefined {
     if (!this._config.statistics) {
-      this._addWarning("_getStatisticsState when !statistics - contact developer")
+      console.error("_getStatisticsState when !statistics");
       return;
     }
     if (!this._entitiesHistoryStatistics) {
-      this._addWarning("no _entitiesHistoryStatistics");
+      console.error("_no _entitiesHistoryStatistics");
       return 0;
     }
     if (!this._entitiesHistoryStatistics.buckets) {
-      this._addWarning("no _entitiesHistoryStatistics.buckets");
+      console.error("_no buckets");
       return 0;
     }
     if (!this._entitiesHistoryStatistics.buckets[entityID]) {
-      this._addWarning(`no _entitiesHistoryStatistics.buckets[${entityID}]`);
+      console.error(`no _entitiesHistoryStatistics.buckets[${entityID}]`);
       return 0;
     }
 
@@ -1106,7 +1112,10 @@ export class EnergyLineGauge extends LitElement {
       );
     });
 
-    if (!currentBucket) {return;}
+    if (!currentBucket) {
+      console.error("no bucket found for current timestamp: ", currentTimestamp);
+      return;
+    }
 
     switch (this._config.statistics_function) {
       case "mean": return currentBucket.mean;
