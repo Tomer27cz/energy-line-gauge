@@ -4,9 +4,9 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '@mdi/js';
 
-import { ELGColorSelector, RGBColor, ELGConfig } from '../types';
+import { ELGColorSelector, RGBColor, ELGConfig, ColorType } from '../types';
 import { toRGB, rgbToHex } from '../color'
-import { setConfigDefaults } from '../defaults';
+import { setConfigDefaults, setEntitiesDefaults } from '../defaults';
 
 type ColorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' | 'text_primary' | 'text_secondary' | 'text_disabled' | 'line_primary' | 'line_accent' | 'line_primary_bg' | 'line_secondary_bg' | 'line_card_bg';
 
@@ -41,18 +41,37 @@ export class ColorEditor extends LitElement {
 
   protected render() {
     if (!this.name) {return html``;}
-    if (!this._mode) {this.getInitialMode();}
+    if (!this._mode) {this._getInitialMode();}
+    if (!this.selector.color_elg) {return html``;}
+
+    let currentColorString: ColorType | undefined;
+    let currentColor: RGBColor | undefined;
+    let automaticColor: RGBColor | undefined;
+
+    if (this.selector.color_elg.entity && this.selector.color_elg.entities && this.selector.color_elg.entities.length > 0) {
+      const currentEntityConfig = setEntitiesDefaults(this.selector.color_elg.entities).find(e => e.entity === this.selector.color_elg!.entity);
+      const entitiesWithoutColor = this.selector.color_elg.entities.map(e => {
+        if (e.entity === this.selector.color_elg!.entity) {
+          return { ...e, color: undefined };
+        }
+        return e;
+      });
+
+      currentColorString = currentEntityConfig?.color;
+      currentColor = toRGB(currentColorString);
+      automaticColor = toRGB(setEntitiesDefaults(entitiesWithoutColor).find(e => e.entity === this.selector.color_elg!.entity)?.color);
+    } else {
+      currentColorString = setConfigDefaults({ [this.name]: this.value } as ELGConfig)[this.name];
+      currentColor = toRGB(currentColorString);
+      automaticColor = toRGB(setConfigDefaults({ [this.name]: undefined } as ELGConfig)[this.name] as RGBColor | undefined);
+    }
 
     const selectorMode = this.selector.color_elg?.mode;
-
     const selectorModes: string[] = [];
+
     if (selectorMode === 'text') {selectorModes.push('text');}
     if (selectorMode === 'line') {selectorModes.push('line');}
     if (selectorMode === 'all') {selectorModes.push('text', 'line');}
-
-    const currentColorString = setConfigDefaults({ [this.name]: this.value } as ELGConfig)[this.name] as RGBColor | undefined;
-    const currentColor = toRGB(currentColorString);
-    const automaticColor = toRGB(setConfigDefaults({ [this.name]: undefined } as ELGConfig)[this.name] as RGBColor | undefined);
 
     // noinspection HtmlUnknownAttribute
     const valueTemplate = {
@@ -84,7 +103,6 @@ export class ColorEditor extends LitElement {
           @input=${this._valueChanged}
         />`,
     };
-
 
     return html`
       <div class="elg_color_container">
@@ -201,7 +219,7 @@ export class ColorEditor extends LitElement {
     `;
   }
 
-  private getInitialMode(): void {
+  private _getInitialMode(): void {
     switch (this.value) {
       case undefined:
         this._mode = 'automatic';

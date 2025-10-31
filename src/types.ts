@@ -225,6 +225,8 @@ export const DEFAULT_ACTIONS = [
 export interface ELGColorSelector {
   color_elg: {
     mode?: "text" | "line" | "all";
+    entity?: string;
+    entities?: ELGEntity[];
   } | null;
 }
 

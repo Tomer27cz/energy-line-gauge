@@ -13,6 +13,8 @@ import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 export class ItemEditor extends LitElement {
   @property({ attribute: false }) config?: ELGEntity;
 
+  @property({ attribute: false }) entities?: ELGEntity[];
+
   @property({ attribute: false }) hass?: HomeAssistant;
 
   private _schema = memoizeOne(() =>  {
@@ -63,7 +65,7 @@ export class ItemEditor extends LitElement {
         type: "grid",
         schema: [
           { name: "name", required: false, selector: {text: {}}},
-          { name: "color", required: false, selector: {color_elg: { mode: "line" }}},
+          { name: "color", required: false, selector: {color_elg: { mode: "line", entity: this.config?.entity, entities: this.entities } } },
         ]
       },
 
