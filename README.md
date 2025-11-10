@@ -30,6 +30,8 @@
 
 The main idea of this card is to show the energy consumption of your devices as a percentage of the **main entity** (your entity for tracking whole **house consumption**).
 
+My electricity meter is a **Sagemcom XT211**, I made a **[custom ESPHome component](https://github.com/Tomer27cz/xt211)** to read data from it (or any other DLMS/COSEM PUSH meter using RS485).
+
 The card is designed to resemble the Home Assistant **Energy panel** style. The **auto color** option will use the colors in the same order as the energy panel.
 
 
