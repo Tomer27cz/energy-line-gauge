@@ -152,6 +152,11 @@ export interface ELGEntityState extends ELGState {
   stateObject: HassEntity;
 }
 
+export interface EntityWarning {
+  message: string;
+  entity_id?: string;
+}
+
 // Helper interface for functions returning template and text
 export interface LabelRenderResult {
   template: TemplateResult | string; // Allow string for simple cases

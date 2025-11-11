@@ -339,6 +339,8 @@ The types are used in the configuration. The type is used to define what kind of
 
 The only required field is `entity`. The rest of the fields are optional. Color `auto` can only be set in the YAML file (or it will be set to `auto` by default when creating the card).
 
+You can set the `entity` to `none`, `null` or `undefined` to create a "spacer" to "consume" an automatic color (I had a unique "gap" in my HA energy panel colors - the color index skipped a color).
+
 #### Each entity has its own settings:
 
 | Setting              |     type      |     default      |                                         example                                          | description                                                                                                                                          |

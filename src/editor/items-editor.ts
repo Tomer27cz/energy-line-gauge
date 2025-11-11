@@ -70,6 +70,17 @@ export class ItemsEditor extends LitElement {
       this.entities = [];
     }
 
+    const isValidEntity = (entityConf: ELGEntity): boolean => {
+      return !(
+        entityConf.entity === undefined ||
+        entityConf.entity === null ||
+        entityConf.entity === '' ||
+        entityConf.entity === 'none' ||
+        entityConf.entity === 'null' ||
+        entityConf.entity === 'undefined'
+      );
+    }
+
     return html`
       <div class="entities">
         ${repeat(
@@ -81,8 +92,9 @@ export class ItemsEditor extends LitElement {
                 <ha-icon icon="mdi:drag"></ha-icon>
               </div>
               <div class="entity-name">
-                <span>${this._entityName(entityConf)}</span>
+                <span>${isValidEntity(entityConf) ? this._entityName(entityConf) : 'Unknown'}</span>
               </div>
+              ${isValidEntity(entityConf) ? html`
               <ha-icon-button
                 .label=${this.hass!.localize('ui.common.edit')}
                 .path=${mdiPencil}
@@ -90,6 +102,7 @@ export class ItemsEditor extends LitElement {
                 .index=${index}
                 @click="${this._editRow}"
               ></ha-icon-button>
+              ` : nothing}
               <ha-icon-button
                 .label=${this.hass!.localize('ui.common.remove')}
                 .path=${mdiDelete}

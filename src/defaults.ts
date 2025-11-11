@@ -256,7 +256,9 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
 export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
   const usedColors = new Set(entities.map(e => e.color).filter(Boolean));
 
-  return entities.map(entity => {
+  const validatedEntities: ELGEntity[] = [];
+
+  for (const entity of entities) {
     let color = entity.color ?? (entity as any).colour;
 
     if (!color || color === "auto") {
@@ -264,7 +266,11 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
       usedColors.add(color);
     }
 
-    return {
+    if (entity.entity === undefined || entity.entity === null || entity.entity === '' || entity.entity === 'none' || entity.entity === 'null' || entity.entity === 'undefined') {
+      continue;
+    }
+
+    validatedEntities.push({
       ...entity,
 
       // Entity
@@ -292,8 +298,10 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
       tap_action: entity.tap_action ?? ENTITY_DEFAULTS.tap_action,
       hold_action: entity.hold_action ?? ENTITY_DEFAULTS.hold_action,
       double_tap_action: entity.double_tap_action ?? ENTITY_DEFAULTS.double_tap_action,
-    };
-  });
+    });
+  }
+
+  return validatedEntities;
 };
 
 // Config value transformers -------------------------------------------------------------------------------------------

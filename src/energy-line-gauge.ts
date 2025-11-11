@@ -38,6 +38,7 @@ import {
   RGBColor,
   ColorType,
   IndicatorType,
+  EntityWarning
 } from './types';
 import { styles, getTextStyle } from './styles';
 import { actionHandler } from './action-handler';
@@ -69,7 +70,7 @@ export class EnergyLineGauge extends LitElement {
 
   @property() private _card!: LovelaceCard;
 
-  private _warnings: string[] = [];
+  private _warnings: EntityWarning[] = [];
 
   private _mainObject!: ELGEntityState;
   private _untrackedObject!: ELGState;
@@ -937,7 +938,7 @@ export class EnergyLineGauge extends LitElement {
     const validationResult = this._validateEntityState(entityId);
     if (!validationResult) {return true;}
 
-    this._addWarning(validationResult);
+    this._addWarning(validationResult, entityId);
     return false;
   }
   private _validateEntityState(entityId: string ): string | undefined {
@@ -955,12 +956,32 @@ export class EnergyLineGauge extends LitElement {
     if (this._config.suppress_warnings) {return html``;}
     if (this._warnings.length === 0) {return html``;}
 
-    return html`
-      <div class="warnings">
-        ${this._warnings.map((warning: string) => html`<hui-warning>${warning}</hui-warning>`)}
-      </div>`;
+    const warning_templates: TemplateResult[] = [];
+
+    for (const warning of this._warnings) {
+      if (warning.entity_id) {
+        const config: ELGEntity = {
+          entity: warning.entity_id,
+          tap_action: {action: 'more-info'},
+          hold_action: {action: 'more-info'},
+          double_tap_action: {action: 'more-info'},
+        }
+
+        warning_templates.push(html`
+          <hui-warning @action=${(ev: ActionHandlerEvent) => this._handleAction(ev, config)}>
+            ${warning.message}
+          </hui-warning>`);
+
+        continue;
+      }
+
+      warning_templates.push(html`<hui-warning>${warning.message}</hui-warning>`);
+    }
+
+    return html`<div class="warnings">${warning_templates.map(w => w)}</div>`;
   }
-  private _addWarning(warning: string): void {
+  private _addWarning(message: string, entity_id: string): void {
+    const warning: EntityWarning = {message, entity_id};
     if (this._warnings.includes(warning)) {return;}
     this._warnings.push(warning);
   }
@@ -972,7 +993,7 @@ export class EnergyLineGauge extends LitElement {
     if (this._config.statistics) {
       const state = this._getStatisticsState(this._config.entity);
       if (state === null || state === undefined) {
-        this._addWarning(this._entityNoStatistics(this._config.entity));
+        this._addWarning(this._entityNoStatistics(this._config.entity), this._config.entity);
         return 0;
       }
       return state;
@@ -986,7 +1007,7 @@ export class EnergyLineGauge extends LitElement {
       if (this._config.statistics) {
         const state = this._getStatisticsState(stateObj.entity_id);
         if (state === null || state === undefined) {
-          this._addWarning(this._entityNoStatistics(stateObj.entity_id));
+          this._addWarning(this._entityNoStatistics(stateObj.entity_id), stateObj.entity_id);
           return 0;
         }
         return state;
