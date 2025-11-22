@@ -48,6 +48,7 @@ import { toRGB, getTextColor } from './color';
 
 import './editor/editor';
 import { deepEqual } from './deep-equal';
+import memoizeOne from 'memoize-one';
 
 console.info(
   `%c ENERGY LINE GAUGE %c ${version} `,
@@ -1086,6 +1087,11 @@ export class EnergyLineGauge extends LitElement {
         history: this._transformOffsetHistory(history),
         updating: false,
       };
+    }).catch((err) => {
+      console.error("Energy Line Gauge: Failed to fetch history", err);
+      if (this._entitiesHistoryOffset) {
+        this._entitiesHistoryOffset.updating = false;
+      }
     });
   }
   private _transformOffsetHistory(history: HassHistory[]): ELGHistoryOffsetEntities {
@@ -1191,6 +1197,11 @@ export class EnergyLineGauge extends LitElement {
         date: offsetDate,
         buckets: statistics,
       };
+    }).catch((err) => {
+      console.error("Energy Line Gauge: Failed to fetch statistics", err);
+      if (this._entitiesHistoryStatistics) {
+        this._entitiesHistoryStatistics.updating = false;
+      }
     });
   }
 
@@ -1219,17 +1230,20 @@ export class EnergyLineGauge extends LitElement {
 
     return this.hass?.callApi('GET', url);
   }
-  private _allConfigEntities(): string[] {
-    const entityIDs = [this._config.entity].concat(this._config.entities?.map((device: ELGEntity) => device.entity) ?? []);
+
+  // Entities ----------------------------------------------------------------------------------------------------------
+
+  private _memoizedEntities = memoizeOne((config: ELGConfig): string[] => {
+    const entityIDs = [config.entity].concat(config.entities?.map((device: ELGEntity) => device.entity) ?? []);
 
     // add max, min if they are an entityId - technically not all-config entities, but all allowed entities
     const otherEntities = [
-      this._config.min,
-      this._config.max,
+      config.min,
+      config.max,
     ]
 
     for (const entity of otherEntities) {
-      if (entity && entity !== this._config.entity && typeof entity === 'string') {
+      if (entity && entity !== config.entity && typeof entity === 'string') {
         if (!this._validate(entity)) {continue;}
         if (entityIDs.includes(entity)) {continue;}
         entityIDs.push(entity);
@@ -1237,6 +1251,9 @@ export class EnergyLineGauge extends LitElement {
     }
 
     return entityIDs;
+  });
+  private _allConfigEntities(): string[] {
+    return this._memoizedEntities(this._config);
   }
 
   // MIN / MAX ---------------------------------------------------------------------------------------------------------
