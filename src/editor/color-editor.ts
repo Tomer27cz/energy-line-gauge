@@ -1,5 +1,6 @@
 import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
+import { map } from 'lit/directives/map.js';
 
 import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '@mdi/js';
@@ -9,6 +10,24 @@ import { toRGB, rgbToHex } from '../color'
 import { setConfigDefaults, setEntitiesDefaults } from '../defaults';
 
 type ColorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' | 'text_primary' | 'text_secondary' | 'text_disabled' | 'line_primary' | 'line_accent' | 'line_primary_bg' | 'line_secondary_bg' | 'line_card_bg';
+
+interface ColorOption {
+  mode: ColorMode;
+  label: string;
+  value?: string; // The CSS variable
+  category?: 'text' | 'line';
+}
+
+const COLOR_OPTIONS: ColorOption[] = [
+  { mode: 'text_primary', label: 'Primary Text', value: 'var(--primary-text-color)', category: 'text' },
+  { mode: 'text_secondary', label: 'Secondary Text', value: 'var(--secondary-text-color)', category: 'text' },
+  { mode: 'text_disabled', label: 'Disabled Text', value: 'var(--disabled-text-color)', category: 'text' },
+  { mode: 'line_primary', label: 'Primary', value: 'var(--primary-color)', category: 'line' },
+  { mode: 'line_accent', label: 'Accent', value: 'var(--accent-color)', category: 'line' },
+  { mode: 'line_primary_bg', label: 'Primary Background', value: 'var(--primary-background-color)', category: 'line' },
+  { mode: 'line_secondary_bg', label: 'Secondary Background', value: 'var(--secondary-background-color)', category: 'line' },
+  { mode: 'line_card_bg', label: 'Card Background', value: 'var(--card-background-color)', category: 'line' },
+];
 
 @customElement('ha-selector-color_elg')
 export class ColorEditor extends LitElement {
@@ -28,81 +47,28 @@ export class ColorEditor extends LitElement {
 
   @query('.elg_color_container') private _container!: HTMLElement;
 
-  protected shouldUpdate(changedProps: PropertyValues): boolean {
-    const propertiesToCheck = [
-      '_mode',
-      '_menuOpen',
-      'selector',
-      'value',
-    ];
-
-    return propertiesToCheck.some(prop => changedProps.has(prop));
-  }
+  // protected shouldUpdate(changedProps: PropertyValues): boolean {
+  //   const propertiesToCheck = [
+  //     '_mode',
+  //     '_menuOpen',
+  //     'selector',
+  //     'value',
+  //   ];
+  //
+  //   return propertiesToCheck.some(prop => changedProps.has(prop));
+  // }
 
   protected render() {
     if (!this.name) {return html``;}
-    if (!this._mode) {this._getInitialMode();}
-    if (!this.selector.color_elg) {return html``;}
+    if (!this._mode) {this._determineInitialMode();}
 
-    let currentColorString: ColorType | undefined;
-    let currentColor: RGBColor | undefined;
-    let automaticColor: RGBColor | undefined;
+    const { currentColorString, currentColor, automaticColor } = this._calculateEntityColors();
 
-    if (this.selector.color_elg.entity && this.selector.color_elg.entities && this.selector.color_elg.entities.length > 0) {
-      const currentEntityConfig = setEntitiesDefaults(this.selector.color_elg.entities).find(e => e.entity === this.selector.color_elg!.entity);
-      const entitiesWithoutColor = this.selector.color_elg.entities.map(e => {
-        if (e.entity === this.selector.color_elg!.entity) {
-          return { ...e, color: undefined };
-        }
-        return e;
-      });
+    const currentOption = COLOR_OPTIONS.find(opt => opt.mode === this._mode);
+    let modeLabel = currentOption ? currentOption.label : 'Automatic';
 
-      currentColorString = currentEntityConfig?.color;
-      currentColor = toRGB(currentColorString);
-      automaticColor = toRGB(setEntitiesDefaults(entitiesWithoutColor).find(e => e.entity === this.selector.color_elg!.entity)?.color);
-    } else {
-      currentColorString = setConfigDefaults({ [this.name]: this.value } as ELGConfig)[this.name];
-      currentColor = toRGB(currentColorString);
-      automaticColor = toRGB(setConfigDefaults({ [this.name]: undefined } as ELGConfig)[this.name] as RGBColor | undefined);
-    }
-
-    const selectorMode = this.selector.color_elg?.mode;
-    const selectorModes: string[] = [];
-
-    if (selectorMode === 'text') {selectorModes.push('text');}
-    if (selectorMode === 'line') {selectorModes.push('line');}
-    if (selectorMode === 'all') {selectorModes.push('text', 'line');}
-
-    // noinspection HtmlUnknownAttribute
-    const valueTemplate = {
-      'automatic': html`<span>Automatic</span>`,
-      'text_primary': html`<span>Primary Text</span>`,
-      'text_secondary': html`<span>Secondary Text</span>`,
-      'text_disabled': html`<span>Disabled Text</span>`,
-      'line_primary': html`<span>Primary</span>`,
-      'line_accent': html`<span>Accent</span>`,
-      'line_primary_bg': html`<span>Primary Background</span>`,
-      'line_secondary_bg': html`<span>Secondary Background</span>`,
-      'line_card_bg': html`<span>Card Background</span>`,
-
-      'custom_rgb': html`
-        <input
-          class="custom-rgb-input"
-          type="color"
-          .value=${rgbToHex(currentColor) ?? ''}
-          .disabled=${this.disabled}
-          .required=${this.required}
-          @change=${this._valueChanged}
-        />`,
-      'custom_css': html`
-        <input
-          class="custom-css-input"
-          .value=${this.value ?? ''}
-          .disabled=${this.disabled}
-          .required=${this.required}
-          @input=${this._valueChanged}
-        />`,
-    };
+    if (this._mode === 'custom_rgb') modeLabel = '';
+    if (this._mode === 'custom_css') modeLabel = '';
 
     return html`
       <div class="elg_color_container">
@@ -110,7 +76,7 @@ export class ColorEditor extends LitElement {
         <div class="selector">
           <div class="content">
             <div class="label">${this.label ? this.label : this.name}${this.required ? '*' : ''}</div>
-            <div class="input">${valueTemplate[this._mode as keyof typeof valueTemplate]}</div>
+            <div class="input">${this._renderInput(currentColor, modeLabel)}</div>
           </div>
           
           <ha-icon-button
@@ -138,49 +104,7 @@ export class ColorEditor extends LitElement {
               <span>Automatic</span>
             </ha-list-item>
             
-            ${selectorModes.includes('text') ? html`
-              <ha-list-item value="text_primary" ?selected=${this._mode === 'text_primary'}>
-                ${this._renderColorPreview(toRGB('var(--primary-text-color)'))}
-                <span>Primary Text</span>
-              </ha-list-item>
-              
-              <ha-list-item value="text_secondary" ?selected=${this._mode === 'text_secondary'}>
-                ${this._renderColorPreview(toRGB('var(--secondary-text-color)'))}
-                <span>Secondary Text</span>
-              </ha-list-item>
-              
-              <ha-list-item value="text_disabled" ?selected=${this._mode === 'text_disabled'}>
-                ${this._renderColorPreview(toRGB('var(--disabled-text-color)'))}
-                <span>Disabled Text</span>
-              </ha-list-item>
-            ` : html``}
-  
-            ${selectorModes.includes('line') ? html`
-              <ha-list-item value="line_primary" ?selected=${this._mode === 'line_primary'}>
-                ${this._renderColorPreview(toRGB('var(--primary-color)'))}
-                <span>Primary</span>
-              </ha-list-item>  
-              
-              <ha-list-item value="line_accent" ?selected=${this._mode === 'line_accent'}>
-                ${this._renderColorPreview(toRGB('var(--accent-color)'))}
-                <span>Accent</span>
-              </ha-list-item>  
-              
-              <ha-list-item value="line_primary_bg" ?selected=${this._mode === 'line_primary_bg'}>
-                ${this._renderColorPreview(toRGB('var(--primary-background-color)'))}
-                <span>Primary Background</span>
-              </ha-list-item>  
-              
-              <ha-list-item value="line_secondary_bg" ?selected=${this._mode === 'line_secondary_bg'}>
-                ${this._renderColorPreview(toRGB('var(--secondary-background-color)'))}
-                <span>Secondary Background</span>
-              </ha-list-item>
-              
-              <ha-list-item value="line_card_bg" ?selected=${this._mode === 'line_card_bg'}>
-                ${this._renderColorPreview(toRGB('var(--card-background-color)'))}
-                <span>Card Background</span>
-              </ha-list-item>  
-            ` : html``}
+            ${this._renderMenuOptions()}
   
             <ha-list-item value="custom_rgb" ?selected=${this._mode === 'custom_rgb'}>
               ${this._renderColorPreview(this._mode === 'custom_rgb' ? currentColor : undefined)}
@@ -219,35 +143,91 @@ export class ColorEditor extends LitElement {
     `;
   }
 
-  private _getInitialMode(): void {
-    switch (this.value) {
-      case undefined:
-        this._mode = 'automatic';
-        return;
-      case 'var(--primary-text-color)':
-        this._mode = 'text_primary';
-        return;
-      case 'var(--secondary-text-color)':
-        this._mode = 'text_secondary';
-        return;
-      case 'var(--disabled-text-color)':
-        this._mode = 'text_disabled';
-        return;
-      case 'var(--primary-color)':
-        this._mode = 'line_primary';
-        return;
-      case 'var(--accent-color)':
-        this._mode = 'line_accent';
-        return;
-      case 'var(--primary-background-color)':
-        this._mode = 'line_primary_bg';
-        return;
-      case 'var(--secondary-background-color)':
-        this._mode = 'line_secondary_bg';
-        return;
-      case 'var(--card-background-color)':
-        this._mode = 'line_card_bg';
-        return;
+  private _renderMenuOptions() {
+    const mode = this.selector.color_elg?.mode;
+    const includeText = mode === 'text' || mode === 'all';
+    const includeLine = mode === 'line' || mode === 'all';
+
+    const visibleOptions = COLOR_OPTIONS.filter(opt => {
+      if (opt.category === 'text') return includeText;
+      if (opt.category === 'line') return includeLine;
+      return false;
+    });
+
+    return map(visibleOptions, (opt) => html`
+      <ha-list-item value="${opt.mode}" ?selected=${this._mode === opt.mode}>
+        ${this._renderColorPreview(toRGB(opt.value))}
+        <span>${opt.label}</span>
+      </ha-list-item>
+    `);
+  }
+
+  private _renderInput(currentColor: RGBColor | undefined, label: string) {
+    if (this._mode === 'custom_rgb') {
+      return html`
+        <input
+          class="custom-rgb-input"
+          type="color"
+          .value=${rgbToHex(currentColor) ?? ''}
+          .disabled=${this.disabled}
+          .required=${this.required}
+          @change=${this._valueChanged}
+        />`;
+    }
+    if (this._mode === 'custom_css') {
+      return html`
+        <input
+          class="custom-css-input"
+          .value=${this.value ?? ''}
+          .disabled=${this.disabled}
+          .required=${this.required}
+          @input=${this._valueChanged}
+        />`;
+    }
+
+    return html`<span>${label}</span>`;
+  }
+
+  private _calculateEntityColors() {
+    const config = this.selector.color_elg!;
+
+    if (config.entity && config.entities && config.entities.length > 0) {
+      const defaults = setEntitiesDefaults(config.entities);
+      const currentEntityConfig = defaults.find(e => e.entity === config.entity);
+
+      // Create a list excluding the color of the current entity to find the "automatic" default
+      const entitiesWithoutColor = config.entities.map(e =>
+        e.entity === config.entity ? { ...e, color: undefined } : e
+      );
+
+      return {
+        currentColorString: currentEntityConfig?.color,
+        currentColor: toRGB(currentEntityConfig?.color),
+        automaticColor: toRGB(setEntitiesDefaults(entitiesWithoutColor).find(e => e.entity === config.entity)?.color)
+      };
+    }
+
+    // No specific entity config, use generic defaults
+    const defaultConfig = setConfigDefaults({ [this.name!]: this.value } as ELGConfig);
+    const automaticConfig = setConfigDefaults({ [this.name!]: undefined } as ELGConfig);
+
+    return {
+      currentColorString: defaultConfig[this.name!],
+      currentColor: toRGB(defaultConfig[this.name!]),
+      automaticColor: toRGB(automaticConfig[this.name!] as RGBColor | undefined)
+    };
+  }
+
+  private _determineInitialMode(): void {
+    if (this.value === undefined) {
+      this._mode = 'automatic';
+      return;
+    }
+
+    const matchedOption = COLOR_OPTIONS.find(opt => opt.value === this.value);
+    if (matchedOption) {
+      this._mode = matchedOption.mode;
+      return;
     }
 
     if (String(this.value).startsWith('rgb(')) {
@@ -269,44 +249,22 @@ export class ColorEditor extends LitElement {
   }
 
   private _handleMenuSelected(ev: CustomEvent) {
-    if (this.selector.color_elg?.mode === 'text') {
-      switch (ev.detail.index) {
-        case 0: this._mode = 'automatic'; break;
-        case 1: this._mode = 'text_primary'; break;
-        case 2: this._mode = 'text_secondary'; break;
-        case 3: this._mode = 'text_disabled'; break;
-        case 4: this._mode = 'custom_rgb'; break;
-        case 5: this._mode = 'custom_css'; break;
-      }
-    } else if (this.selector.color_elg?.mode === 'line') {
-      switch (ev.detail.index) {
-        case 0: this._mode = 'automatic'; break;
-        case 1: this._mode = 'line_primary'; break;
-        case 2: this._mode = 'line_accent'; break;
-        case 3: this._mode = 'line_primary_bg'; break;
-        case 4: this._mode = 'line_secondary_bg'; break;
-        case 5: this._mode = 'line_card_bg'; break;
-        case 6: this._mode = 'custom_rgb'; break;
-        case 7: this._mode = 'custom_css'; break;
-      }
-    } else {
-      switch (ev.detail.index) {
-        case 0: this._mode = 'automatic'; break;
-        case 1: this._mode = 'custom_rgb'; break;
-        case 2: this._mode = 'custom_css'; break;
-      }
+    const index = ev.detail.index;
+    const menu = ev.target as any;
+
+    const selectedItem = menu.items[index];
+    if (!selectedItem) return;
+
+    this._mode = selectedItem.value;
+    if (this._mode === 'automatic') {
+      this._clear(ev);
+      return;
     }
 
-    switch (this._mode) {
-      case 'automatic':this._clear(ev);break;
-      case 'text_primary':this._setValue('var(--primary-text-color)');break;
-      case 'text_secondary':this._setValue('var(--secondary-text-color)');break;
-      case 'text_disabled':this._setValue('var(--disabled-text-color)');break;
-      case 'line_primary':this._setValue('var(--primary-color)');break;
-      case 'line_accent':this._setValue('var(--accent-color)');break;
-      case 'line_primary_bg':this._setValue('var(--primary-background-color)');break;
-      case 'line_secondary_bg':this._setValue('var(--secondary-background-color)');break;
-      case 'line_card_bg':this._setValue('var(--card-background-color)');break;
+    const colorValue = COLOR_OPTIONS.find(opt => opt.mode === this._mode)?.value;
+    if (colorValue) {
+      this._setValue(colorValue);
+      return;
     }
   }
 
