@@ -243,7 +243,8 @@ export class EnergyLineGauge extends LitElement {
     let min: number = this._getMin();
 
     if (mainState > max) {max = mainState;}
-    const range: number = max - min;
+    let range: number = max - min;
+    if (range === 0) {range = 1;}
 
     const clampedMain: number = Math.min(Math.max(mainState, min), max);
     const mainWidth: number = ((clampedMain - min) / range) * 100;

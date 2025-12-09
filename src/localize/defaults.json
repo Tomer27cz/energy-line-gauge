@@ -96,7 +96,7 @@
     "double_tap_action": "ui.panel.lovelace.editor.card.generic.double_tap_action"
   },
 
-  "default": null,
+  "default_string": "ui.components.color-picker.default",
   "cornerOptions": {
     "square": null,
     "lite-rounded": null,
@@ -215,5 +215,18 @@
     "last_updated": "ui.components.state-content-picker.last_updated",
     "percentage": "ui.panel.lovelace.editor.edit_section.settings.column_span",
     "icon": "ui.panel.lovelace.editor.card.generic.icon"
+  },
+  "colorOptions": {
+    "text_primary": null,
+    "text_secondary": null,
+    "text_disabled": null,
+    "line_primary": "ui.components.color-picker.colors.primary",
+    "line_accent": "ui.components.color-picker.colors.accent",
+    "line_primary_bg": null,
+    "line_secondary_bg": null,
+    "line_card_bg": null,
+    "automatic": "ui.panel.config.network.supervisor.auto",
+    "custom_rgb": null,
+    "custom_css": null
   }
 }

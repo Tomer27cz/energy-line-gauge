@@ -96,7 +96,7 @@
     "double_tap_action": "Akce na dvojité klepnutí"
   },
 
-  "default": "výchozí",
+  "default_string": "výchozí",
   "cornerOptions": {
     "square": "Hranatý (výchozí)",
     "lite-rounded": "Mírně zaoblený",
@@ -215,5 +215,18 @@
     "last_updated": "Poslední aktualizace",
     "percentage": "Šířka [%]",
     "icon": "Ikona"
+  },
+  "colorOptions": {
+    "text_primary": "Primární Text",
+    "text_secondary": "Sekundární Text",
+    "text_disabled": "Zarázaný Text",
+    "line_primary": "Primární",
+    "line_accent": "Akcent",
+    "line_primary_bg": "Primární Pozadí",
+    "line_secondary_bg": "Sekundární Pozadí",
+    "line_card_bg": "Pozadí Karty",
+    "automatic": "Automatická",
+    "custom_rgb": "Výběr Barvy",
+    "custom_css": "Vlastní CSS"
   }
 }
