@@ -55,7 +55,7 @@ window.customCards.push({
 });
 
 @customElement('energy-line-gauge')
-export class EnergyLineGauge extends LitElement {
+class EnergyLineGauge extends LitElement {
   @property() public hass!: HomeAssistant;
 
   @state() private _config!: ELGConfig;
