@@ -36,11 +36,9 @@ import { actionHandler } from './action-handler';
 import { findEntities } from './find-entities';
 import { CONFIG_DEFAULTS, setConfigDefaults } from './defaults';
 import { toRGB, getTextColor } from './color';
-
 import { hasAction, handleAction } from './helpers';
-
-import './editor/editor';
 import { deepEqual } from './deep-equal';
+
 import memoizeOne from 'memoize-one';
 
 console.info(
@@ -88,7 +86,7 @@ export class EnergyLineGauge extends LitElement {
 
   // noinspection JSUnusedGlobalSymbols
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
-    // await import('./editor/editor');
+    await import('./editor/editor');
     return document.createElement('energy-line-gauge-editor') as LovelaceCardEditor;
   }
 

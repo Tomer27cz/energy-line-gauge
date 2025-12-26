@@ -83,55 +83,87 @@ def check_languages():
     else:
         print("Language check COMPLETE.\n")
 
-def replace_string_in_file(file_path, old_string, new_string):
+def replace_and_copy(source_path, dest_path, old_string, new_string):
     try:
-        # Open the file in read mode and read its content
-        with open(file_path, 'r', encoding='utf-8') as file:
-            file_content = file.read()
+        # Read the source content
+        with open(source_path, 'r', encoding='utf-8') as f:
+            content = f.read()
 
-        # Replace the old string with the new string
-        updated_content = file_content.replace(old_string, new_string)
+        # Perform replacement if the string exists
+        if old_string in content:
+            content = content.replace(old_string, new_string)
+            # KEEPING PRINT STATEMENT THE SAME:
+            print(f"\nSuccessfully replaced '{old_string}' with '{new_string}' in {source_path}\n")
 
-        # Open the file in write mode and overwrite the content with the updated content
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(updated_content)
+        # Write to destination
+        with open(dest_path, 'w', encoding='utf-8') as f:
+            f.write(content)
 
-        print(f"Successfully replaced '{old_string}' with '{new_string}' in {file_path}")
+        # KEEPING PRINT STATEMENT THE SAME:
+        print(f"File copied successfully to {dest_path}")
+
     except FileNotFoundError:
-        print(f"The file {file_path} was not found.")
+        # KEEPING PRINT STATEMENT THE SAME:
+        print(f"The file {source_path} was not found.")
     except Exception as e:
+        # KEEPING PRINT STATEMENT THE SAME:
         print(f"An error occurred: {e}")
 
-def copy_file():
-    source_file = os.path.join("dist", "energy-line-gauge.js")
+def copy_build_files():
+    dist_dir = "dist"
+    # Destination path from your original file
     destination_path = r'Z:\opt\homeassistant\config\www\community\energy-line-gauge'
 
-    if not os.path.isfile(source_file):
-        print(f"Error: Source file '{source_file}' does not exist.")
+    if not os.path.isdir(dist_dir):
+        # ADAPTED PRINT STATEMENT (Original referred to a single file):
+        print(f"Error: Source directory '{dist_dir}' does not exist.")
         sys.exit(1)
 
     if not os.path.isdir(destination_path):
         try:
             os.makedirs(destination_path)
+            # KEEPING PRINT STATEMENT THE SAME:
             print(f"Created missing destination directory: {destination_path}")
         except OSError as e:
+            # KEEPING PRINT STATEMENT THE SAME:
             print(f"Error creating destination directory '{destination_path}': {e}")
             sys.exit(1)
 
+    # Clean old .js files in destination to avoid clutter from old hashes
+    print("Cleaning old .js files in destination...")
+    for filename in os.listdir(destination_path):
+        if filename.endswith(".js") or filename.endswith(".map"):
+            try:
+                os.remove(os.path.join(destination_path, filename))
+            except Exception as e:
+                print(f"Warning: Could not remove old file {filename}: {e}")
+
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    search_string = "%c ENERGY LINE GAUGE"
+    replace_string = current_time + " %c ENERGY LINE GAUGE"
 
-    # Replace the version string in the file
-    replace_string_in_file(source_file, "%c ENERGY LINE GAUGE", current_time + " %c ENERGY LINE GAUGE")
+    # Iterate over all files in dist folder
+    files_processed = 0
+    for filename in os.listdir(dist_dir):
+        source_file = os.path.join(dist_dir, filename)
+        destination_file = os.path.join(destination_path, filename)
 
-    try:
-        destination_file = os.path.join(destination_path, "energy-line-gauge.js")
-        shutil.copy2(source_file, destination_file)
-        print(f"File copied successfully to {destination_file}")
-    except (shutil.Error, IOError) as e:
-        print(f"Error copying file: {e}")
-        sys.exit(1)
+        if os.path.isfile(source_file):
+            files_processed += 1
+            if filename.endswith(".js"):
+                # Use the smart copy that replaces the timestamp
+                replace_and_copy(source_file, destination_file, search_string, replace_string)
+            else:
+                # Direct copy for assets/maps
+                try:
+                    shutil.copy2(source_file, destination_file)
+                    print(f"File copied successfully to {destination_file}")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
 
+    if files_processed == 0:
+        print(f"Error: No files found in '{dist_dir}'.")
 
 if __name__ == "__main__":
     check_languages()
-    copy_file()
+    copy_build_files()

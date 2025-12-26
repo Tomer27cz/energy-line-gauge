@@ -1,6 +1,6 @@
 {
   "name": "energy-line-gauge",
-  "version": "2.2.6",
+  "version": "2.2.6-dev",
   "license": "MIT",
   "author": "Tomer27cz",
   "description": "A customizable line gauge with a legend, optionally showing device power use as a percentage of a main entity.",
@@ -26,7 +26,6 @@
   },
   "homepage": "https://github.com/Tomer27cz/energy-line-gauge#readme",
   "scripts": {
-    "start": "rollup -c --watch",
     "rollup": "rollup -c",
     "test": "rollup -c && python mov_prod.py"
   },
