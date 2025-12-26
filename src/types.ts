@@ -315,6 +315,12 @@ export interface ActionHandlerDetail {
   action: string;
 }
 
+export interface ActionHandlerOptions {
+  hasHold?: boolean;
+  hasDoubleClick?: boolean;
+  disabled?: boolean;
+}
+
 export type ActionHandlerEvent = HASSDomEvent<ActionHandlerDetail>;
 
 // =====================================================================================================================
