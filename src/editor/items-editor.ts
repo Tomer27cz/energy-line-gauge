@@ -1,16 +1,15 @@
-import {LitElement, html, css, CSSResultGroup, nothing} from 'lit';
-
-import { HomeAssistant } from 'custom-card-helpers';
-import { EditorTarget, ELGEntity } from '../types';
+import { LitElement, html, css, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { mdiDelete, mdiPencil } from '@mdi/js';
+import { mdiDelete, mdiPencil, mdiDrag } from '@mdi/js';
 
-import { configElementStyle } from '../styles'
-import Sortable from 'sortablejs';
-import SortableCore, { OnSpill, AutoScroll, SortableEvent } from 'sortablejs/modular/sortable.core.esm';
+import { HomeAssistant, EditorTarget, ELGEntity } from '../types';
+import { configElementStyle } from '../styles';
+import { fireEvent } from '../helpers';
 
-SortableCore.mount(OnSpill, new AutoScroll());
+import { Sortable, OnSpill, AutoScroll } from 'sortablejs/modular/sortable.core.esm';
+import type { SortableEvent } from 'sortablejs/modular/sortable.core.esm';
+Sortable.mount(OnSpill, new AutoScroll());
 
 @customElement('energy-line-gauge-items-editor')
 export class ItemsEditor extends LitElement {
@@ -340,9 +339,4 @@ export class ItemsEditor extends LitElement {
         `
     ];
   }
-}
-
-export function fireEvent<T>(node: HTMLElement | Window, type: string, detail: T): void {
-  const event = new CustomEvent(type, { bubbles: false, composed: false, detail: detail });
-  node.dispatchEvent(event);
 }

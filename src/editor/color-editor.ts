@@ -2,10 +2,10 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 
-import { HomeAssistant, fireEvent } from 'custom-card-helpers';
 import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '@mdi/js';
 
-import { ELGColorSelector, RGBColor, ELGConfig } from '../types';
+import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig } from '../types';
+import { fireEvent } from '../helpers';
 import { toRGB, rgbToHex } from '../color'
 import { setConfigDefaults, setEntitiesDefaults } from '../defaults';
 import { setupLocalize } from '../localize/localize';

@@ -1,15 +1,6 @@
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
-
 import { customElement, property, state } from 'lit/decorators.js';
-
-import {
-  HomeAssistant,
-  LovelaceCardEditor,
-  LovelaceCard,
-  hasAction,
-  ActionHandlerEvent,
-  handleAction,
-} from 'custom-card-helpers';
+import type { HomeAssistant, LovelaceCardEditor, LovelaceCard, ActionHandlerEvent } from './types';
 
 import { version } from '../package.json';
 
@@ -45,6 +36,8 @@ import { actionHandler } from './action-handler';
 import { findEntities } from './find-entities';
 import { CONFIG_DEFAULTS, setConfigDefaults } from './defaults';
 import { toRGB, getTextColor } from './color';
+
+import { hasAction, handleAction } from './helpers';
 
 import './editor/editor';
 import { deepEqual } from './deep-equal';

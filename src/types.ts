@@ -1,5 +1,326 @@
-import { ActionConfig, LovelaceCardConfig } from 'custom-card-helpers';
 import { TemplateResult } from 'lit';
+import {
+  Auth,
+  Connection,
+  HassConfig,
+  HassEntity as HACoreEntity,
+  HassServices,
+  HassServiceTarget,
+  MessageBase,
+} from "home-assistant-js-websocket";
+
+import {
+  CORNER_TYPES,
+  INDICATOR_TYPES,
+  LEGEND_ALIGNMENT_TYPES,
+  LINE_POSITION_TYPES,
+  LINE_SEPARATOR_WIDTH_TYPES,
+  NumberFormat,
+  OVERFLOW_DIRECTION_TYPES,
+  POSITION_TYPES,
+  STATE_CONTENT_TYPES,
+  STATISTICS_FUNCTION_TYPES,
+  STATISTICS_PERIOD_TYPES,
+  TEXT_OVERFLOW_TYPES,
+  TEXT_STYLE_TYPES,
+  TimeFormat,
+  UNTRACKED_STATE_CONTENT_TYPES,
+  VALUE_POSITION_TYPES,
+} from './const';
+
+// =====================================================================================================================
+// 1. HOME ASSISTANT CORE TYPES
+// Types representing the internal Home Assistant state and connection.
+// =====================================================================================================================
+
+export interface HomeAssistant {
+  auth: Auth;
+  connection: Connection;
+  connected: boolean;
+  states: HassEntities;
+  services: HassServices;
+  config: HassConfig;
+  themes: Themes;
+  selectedTheme?: string | null;
+  panels: Panels;
+  panelUrl: string;
+
+  // i18n & Localization
+  language: string;
+  locale: FrontendLocaleData;
+  selectedLanguage: string | null;
+  resources: Resources;
+  localize: LocalizeFunc;
+  translationMetadata: {
+    fragments: string[];
+    translations: {
+      [lang: string]: Translation;
+    };
+  };
+
+  dockedSidebar: boolean;
+  moreInfoEntityId: string;
+  user: CurrentUser;
+
+  // Methods
+  callService: (
+    domain: ServiceCallRequest["domain"],
+    service: ServiceCallRequest["service"],
+    serviceData?: ServiceCallRequest["serviceData"],
+    target?: ServiceCallRequest["target"]
+  ) => Promise<void>;
+  callApi: <T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    path: string,
+    parameters?: { [key: string]: any }
+  ) => Promise<T>;
+  fetchWithAuth: (
+    path: string,
+    init?: { [key: string]: any }
+  ) => Promise<Response>;
+  sendWS: (msg: MessageBase) => Promise<void>;
+  callWS: <T>(msg: MessageBase) => Promise<T>;
+}
+
+// Entities
+export type HassEntityAttributeBase = {
+  friendly_name?: string;
+  unit_of_measurement?: string;
+  icon?: string;
+  entity_picture?: string;
+  supported_features?: number;
+  hidden?: boolean;
+  assumed_state?: boolean;
+  device_class?: string;
+  state_class?: string;
+  [key: string]: any;
+};
+
+export type HassEntity = HACoreEntity & {
+  attributes: HassEntityAttributeBase;
+};
+
+export type HassEntities = {
+  [entity_id: string]: HassEntity;
+};
+
+// Users & Auth
+export interface Credential {
+  auth_provider_type: string;
+  auth_provider_id: string;
+}
+
+export interface MFAModule {
+  id: string;
+  name: string;
+  enabled: boolean;
+}
+
+export interface CurrentUser {
+  id: string;
+  is_owner: boolean;
+  is_admin: boolean;
+  name: string;
+  credentials: Credential[];
+  mfa_modules: MFAModule[];
+}
+
+// Themes & UI
+export interface Theme {
+  "primary-color": string;
+  "text-primary-color": string;
+  "accent-color": string;
+  [key: string]: string;
+}
+
+export interface Themes {
+  default_theme: string;
+  themes: { [key: string]: Theme };
+}
+
+export interface Panel {
+  component_name: string;
+  config: { [key: string]: any } | null;
+  icon: string | null;
+  title: string | null;
+  url_path: string;
+}
+
+export interface Panels {
+  [name: string]: Panel;
+}
+
+export interface Resources {
+  [language: string]: { [key: string]: string };
+}
+
+export interface Translation {
+  nativeName: string;
+  isRTL: boolean;
+  fingerprints: { [fragment: string]: string };
+}
+
+export interface FrontendLocaleData {
+  language: string;
+  number_format: NumberFormat;
+  time_format: TimeFormat;
+}
+
+export type LocalizeFunc = (key: string, ...args: any[]) => string;
+
+// Services
+export interface ServiceCallRequest {
+  domain: string;
+  service: string;
+  serviceData?: Record<string, any>;
+  target?: HassServiceTarget;
+}
+
+// Events
+export interface HASSDomEvent<T> extends Event {
+  detail: T;
+}
+
+// =====================================================================================================================
+// 2. LOVELACE & ACTION TYPES
+// Types related to the Dashboard configuration and interaction actions.
+// =====================================================================================================================
+
+export interface LovelaceConfig {
+  title?: string;
+  views: LovelaceViewConfig[];
+  background?: string;
+}
+
+export interface LovelaceViewConfig {
+  index?: number;
+  title?: string;
+  badges?: Array<string | LovelaceBadgeConfig>;
+  cards?: LovelaceCardConfig[];
+  path?: string;
+  icon?: string;
+  theme?: string;
+  panel?: boolean;
+  background?: string;
+  visible?: boolean | ShowViewConfig[];
+}
+
+export interface ShowViewConfig {
+  user?: string;
+}
+
+export interface LovelaceBadgeConfig {
+  type?: string;
+  [key: string]: any;
+}
+
+export interface LovelaceCardConfig {
+  index?: number;
+  view_index?: number;
+  type: string;
+  [key: string]: any;
+}
+
+export interface LovelaceCard extends HTMLElement {
+  hass?: HomeAssistant;
+  isPanel?: boolean;
+  editMode?: boolean;
+  getCardSize(): number | Promise<number>;
+  setConfig(config: LovelaceCardConfig): void;
+}
+
+export interface LovelaceCardEditor extends HTMLElement {
+  hass?: HomeAssistant;
+  lovelace?: LovelaceConfig;
+  setConfig(config: LovelaceCardConfig): void;
+}
+
+// Actions
+export type HapticType =
+  | "success"
+  | "warning"
+  | "failure"
+  | "light"
+  | "medium"
+  | "heavy"
+  | "selection";
+
+export interface BaseActionConfig {
+  confirmation?: ConfirmationRestrictionConfig;
+  repeat?: number;
+  haptic?: HapticType;
+}
+
+export interface ConfirmationRestrictionConfig {
+  text?: string;
+  exemptions?: RestrictionConfig[];
+}
+
+export interface RestrictionConfig {
+  user: string;
+}
+
+export interface ToggleMenuActionConfig extends BaseActionConfig {
+  action: "toggle-menu";
+}
+
+export interface ToggleActionConfig extends BaseActionConfig {
+  action: "toggle";
+}
+
+export interface CallServiceActionConfig extends BaseActionConfig {
+  action: "call-service";
+  service: string;
+  service_data?: {
+    entity_id?: string | [string];
+    [key: string]: any;
+  };
+  target?: HassServiceTarget;
+}
+
+export interface NavigateActionConfig extends BaseActionConfig {
+  action: "navigate";
+  navigation_path: string;
+}
+
+export interface UrlActionConfig extends BaseActionConfig {
+  action: "url";
+  url_path: string;
+}
+
+export interface MoreInfoActionConfig extends BaseActionConfig {
+  action: "more-info";
+  entity?: string;
+}
+
+export interface NoActionConfig extends BaseActionConfig {
+  action: "none";
+}
+
+export interface CustomActionConfig extends BaseActionConfig {
+  action: "fire-dom-event";
+}
+
+export type ActionConfig =
+  | ToggleActionConfig
+  | CallServiceActionConfig
+  | NavigateActionConfig
+  | UrlActionConfig
+  | MoreInfoActionConfig
+  | NoActionConfig
+  | CustomActionConfig
+  | ToggleMenuActionConfig;
+
+export interface ActionHandlerDetail {
+  action: string;
+}
+
+export type ActionHandlerEvent = HASSDomEvent<ActionHandlerDetail>;
+
+// =====================================================================================================================
+// 3. CARD CONFIGURATION (ELG)
+// Types specific to the Energy Line Gauge configuration structure.
+// =====================================================================================================================
 
 export interface ELGConfig extends LovelaceCardConfig {
   entity: string;
@@ -14,27 +335,27 @@ export interface ELGConfig extends LovelaceCardConfig {
   title_text_style?: TextStyleType;
 
   title_text_color?: ColorType;
-  title_text_colour?: ColorType; // For British English support
+  title_text_colour?: ColorType; // British English support
 
   subtitle_text_color?: ColorType;
-  subtitle_text_colour?: ColorType; // For British English support
+  subtitle_text_colour?: ColorType; // British English support
 
-  // MIN/MAX
+  // Min / Max
   min?: number | string;
   max?: number | string;
 
-  // Value
-  precision?: number; // Decimal precision for the value
-  unit?: string; // String appended to the value
-  cutoff?: number; // Cutoff value for the entity state
-  offset?: string | number; // Offset values into the past - duration string (e.g., "1h", "30m", "15s")
+  // Value Display
+  precision?: number;
+  unit?: string;
+  cutoff?: number;
+  offset?: string | number; // Duration string (e.g., "1h") or milliseconds
 
   position?: ValuePositionType;
   text_size?: number;
   text_style?: TextStyleType;
 
   text_color?: ColorType;
-  text_colour?: ColorType; // For British English support
+  text_colour?: ColorType; // British English support
 
   // Styling
   line_height?: number;
@@ -45,12 +366,12 @@ export interface ELGConfig extends LovelaceCardConfig {
   line_separator_width?: LineSeparatorWidthType;
 
   line_separator_color?: ColorType;
-  line_separator_colour?: ColorType; // For British English support
+  line_separator_colour?: ColorType; // British English support
 
   color?: ColorType;
   color_bg?: ColorType;
-  colour?: ColorType; // For British English support
-  colour_bg?: ColorType; // For British English support
+  colour?: ColorType; // British English support
+  colour_bg?: ColorType; // British English support
 
   // Line Text
   line_text_position?: LinePositionType;
@@ -58,7 +379,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   line_text_style?: TextStyleType;
 
   line_text_color?: ColorType;
-  line_text_colour?: ColorType; // For British English support
+  line_text_colour?: ColorType; // British English support
 
   line_text_overflow?: TextOverflowType;
   overflow_direction?: OverflowDirectionType;
@@ -73,13 +394,13 @@ export interface ELGConfig extends LovelaceCardConfig {
   legend_all?: boolean;
 
   legend_position?: PositionType;
-  legend_alignment?: LegendAlignmentType
+  legend_alignment?: LegendAlignmentType;
   legend_indicator?: IndicatorType;
   legend_text_size?: number;
   legend_text_style?: TextStyleType;
 
   legend_text_color?: ColorType;
-  legend_text_colour?: ColorType; // For British English support
+  legend_text_colour?: ColorType; // British English support
 
   // Show Delta
   show_delta?: boolean;
@@ -94,8 +415,9 @@ export interface ELGConfig extends LovelaceCardConfig {
   untracked_state_content?: UntrackedStateContentType;
   untracked_line_state_content?: UntrackedStateContentType;
 
-  // Suppress Warnings
+  // Misc
   suppress_warnings?: boolean;
+  config_version?: number;
 
   // Statistics
   statistics?: boolean;
@@ -103,39 +425,35 @@ export interface ELGConfig extends LovelaceCardConfig {
   statistics_period?: StatisticsPeriodType;
   statistics_function?: StatisticsFunctionType;
 
-  // Config Version
-  config_version?: number;
-
+  // Sub-Entities
   entities: ELGEntity[];
 }
 
 export interface ELGEntity {
   entity: string;
 
-  // Title
+  // Identity
   name?: string;
   icon?: string;
   color?: ColorType;
-  colour?: ColorType; // For British English support
+  colour?: ColorType; // British English support
 
-  // Value
+  // Value Processing
   cutoff?: number;
   unit?: string;
   multiplier?: number;
   precision?: number;
 
-  // State Content
+  // Display Content
   state_content?: StateContentType;
   line_state_content?: StateContentType;
 
   // Styling
   legend_indicator?: IndicatorType;
-
   legend_text_color?: ColorType;
-  legend_text_colour?: ColorType; // For British English support
-
+  legend_text_colour?: ColorType; // British English support
   line_text_color?: ColorType;
-  line_text_colour?: ColorType; // For British English support
+  line_text_colour?: ColorType; // British English support
 
   // Actions
   tap_action?: ActionConfig;
@@ -143,11 +461,17 @@ export interface ELGEntity {
   double_tap_action?: ActionConfig;
 }
 
+// =====================================================================================================================
+// 4. INTERNAL STATE & DATA
+// Types used for calculation, history retrieval, and runtime state.
+// =====================================================================================================================
+
 export interface ELGState {
   state: number;
   width: number;
   percentage: number;
 }
+
 export interface ELGEntityState extends ELGState {
   stateObject: HassEntity;
 }
@@ -157,45 +481,69 @@ export interface EntityWarning {
   entity_id?: string;
 }
 
-// Helper interface for functions returning template and text
-export interface LabelRenderResult {
-  template: TemplateResult | string; // Allow string for simple cases
-  text: string;
-}
-export type PartRenderer = (
-  value: string,
-  context: any,
-  line: boolean
-) => LabelRenderResult;
-
-export interface RendererContext {
-  defaultLabel: string;
-}
-export interface DeviceRendererContext extends RendererContext {
-  device: ELGEntity;
+// History API
+export interface HassHistoryEntry {
+  last_updated: string;
+  state: string;
+  last_changed: string;
+  attributes?: any;
+  entity_id: string;
 }
 
+export type HassHistory = Array<HassHistoryEntry>;
 
+export type ELGHistoryOffsetEntities = {
+  [entity_id: string]: ELGHistoryOffsetEntry[];
+};
 
-// State Content Types -------------------------------------------------------------------------------------------------
+export type ELGHistoryOffsetEntry = {
+  state: string;
+  last_changed: string;
+};
 
-export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;
-export const LINE_SEPARATOR_WIDTH_TYPES = ['total020', 'total030', 'total040', 'total050', 'total060', 'total070', 'total080', 'total090', 'total100', 'each002', 'each004', 'each006', 'each008', 'each010', 'each012', 'each014', 'each016', 'each018', 'each020'] as const; // [mode][width], width = {number}{number}.{number}
-export const TEXT_STYLE_TYPES = ['weight-lighter', 'weight-bold', 'weight-bolder', 'style-italic', 'decoration-underline', 'decoration-overline', 'decoration-line-through', 'transform-uppercase', 'transform-lowercase', 'transform-capitalize', 'family-monospace', 'shadow-light', 'shadow-medium', 'shadow-heavy', 'shadow-hard', 'shadow-neon', 'black-outline', 'white-outline'] as const;
-export const TEXT_OVERFLOW_TYPES = ['ellipsis', 'clip', 'tooltip', 'tooltip-segment', 'fade'] as const;
-export const OVERFLOW_DIRECTION_TYPES = ['left', 'right'] as const;
-export const INDICATOR_TYPES = ['circle', 'icon', 'icon-fallback', 'none', 'name', 'state', 'percentage'] as const;
+export type ELGHistoryOffset = {
+  start_time: number;
+  end_time: number;
+  updating: boolean;
+  history: ELGHistoryOffsetEntities;
+};
 
-export const POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right'] as const; // -middle & -center are equivalent
-export const VALUE_POSITION_TYPES = ['left', 'right', 'none', 'top-left', 'top-middle', 'top-center', 'top-right', 'bottom-left', 'bottom-middle', 'bottom-center', 'bottom-right', 'in-title-right', 'in-title-left'] as const; // -middle & -center are equivalent
-export const LINE_POSITION_TYPES = ['left', 'right', 'none', 'center', 'top-left', 'top-right', 'top-center', 'bottom-left', 'bottom-right', 'bottom-center'] as const;
-export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
+// Statistics API
+export interface HassStatisticEntry {
+  start: number;
+  end: number;
+  last_reset: number | null;
+  max: number | null;
+  mean: number | null;
+  min: number | null;
+  sum: number | null;
+  state: number | null;
+  change: number | null;
+}
 
-export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage', 'icon'] as const;
-export const UNTRACKED_STATE_CONTENT_TYPES = ['name', 'state', 'percentage', 'icon'] as const;
+export type HassStatistics = {
+  [entity_id: string]: HassStatisticEntry[];
+};
 
-export const STATISTICS_PERIOD_TYPES = ['5minute', 'hour', 'day', 'week', 'month'] as const;
-export const STATISTICS_FUNCTION_TYPES = ['change', 'last_reset', 'max', 'mean', 'min', 'state', 'sum'] as const;
+export type ELGHistoryStatisticsBucket = HassStatisticEntry;
+
+export type ELGHistoryStatisticsBuckets = {
+  [entity_id: string]: ELGHistoryStatisticsBucket[];
+};
+
+export type ELGHistoryStatistics = {
+  updating: boolean;
+  date: Date;
+  buckets: ELGHistoryStatisticsBuckets;
+};
+
+// =====================================================================================================================
+// 5. STYLING & OPTION TYPES
+// Derived from the constant arrays in const.ts.
+// =====================================================================================================================
+
+export type RGBColor = [number, number, number] | [number, number, number, number];
+export type ColorType = RGBColor | string | undefined;
 
 export type CornerType = typeof CORNER_TYPES[number];
 export type LineSeparatorWidthType = typeof LINE_SEPARATOR_WIDTH_TYPES[number];
@@ -215,17 +563,14 @@ export type UntrackedStateContentType = typeof UNTRACKED_STATE_CONTENT_TYPES[num
 export type StatisticsPeriodType = typeof STATISTICS_PERIOD_TYPES[number];
 export type StatisticsFunctionType = typeof STATISTICS_FUNCTION_TYPES[number];
 
-// EDITOR---------------------------------------------------------------------------------------------------------------
+// =====================================================================================================================
+// 6. EDITOR & RENDER TYPES
+// Types used specifically for the Visual Editor and Label Rendering.
+// =====================================================================================================================
 
-export const DEFAULT_ACTIONS = [
-  "more-info",
-  "toggle",
-  "navigate",
-  "url",
-  "perform-action",
-  "assist",
-  "none",
-];
+export interface HassCustomElement extends CustomElementConstructor {
+  getConfigElement(): Promise<unknown>;
+}
 
 export interface ELGColorSelector {
   color_elg: {
@@ -244,6 +589,29 @@ export interface EditorTarget extends EventTarget {
   config: ActionConfig;
 }
 
+export interface LabelRenderResult {
+  template: TemplateResult | string;
+  text: string;
+}
+
+export interface RendererContext {
+  defaultLabel: string;
+}
+
+export interface DeviceRendererContext extends RendererContext {
+  device: ELGEntity;
+}
+
+export type PartRenderer = (
+  value: string,
+  context: any,
+  line: boolean
+) => LabelRenderResult;
+
+// =====================================================================================================================
+// 7. GLOBAL AUGMENTATION
+// =====================================================================================================================
+
 declare global {
   interface Window {
     loadCardHelpers: () => Promise<void>;
@@ -255,107 +623,3 @@ declare global {
     offsetWidth: number;
   }
 }
-
-export interface HassCustomElement extends CustomElementConstructor {
-  getConfigElement(): Promise<unknown>;
-}
-
-// Types from home-assistant-js-websocket ------------------------------------------------------------------------------
-export declare type Context = {
-  id: string;
-  user_id: string | null;
-  parent_id: string | null;
-};
-export declare type HassEntityBase = {
-  entity_id: string;
-  state: string;
-  last_changed: string;
-  last_updated: string;
-  attributes: HassEntityAttributeBase;
-  context: Context;
-};
-export declare type HassEntityAttributeBase = {
-  friendly_name?: string;
-  unit_of_measurement?: string;
-  icon?: string;
-  entity_picture?: string;
-  supported_features?: number;
-  hidden?: boolean;
-  assumed_state?: boolean;
-  device_class?: string;
-  state_class?: string;
-};
-export declare type HassEntity = HassEntityBase & {
-  attributes: {
-    [key: string]: any;
-  };
-};
-export declare type HassEntities = {
-  [entity_id: string]: HassEntity;
-};
-
-export interface HassHistoryEntry {
-  last_updated: string;
-  state: string;
-  last_changed: string;
-  attributes?: any;
-  entity_id: string;
-}
-
-export type HassHistory = Array<HassHistoryEntry>;
-
-// Statistic Own Observations ------------------------------------------------------------------------------------------
-
-export declare type HassStatistics = {
-  [entity_id: string]: HassStatisticEntry[];
-};
-
-export interface HassStatisticEntry {
-  start: number;
-  end: number;
-  last_reset: number | null;
-  max: number | null;
-  mean: number | null;
-  min: number | null;
-  sum: number | null;
-  state: number | null;
-  change: number | null;
-}
-
-// Energy Line Gauge History -------------------------------------------------------------------------------------------
-
-export declare type ELGHistoryOffsetEntities = {
-  [entity_id: string]: ELGHistoryOffsetEntry[];
-};
-
-export type ELGHistoryOffset = {
-  start_time: number;
-  end_time: number;
-  updating: boolean;
-  history: ELGHistoryOffsetEntities;
-}
-
-export type ELGHistoryOffsetEntry = {
-  state: string;
-  last_changed: string;
-}
-
-// Energy Line Gauge History Statistics --------------------------------------------------------------------------------
-
-export declare type ELGHistoryStatisticsBuckets = {
-  [entity_id: string]: ELGHistoryStatisticsBucket[];
-};
-
-export type ELGHistoryStatistics = {
-  updating: boolean;
-  date: Date;
-  buckets: ELGHistoryStatisticsBuckets;
-}
-
-export type ELGHistoryStatisticsBucket = HassStatisticEntry
-
-// Color Types ---------------------------------------------------------------------------------------------------------
-
-export type RGBColor = [number, number, number] | [number, number, number, number]; // RGBA color with alpha channel
-
-export type ColorType = RGBColor | string | undefined; // Can be RGB array, HEX string, or undefined

@@ -1,4 +1,4 @@
-import { HomeAssistant } from 'custom-card-helpers';
+import type { HomeAssistant } from '../types';
 
 import * as defaults from './defaults.json';
 

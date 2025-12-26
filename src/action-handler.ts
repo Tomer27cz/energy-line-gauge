@@ -1,8 +1,8 @@
-import { fireEvent } from 'custom-card-helpers';
 import { noChange } from 'lit';
 import { AttributePart, directive, Directive, DirectiveParameters } from 'lit/directive.js';
 
 import { deepEqual } from './deep-equal';
+import { fireEvent } from './helpers';
 
 export const actions = ['more-info', 'toggle', 'navigate', 'url', 'call-service', 'none'] as const;
 

@@ -33,7 +33,6 @@
   "dependencies": {
     "@mdi/js": "^7.4.47",
     "color-string": "^2.0.1",
-    "custom-card-helpers": "1.9.0",
     "lit": "2.8.0",
     "memoize-one": "^6.0.0",
     "sortablejs": "1.15.2"
@@ -54,6 +53,7 @@
     "prettier": "3.3.2",
     "rollup": "^4.36.0",
     "tslib": "^2.6.3",
-    "typescript": "5.5.3"
+    "typescript": "5.5.3",
+    "home-assistant-js-websocket": "^9.6.0"
   }
 }

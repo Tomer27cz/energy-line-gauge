@@ -2,11 +2,11 @@ import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import memoizeOne  from 'memoize-one';
 
-import { HomeAssistant, fireEvent } from 'custom-card-helpers';
-
+import { fireEvent } from '../helpers';
 import { localize, setupLocalize } from '../localize/localize';
+import { HomeAssistant, ELGEntity } from '../types';
+import { DEFAULT_ACTIONS } from '../const';
 
-import { ELGEntity, DEFAULT_ACTIONS } from '../types';
 import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
 
 @customElement('energy-line-gauge-item-editor')

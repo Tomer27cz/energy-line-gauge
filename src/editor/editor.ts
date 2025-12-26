@@ -12,14 +12,10 @@ import {
 
 import memoizeOne  from 'memoize-one';
 
-import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
-import {
-  ELGConfig,
-  HassCustomElement,
-  ELGEntity,
-  DEFAULT_ACTIONS
-} from '../types';
+import { fireEvent } from '../helpers';
+import { HomeAssistant, LovelaceCardEditor, ELGConfig, HassCustomElement, ELGEntity } from '../types';
 import { localize, setupLocalize } from '../localize/localize';
+import { DEFAULT_ACTIONS } from '../const'
 
 import './item-editor';
 import './items-editor';
