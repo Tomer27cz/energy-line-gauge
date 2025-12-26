@@ -1,8 +1,8 @@
 import { LitElement, html, css, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { mdiDelete, mdiPencil, mdiDrag } from '@mdi/js';
 
+import { mdiDelete, mdiPencil } from '../const';
 import { HomeAssistant, EditorTarget, ELGEntity } from '../types';
 import { configElementStyle } from '../styles';
 import { fireEvent } from '../helpers';

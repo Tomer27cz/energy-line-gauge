@@ -7,7 +7,7 @@ import { localize, setupLocalize } from '../localize/localize';
 import { HomeAssistant, ELGEntity } from '../types';
 import { DEFAULT_ACTIONS } from '../const';
 
-import { mdiGestureTap, mdiRuler, mdiTextShort } from '@mdi/js';
+import { mdiGestureTap, mdiRuler, mdiTextShort } from '../const';
 
 @customElement('energy-line-gauge-item-editor')
 export class ItemEditor extends LitElement {

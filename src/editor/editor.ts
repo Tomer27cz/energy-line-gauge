@@ -8,7 +8,7 @@ import {
   mdiListBox,
   mdiChartBar,
   mdiChartAreaspline,
-} from '@mdi/js';
+} from '../const';
 
 import memoizeOne  from 'memoize-one';
 

@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 
-import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '@mdi/js';
+import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '../const';
 
 import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig } from '../types';
 import { fireEvent } from '../helpers';

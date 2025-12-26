@@ -31,7 +31,6 @@
     "test": "rollup -c && python mov_prod.py"
   },
   "dependencies": {
-    "@mdi/js": "^7.4.47",
     "color-string": "^2.0.1",
     "lit": "2.8.0",
     "memoize-one": "^6.0.0",
