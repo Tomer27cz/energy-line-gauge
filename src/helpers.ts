@@ -34,12 +34,12 @@ export type ActionConfigParams = {
   double_tap_action?: ActionConfig;
 };
 
-export const handleAction = async (
+export const handleAction = (
   node: HTMLElement,
   _hass: HomeAssistant,
   config: ActionConfigParams,
   action: string
-): Promise<void> => {
+): void => {
   fireEvent(node, "hass-action", { config, action });
 };
 

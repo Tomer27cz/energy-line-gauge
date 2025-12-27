@@ -69,13 +69,13 @@ def check_languages():
             print(f"Defaults have all keys.")
 
     if any_missing_keys:
-        print("\nMISSING KEYS, PLEASE FIX!")
+        print("\nMISSING KEYS, PLEASE FIX!", file=sys.stderr)
         override = input("Continue anyway? (y/n): ")
         if override.lower() != 'y':
             sys.exit(1)
         print("Continuing anyway...\n")
     elif any_additional_keys:
-        print("\nADDITIONAL KEYS, PLEASE FIX!")
+        print("\nADDITIONAL KEYS, PLEASE FIX!", file=sys.stderr)
         override = input("Continue anyway? (y/n): ")
         if override.lower() != 'y':
             sys.exit(1)
@@ -107,7 +107,7 @@ def replace_and_copy(source_path, dest_path, old_string, new_string):
         print(f"The file {source_path} was not found.")
     except Exception as e:
         # KEEPING PRINT STATEMENT THE SAME:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred: {e}", file=sys.stderr)
 
 def copy_build_files():
     dist_dir = "dist"
@@ -116,7 +116,7 @@ def copy_build_files():
 
     if not os.path.isdir(dist_dir):
         # ADAPTED PRINT STATEMENT (Original referred to a single file):
-        print(f"Error: Source directory '{dist_dir}' does not exist.")
+        print(f"Error: Source directory '{dist_dir}' does not exist.", file=sys.stderr)
         sys.exit(1)
 
     if not os.path.isdir(destination_path):
@@ -126,7 +126,7 @@ def copy_build_files():
             print(f"Created missing destination directory: {destination_path}")
         except OSError as e:
             # KEEPING PRINT STATEMENT THE SAME:
-            print(f"Error creating destination directory '{destination_path}': {e}")
+            print(f"Error creating destination directory '{destination_path}': {e}", file=sys.stderr)
             sys.exit(1)
 
     # Clean old .js files in destination to avoid clutter from old hashes
@@ -136,7 +136,7 @@ def copy_build_files():
             try:
                 os.remove(os.path.join(destination_path, filename))
             except Exception as e:
-                print(f"Warning: Could not remove old file {filename}: {e}")
+                print(f"Warning: Could not remove old file {filename}: {e}", file=sys.stderr)
 
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     search_string = "%c ENERGY LINE GAUGE"
@@ -159,10 +159,10 @@ def copy_build_files():
                     shutil.copy2(source_file, destination_file)
                     print(f"File copied successfully to {destination_file}")
                 except Exception as e:
-                    print(f"An error occurred: {e}")
+                    print(f"An error occurred: {e}", file=sys.stderr)
 
     if files_processed == 0:
-        print(f"Error: No files found in '{dist_dir}'.")
+        print(f"Error: No files found in '{dist_dir}'.", file=sys.stderr)
 
 if __name__ == "__main__":
     check_languages()
