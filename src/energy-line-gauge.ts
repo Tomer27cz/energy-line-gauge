@@ -2,6 +2,9 @@ import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from
 import { customElement, property, state } from 'lit/decorators.js';
 import type { HomeAssistant, LovelaceCardEditor, LovelaceCard, ActionHandlerEvent } from './types';
 
+import { UnsubscribeFunc } from "home-assistant-js-websocket";
+import { subscribeRenderTemplate, RenderTemplateResult, isTemplate } from './template';
+
 import { version } from '../package.json';
 
 import {
@@ -61,6 +64,9 @@ export class EnergyLineGauge extends LitElement {
   @state() private _config!: ELGConfig;
 
   @property() private _card!: LovelaceCard;
+
+  @state() private _templateResults: Record<string, string> = {};
+  @state() private _unsubRenderTemplates: Map<string, Promise<UnsubscribeFunc>> = new Map();
 
   private _warnings: EntityWarning[] = [];
 
@@ -146,8 +152,14 @@ export class EnergyLineGauge extends LitElement {
     requestAnimationFrame(() => this._checkAllLabelsOverflow());
   }
 
+  public connectedCallback() {
+    super.connectedCallback();
+    this._tryConnect().catch(err => console.error("Template connect failed:", err));
+  }
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._tryDisconnect().catch(err => console.error("Template disconnect failed:", err));
+
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
     }
@@ -158,12 +170,12 @@ export class EnergyLineGauge extends LitElement {
       return true;
     }
 
+    if (changedProps.has('_templateResults')) {return true;}
     if (changedProps.has('_entitiesHistoryOffset')) {return true;}
     if (changedProps.has('_entitiesHistoryStatistics')) {return true;}
 
     if (changedProps.has('_config')) {
       const oldConfig = changedProps.get('_config') as ELGConfig;
-
       if (!deepEqual(this._config, oldConfig)) {
         return true;
       }
@@ -174,7 +186,6 @@ export class EnergyLineGauge extends LitElement {
       if (this._config.offset) {return false;}
 
       const oldHass = changedProps.get('hass') as HomeAssistant | undefined;
-
       if (!oldHass) {
         return true;
       }
@@ -196,12 +207,91 @@ export class EnergyLineGauge extends LitElement {
     super.updated(changedProperties);
     if (this.hass && this._card) {this._card.hass = this.hass;}
 
+    this._tryConnect().catch(err => console.error("Template connect failed:", err));
+
     if (['tooltip', 'tooltip-segment'].includes(this._config.line_text_overflow ?? 'tooltip'))  {
       requestAnimationFrame(() => this._checkAllLabelsOverflow());
       return;
     }
 
     requestAnimationFrame(() => this._resetAllLabelsToVisible());
+  }
+
+  private async _tryConnect(): Promise<void> {
+    if (!this.hass || !this._config) return;
+
+    ['title', 'subtitle', 'header'].forEach((key) => {
+      if (this._config[key] && isTemplate(this._config[key])) {
+        this._subscribeToTemplate(key, this._config[key]);
+      }
+    });
+
+    this._config.entities?.forEach((entity, index) => {
+      if (entity.name && isTemplate(entity.name)) {
+        this._subscribeToTemplate(`entity_${index}_name`, entity.name);
+      }
+    });
+  }
+  private async _subscribeToTemplate(key: string, template: string): Promise<void> {
+    if (this._unsubRenderTemplates.has(key)) {
+      return;
+    }
+
+    try {
+      const sub = subscribeRenderTemplate(
+        this.hass.connection,
+        (result: RenderTemplateResult) => {
+          this._templateResults = {
+            ...this._templateResults,
+            [key]: result.result,
+          };
+        },
+        {
+          template: template,
+          variables: {
+            config: this._config,
+            user: this.hass.user!.name,
+            entity: this._config.entity,
+          },
+          strict: true,
+        }
+      );
+      this._unsubRenderTemplates.set(key, sub);
+      await sub;
+    } catch (e) {
+      console.error("Error subscribing to template", e);
+      this._templateResults = {
+        ...this._templateResults,
+        [key]: template, // Fallback to raw string
+      };
+      this._unsubRenderTemplates.delete(key);
+    }
+  }
+  private async _tryDisconnect(): Promise<void> {
+    for (const key of this._unsubRenderTemplates.keys()) {
+      await this._tryDisconnectKey(key);
+    }
+  }
+  private async _tryDisconnectKey(key: string): Promise<void> {
+    const unsubPromise = this._unsubRenderTemplates.get(key);
+    if (!unsubPromise) return;
+
+    try {
+      const unsub = await unsubPromise;
+      unsub();
+      this._unsubRenderTemplates.delete(key);
+    } catch (err: any) {
+      if (err.code === "not_found" || err.code === "template_error") {
+        // Ignore normal closure errors
+      } else {
+        throw err;
+      }
+    }
+  }
+  private _getTemplateValue(key: string, fallback: string | undefined): string {
+    if (this._templateResults[key] !== undefined) {return this._templateResults[key];}
+    if (fallback && !isTemplate(fallback)) {return fallback;}
+    return fallback ?? "";
   }
 
   private _checkAllLabelsOverflow(): void {
@@ -322,7 +412,7 @@ export class EnergyLineGauge extends LitElement {
 
     return html`
       <ha-card
-        .header=${this._config.header}
+        .header=${this._getTemplateValue('header', this._config.header)}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
           hasHold: hasAction(this._config.hold_action),
@@ -604,6 +694,9 @@ export class EnergyLineGauge extends LitElement {
     const titleStyle = getTextStyle(this._config.title_text_style, titleTextSize, titleColor);
     const valueStyle = getTextStyle(this._config.text_style, textSize, valueColor);
 
+    const titleText = this._getTemplateValue('title', this._config.title);
+    const subtitleText = this._getTemplateValue('subtitle', this._config.subtitle);
+
     if (!displayTitle) {valuePosition = "left";}
     if (["in-title-right", "in-title-left"].includes(valuePosition)) {displayValue = false;}
 
@@ -617,8 +710,8 @@ export class EnergyLineGauge extends LitElement {
       <div class="title-value-position-${valuePosition == 'in-title-left' ? 'left' : valuePosition == 'in-title-right' ? 'right' : 'none'}">
         ${["in-title-right", "in-title-left"].includes(valuePosition) ? valueTemplate : ''}
         <div>
-          ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}; color: ${titleColor}">${this._config.title}</div>` : ''}
-          ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}; color: ${subtitleColor}">${this._config.subtitle}</div>` : ''}
+          ${this._config.title ? html`<div class="gauge-title" style="font-size: ${titleTextSize}rem; ${titleStyle}; color: ${titleColor}">${titleText}</div>` : ''}
+          ${this._config.subtitle ? html`<div class="gauge-subtitle" style="font-size: ${titleTextSize/2}rem; ${titleStyle}; color: ${subtitleColor}">${subtitleText}</div>` : ''}
         </div>
       </div>  
     `;
@@ -672,7 +765,14 @@ export class EnergyLineGauge extends LitElement {
   // ----------------------------------------------------- Entity ------------------------------------------------------
 
   private _entityName(device: ELGEntity): string {
-    if (device.name) {return device.name;}
+    if (device.name) {
+      const index = this._config.entities.indexOf(device);
+      if (index !== -1) {
+        const key = `entity_${index}_name`;
+        if (this._templateResults[key]) return this._templateResults[key];
+        if (!isTemplate(device.name)) return device.name;
+      }
+    }
     return this._entitiesObject[device.entity].stateObject.attributes.friendly_name || device.entity.split('.')[1];
   }
   private _entityIcon(device: ELGEntity): string {

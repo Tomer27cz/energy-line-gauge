@@ -101,7 +101,6 @@ export const styles = css`
         text-align: left;
         flex-wrap: nowrap;
         white-space: nowrap;
-        margin-bottom: 0.5rem;
     }
     .gauge-subtitle {
         font-size: 1rem;
