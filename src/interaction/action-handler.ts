@@ -5,12 +5,12 @@ import {
   Directive,
   DirectiveParameters,
 } from "lit/directive.js";
-import { fireEvent } from "./helpers";
+import { fireEvent } from "./event-helpers";
 import { deepEqual } from "./deep-equal";
 import {
   ActionHandlerDetail,
   ActionHandlerOptions,
-} from "./types";
+} from "../types";
 
 const isTouch =
   "ontouchstart" in window ||

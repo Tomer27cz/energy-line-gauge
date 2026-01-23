@@ -8,19 +8,19 @@ import {
   mdiListBox,
   mdiChartBar,
   mdiChartAreaspline,
-} from '../const';
+} from '../config/const';
 
 import memoizeOne  from 'memoize-one';
 
-import { fireEvent } from '../helpers';
+import { fireEvent } from '../interaction/event-helpers';
 import { HomeAssistant, LovelaceCardEditor, ELGConfig, HassCustomElement, ELGEntity } from '../types';
 import { localize, setupLocalize } from '../localize/localize';
-import { DEFAULT_ACTIONS } from '../const'
+import { DEFAULT_ACTIONS } from '../config/const'
 
 import './item-editor';
 import './items-editor';
 import './color-editor';
-import { configElementStyle } from '../styles';
+import { configElementStyle } from '../style/styles';
 
 @customElement('energy-line-gauge-editor')
 export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEditor {

@@ -1,13 +1,15 @@
 import { LitElement, html, TemplateResult, PropertyValues, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { HomeAssistant, LovelaceCardEditor, LovelaceCard, ActionHandlerEvent } from './types';
-
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
-import { subscribeRenderTemplate, RenderTemplateResult, isTemplate } from './template';
+import memoizeOne from 'memoize-one';
 
 import { version } from '../package.json';
 
 import {
+  HomeAssistant,
+  LovelaceCardEditor,
+  LovelaceCard,
+
   ELGConfig,
   ELGEntity,
   ELGEntityState,
@@ -32,17 +34,22 @@ import {
   RGBColor,
   ColorType,
   IndicatorType,
-  EntityWarning
-} from './types';
-import { styles, getTextStyle } from './styles';
-import { actionHandler } from './action-handler';
-import { findEntities } from './find-entities';
-import { CONFIG_DEFAULTS, setConfigDefaults } from './defaults';
-import { toRGB, getTextColor } from './color';
-import { hasAction, handleAction } from './helpers';
-import { deepEqual } from './deep-equal';
+  EntityWarning,
 
-import memoizeOne from 'memoize-one';
+  ActionHandlerEvent
+} from './types';
+
+import { styles, getTextStyle } from './style/styles';
+import { toRGB, getTextColor } from './style/color';
+
+import { actionHandler } from './interaction/action-handler';
+import { hasAction, handleAction } from './interaction/event-helpers';
+import { deepEqual } from './interaction/deep-equal';
+
+import { findEntities } from './data/find-entities';
+import { CONFIG_DEFAULTS, setConfigDefaults } from './config/defaults';
+
+import { subscribeRenderTemplate, RenderTemplateResult, isTemplate } from './data/template';
 
 console.info(
   `%c ENERGY LINE GAUGE %c ${version} `,
@@ -154,11 +161,11 @@ export class EnergyLineGauge extends LitElement {
 
   public connectedCallback() {
     super.connectedCallback();
-    this._tryConnect().catch(err => console.error("Template connect failed:", err));
+    this._tryConnect().catch(err => console.error("ELG: Template connect failed:", err));
   }
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._tryDisconnect().catch(err => console.error("Template disconnect failed:", err));
+    this._tryDisconnect().catch(err => console.error("ELG: Template disconnect failed:", err));
 
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();

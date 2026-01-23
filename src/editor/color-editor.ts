@@ -2,12 +2,12 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 
-import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '../const';
+import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '../config/const';
 
 import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig } from '../types';
-import { fireEvent } from '../helpers';
-import { toRGB, rgbToHex } from '../color'
-import { setConfigDefaults, setEntitiesDefaults } from '../defaults';
+import { fireEvent } from '../interaction/event-helpers';
+import { toRGB, rgbToHex } from '../style/color'
+import { setConfigDefaults, setEntitiesDefaults } from '../config/defaults';
 import { setupLocalize } from '../localize/localize';
 
 type ColorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' | 'text_primary' | 'text_secondary' | 'text_disabled' | 'line_primary' | 'line_accent' | 'line_primary_bg' | 'line_secondary_bg' | 'line_card_bg';

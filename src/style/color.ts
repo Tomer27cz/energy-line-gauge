@@ -1,4 +1,4 @@
-import { ColorType, RGBColor } from './types';
+import { ColorType, RGBColor } from '../types';
 
 import colorString from 'color-string';
 

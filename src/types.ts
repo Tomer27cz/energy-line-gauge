@@ -26,7 +26,7 @@ import {
   TimeFormat,
   UNTRACKED_STATE_CONTENT_TYPES,
   VALUE_POSITION_TYPES,
-} from './const';
+} from './config/const';
 
 // =====================================================================================================================
 // 1. HOME ASSISTANT CORE TYPES

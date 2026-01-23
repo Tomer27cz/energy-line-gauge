@@ -2,10 +2,10 @@ import { LitElement, html, css, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import { mdiDelete, mdiPencil } from '../const';
+import { mdiDelete, mdiPencil } from '../config/const';
 import { HomeAssistant, EditorTarget, ELGEntity } from '../types';
-import { configElementStyle } from '../styles';
-import { fireEvent } from '../helpers';
+import { configElementStyle } from '../style/styles';
+import { fireEvent } from '../interaction/event-helpers';
 
 import { Sortable, OnSpill, AutoScroll } from 'sortablejs/modular/sortable.core.esm';
 import type { SortableEvent } from 'sortablejs/modular/sortable.core.esm';

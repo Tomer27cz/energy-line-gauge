@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import memoizeOne from 'memoize-one';
-import { ColorType, TextStyleType } from './types';
+import { ColorType, TextStyleType } from '../types';
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
 export const configElementStyle = css`

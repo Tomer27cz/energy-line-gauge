@@ -19,7 +19,7 @@ import {
   StatisticsFunctionType,
 
   ColorType,
-} from './types';
+} from '../types';
 
 import {
   CORNER_TYPES,
@@ -37,7 +37,7 @@ import {
   STATISTICS_FUNCTION_TYPES,
 } from './const';
 
-import { COLORS } from './color';
+import { COLORS } from '../style/color';
 
 // Some values are undefined but set programmatically in the code - comment
 export const CONFIG_DEFAULTS = {
