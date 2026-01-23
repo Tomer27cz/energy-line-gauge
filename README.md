@@ -801,6 +801,29 @@ You can add gaps between segments in the line. The gaps can be customized with `
 
 </div>
 
+## Templating
+
+<div id="templating">
+
+Added support for [Home Assistant templating](https://www.home-assistant.io/docs/configuration/templating/) in [v2.2.7](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.2.7).
+
+The following fields support templating: `title`, `subtitle`, `unit`, `untracked_legend_label`, entity `name`, entity `unit`.
+
+An example of templating in the title:
+
+```yaml
+type: custom:energy-line-gauge
+entities: []
+entity: sensor.pipe_temperature
+unit: °C
+title_position: right
+title: "{{ states('binary_sensor.pump_status') | upper }}"
+```
+
+You can learn more about templating in Home Assistant [here](https://www.home-assistant.io/docs/configuration/templating/).
+
+</div>
+
 </div>
 
 <div id="issues">

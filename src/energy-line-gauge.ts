@@ -214,7 +214,7 @@ export class EnergyLineGauge extends LitElement {
     super.updated(changedProperties);
     if (this.hass && this._card) {this._card.hass = this.hass;}
 
-    this._tryConnect().catch(err => console.error("Template connect failed:", err));
+    this._tryConnect().catch(err => console.error("ELG: Template connect failed:", err));
 
     if (['tooltip', 'tooltip-segment'].includes(this._config.line_text_overflow ?? 'tooltip'))  {
       requestAnimationFrame(() => this._checkAllLabelsOverflow());
@@ -227,15 +227,21 @@ export class EnergyLineGauge extends LitElement {
   private async _tryConnect(): Promise<void> {
     if (!this.hass || !this._config) return;
 
-    ['title', 'subtitle', 'header'].forEach((key) => {
+    // Subscribe to templates in config
+    const templateFields = ['title', 'subtitle', 'header', 'unit', 'untracked_legend_label']
+    templateFields.forEach((key) => {
       if (this._config[key] && isTemplate(this._config[key])) {
         this._subscribeToTemplate(key, this._config[key]);
       }
     });
 
     this._config.entities?.forEach((entity, index) => {
-      if (entity.name && isTemplate(entity.name)) {
+      if (entity.name && isTemplate(entity.name)) { // Subscribe to entity name template
         this._subscribeToTemplate(`entity_${index}_name`, entity.name);
+      }
+
+      if (entity.unit && isTemplate(entity.unit)) { // Subscribe to entity unit template
+        this._subscribeToTemplate(`entity_${index}_unit`, entity.unit);
       }
     });
   }
@@ -266,7 +272,7 @@ export class EnergyLineGauge extends LitElement {
       this._unsubRenderTemplates.set(key, sub);
       await sub;
     } catch (e) {
-      console.error("Error subscribing to template", e);
+      console.error("ELG: Error subscribing to template", e);
       this._templateResults = {
         ...this._templateResults,
         [key]: template, // Fallback to raw string
@@ -390,12 +396,12 @@ export class EnergyLineGauge extends LitElement {
     if (this._config.line_separator && renderedLines > 0) {
       const calculateTotalSeparatorWidth = (configString: string, numberOfSeparators: number): number => {
         const firstDigitIndex = configString.search(/\d/);
-        if (firstDigitIndex === -1) {console.error(`Invalid config: ${configString}.`); return 0}
+        if (firstDigitIndex === -1) {console.error(`ELG: Invalid config: ${configString}.`); return 0}
 
         const mode = configString.substring(0, firstDigitIndex);
         const value = parseInt(configString.substring(firstDigitIndex), 10) / 10;
 
-        if (isNaN(value)) {console.error(`Invalid value parsed from: ${configString}`); return 0}
+        if (isNaN(value)) {console.error(`ELG: Invalid value parsed from: ${configString}`); return 0}
 
         switch (mode) {
           case "total": return value;
@@ -710,7 +716,7 @@ export class EnergyLineGauge extends LitElement {
     const valueTemplate = html`
       <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: ${valueColor}">
         ${this._calcStateMain().toFixed(this._config.precision)}
-        ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._config.unit}</span>` : ''}
+        ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._getTemplateValue('unit', this._config.unit)}</span>` : ''}
       </div>
     `;
     const titleTemplate = html`
@@ -785,6 +791,17 @@ export class EnergyLineGauge extends LitElement {
   private _entityIcon(device: ELGEntity): string {
     if (device.icon) {return device.icon;}
     return this._entitiesObject[device.entity].stateObject.attributes.icon || '';
+  }
+  private _entityUnit(device: ELGEntity): string {
+    if (device.unit) {
+      const index = this._config.entities.indexOf(device);
+      if (index !== -1) {
+        const key = `entity_${index}_unit`;
+        if (this._templateResults[key]) return this._templateResults[key];
+        if (device.unit && !isTemplate(device.unit)) return device.unit;
+      }
+    }
+    return this._entitiesObject[device.entity].stateObject.attributes.unit_of_measurement || '';
   }
 
   // Label -------------------------------------------------------------------------------------------------------------
@@ -1009,7 +1026,10 @@ export class EnergyLineGauge extends LitElement {
   }
   private _untrackedLabel(line = false): LabelRenderResult | undefined {
     const stateContent = line ? this._config.untracked_line_state_content : this._config.untracked_state_content;
-    const defaultLabel = this._config.untracked_legend_label ?? this.hass.localize('ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption');
+    const templateResult = this._getTemplateValue('untracked_legend_label', this._config.untracked_legend_label);
+
+    const defaultLabel = templateResult != "" ?
+      templateResult : this.hass.localize('ui.panel.lovelace.cards.energy.energy_devices_detail_graph.untracked_consumption');
 
     return this._renderLabelInternal(
       stateContent,
@@ -1021,15 +1041,20 @@ export class EnergyLineGauge extends LitElement {
 
   // Formatting --------------------------------------------------------------------------------------------------------
 
-  private _formatValue(value: any, precision?: number, unit?: string): string {
+  private _formatValue(value: number, precision?: number, unit?: string): string {
     if (!value && value !== 0) return '';
-    return `${parseFloat(value).toFixed(precision??0)}${unit ? ` ${unit}` : ''}`;
+    return `${value.toFixed(precision ?? 0)}${unit ? ` ${unit}` : ''}`;
+
   }
-  private _formatValueMain(value: any): string {
+  private _formatValueMain(value: number): string {
     return this._formatValue(value, this._config.precision, this._config.unit);
   }
   private _formatValueDevice(device: ELGEntity): string {
-    return this._formatValue(this._entitiesObject[device.entity].state, device.precision ?? this._config.precision, device.unit ?? this._config.unit);
+    const entityValue = this._entitiesObject[device.entity].state;
+    const entityPrecision = device.precision ?? this._config.precision;
+    const entityUnit = this._entityUnit(device) ?? this._config.unit;
+
+    return this._formatValue(entityValue, entityPrecision, entityUnit);
   }
 
   // Validation --------------------------------------------------------------------------------------------------------
@@ -1187,7 +1212,7 @@ export class EnergyLineGauge extends LitElement {
         updating: false,
       };
     }).catch((err) => {
-      console.error("Energy Line Gauge: Failed to fetch history", err);
+      console.error("ELG: Failed to fetch history", err);
       if (this._entitiesHistoryOffset) {
         this._entitiesHistoryOffset.updating = false;
       }
@@ -1212,19 +1237,19 @@ export class EnergyLineGauge extends LitElement {
 
   private _getStatisticsState(entityID: string): number | null | undefined {
     if (!this._config.statistics) {
-      console.error("_getStatisticsState when !statistics");
+      console.error("ELG: _getStatisticsState when !statistics");
       return;
     }
     if (!this._entitiesHistoryStatistics) {
-      console.error("_no _entitiesHistoryStatistics");
+      console.error("ELG: _no _entitiesHistoryStatistics");
       return 0;
     }
     if (!this._entitiesHistoryStatistics.buckets) {
-      console.error("_no buckets");
+      console.error("ELG: _no buckets");
       return 0;
     }
     if (!this._entitiesHistoryStatistics.buckets[entityID]) {
-      console.error(`no _entitiesHistoryStatistics.buckets[${entityID}]`);
+      console.error(`ELG: no _entitiesHistoryStatistics.buckets[${entityID}]`);
       return 0;
     }
 
@@ -1239,7 +1264,7 @@ export class EnergyLineGauge extends LitElement {
     });
 
     if (!currentBucket) {
-      console.error("no bucket found for current timestamp: ", currentTimestamp);
+      console.error("ELG: no bucket found for current timestamp: ", currentTimestamp);
       return;
     }
 
@@ -1297,7 +1322,7 @@ export class EnergyLineGauge extends LitElement {
         buckets: statistics,
       };
     }).catch((err) => {
-      console.error("Energy Line Gauge: Failed to fetch statistics", err);
+      console.error("ELG: Failed to fetch statistics", err);
       if (this._entitiesHistoryStatistics) {
         this._entitiesHistoryStatistics.updating = false;
       }
