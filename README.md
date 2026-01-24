@@ -40,7 +40,6 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
 <div id="table-of-contents">
 <h1>Table of Contents</h1>
 
-* [Energy Line Gauge](#energy-line-gauge)
 * [Installation](#installation)
     * [Installation via HACS](#installation-via-hacs)
     * [Manual installation](#manual-installation)
@@ -65,6 +64,8 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
     * [Untracked State Content](#untracked_state_content)
 * [Offset](#offset)
 * [Statistics](#statistics)
+* [Line Separators](#line_separators)
+* [Templating](#templating)
 * [Issues](#issues)
 * [Contribute](#contribute)
 
@@ -79,20 +80,20 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
 <h2> Installation via <a href="https://hacs.xyz/">HACS</a><img src="https://img.shields.io/badge/-Recommended-%2303a9f4" alt=""/></h2>
 
 1. Make sure the [HACS](https://github.com/custom-components/hacs) custom component is installed and working.
-2. Search for `energy-line-gauge` and add it through HACS
-3. Refresh home-assistant.
-4. 
+2. Search for `energy-line-gauge`
+3. Click Download and then select the latest version.
+4. Reload home-assistant.
 </div>
 
 <div id="manual-installation">
 <h2> Manual installation</h2>
 
-1. Download the [energy-line-gauge](http://www.github.com/Tomer27cz/energy-line-gauge/releases/latest/download/energy-line-gauge.js) (`energy-line-gauge.js` from latest release)
-2. Create a `energy-line-gauge` folder your `config/www` folder and place the file in there
+1. Download the three files from the [latest release](http://www.github.com/Tomer27cz/energy-line-gauge/releases/latest)
+2. Create a `energy-line-gauge` folder inside your `config/www` folder and place the files in there
 3. Include the card code in your `ui-lovelace-card.yaml`
   ```yaml
   resources:
-    - url: /local/energy-line-gauge.js
+    - url: /local/energy-line-gauge/energy-line-gauge.js
       type: module
   ```
 Or alternatively set it up via the UI:
@@ -257,7 +258,7 @@ There are a lot of settings you can customize your sensors with:
 | `line_height`                  |        number         |              `3`               |                                            2                                             | Height of the line in rem.                                                                                                                 |
 | `corner`                       |      CornerType       |            `square`            |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                      |
 | `state_content_separator`      |        string         |            `' ⸱ '`             |                                           '-'                                            | This string is added between state content items in legend and line.                                                                       |
-| `line_separator`               |         bool          |            `false`             |                                          true`                                           | Separates the line segments with the background color.                                                                                     |
+| `line_separator`               |         bool          |            `false`             |                                           true                                           | Separates the line segments with the background color.                                                                                     |
 | `line_separator_width`         |  SeparatorWidthType   |           `total050`           |                                         each008                                          | Width of separators. Total - Percentage gets divide, Each - Each separator gets fixed percentage [see more](#line_separators).             |
 | `line_separator_color`         |       ColorType       | `var(--card-background-color)` |                                          white                                           | Color of the line separators.                                                                                                              |
 | `position`                     |   ValuePositionType   |             `left`             |                                           none                                           | Position of the main label [see examples](#position)                                                                                       |
@@ -512,7 +513,7 @@ untracked_legend_label: Untracked
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/in-title-right.png" alt="in-title-right">
 
 ### `position: in-title-left` `title_position: top-center`
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/in-title-left.png" alt="int-title-left">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/position/in-title-left.png" alt="in-title-left">
 
 
 ## Legend
