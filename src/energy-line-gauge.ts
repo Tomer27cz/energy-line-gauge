@@ -39,7 +39,7 @@ import {
   ActionHandlerEvent
 } from './types';
 
-import { styles, getTextStyle } from './style/styles';
+import { styles, getTextStyle, getOverflowStyle } from './style/styles';
 import { toRGB, getTextColor } from './style/color';
 
 import { actionHandler } from './interaction/action-handler';
@@ -323,105 +323,9 @@ export class EnergyLineGauge extends LitElement {
       return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
     }
 
-    this._entitiesObject = {};
-    this._warnings = [];
-
     if (!this._validate(this._config.entity)) {return this._renderWarnings();}
 
-    if (this._config.offset) {this._getOffsetHistory();}
-    if (this._config.statistics) {this._getStatisticsHistory();}
-
-    const mainState: number = this._calcStateMain();
-
-    let max: number = this._getMax(mainState);
-    let min: number = this._getMin();
-
-    if (mainState > max) {max = mainState;}
-    let range: number = max - min;
-    if (range === 0) {range = 1;}
-
-    const clampedMain: number = Math.min(Math.max(mainState, min), max);
-    const mainWidth: number = ((clampedMain - min) / range) * 100;
-    const mainPercentage: number = clampedMain / max;
-
-    this._mainObject = {
-      state: mainState,
-      width: mainWidth,
-      percentage: mainPercentage,
-      stateObject: this.hass.states[this._config.entity],
-    };
-
-    let stateSum: number = 0;
-    let percentageSum: number = 0;
-    let widthSum: number = 0;
-    let renderedLines: number = 0;
-
-    for (const device of this._config.entities ?? []) {
-      if (!this._validate(device.entity)) continue;
-
-      const stateObj: HassEntity = this.hass.states[device.entity];
-      const state: number = this._calcState(stateObj, device.multiplier);
-      const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
-
-      const percentage: number = (state / mainState) ?? 0;
-      const clampedDevice = Math.min(Math.max(state, min), max);
-      const width: number = state <= cutoff ? 0 : (((clampedDevice - min) / range) * 100 ) ?? 0;
-
-      stateSum += state;
-      percentageSum += percentage;
-      widthSum += width;
-
-      if (width > 0) {renderedLines += 1;}
-
-      this._entitiesObject[device.entity] = {
-        state: state,
-        width: width,
-        percentage: percentage,
-        stateObject: stateObj,
-      };
-    }
-
-    this._entitiesTotalObject = {
-      state: stateSum,
-      width: widthSum,
-      percentage: percentageSum,
-    }
-
-    this._untrackedObject = {
-      state: mainState - stateSum,
-      width: mainWidth - widthSum,
-      percentage: (mainState - stateSum) / mainState,
-    };
-
-    if (this._config.line_separator && renderedLines > 0) {
-      const calculateTotalSeparatorWidth = (configString: string, numberOfSeparators: number): number => {
-        const firstDigitIndex = configString.search(/\d/);
-        if (firstDigitIndex === -1) {console.error(`ELG: Invalid config: ${configString}.`); return 0}
-
-        const mode = configString.substring(0, firstDigitIndex);
-        const value = parseInt(configString.substring(firstDigitIndex), 10) / 10;
-
-        if (isNaN(value)) {console.error(`ELG: Invalid value parsed from: ${configString}`); return 0}
-
-        switch (mode) {
-          case "total": return value;
-          case "each": return numberOfSeparators * value;
-          default: return 5;
-        }
-      };
-
-      const numberOfSeparators = this._untrackedObject.width > 0 ? renderedLines : Math.max(0, renderedLines - 1);
-      const totalSeparatorWidth: number = calculateTotalSeparatorWidth(this._config.line_separator_width??"total050", numberOfSeparators);
-      const multiplier = 1-(totalSeparatorWidth*0.01);
-
-      this._lineSeparatorWidth = totalSeparatorWidth / numberOfSeparators;
-
-      for (const deviceKey in this._entitiesObject) {
-        if (this._entitiesObject[deviceKey].width == 0) continue;
-        this._entitiesObject[deviceKey].width *= multiplier;
-      }
-      this._untrackedObject.width *= multiplier;
-    }
+    this._calculate();
 
     return html`
       <ha-card
@@ -560,23 +464,6 @@ export class EnergyLineGauge extends LitElement {
   }
   _createDeviceLines() {
     if (!this._config.entities) return html``;
-
-    const getOverflowStyle = (type: string, direction: string) => {
-      const dirStyle = `direction: ${direction === 'right' ? 'ltr' : 'rtl'};`;
-      switch (type) {
-        case "ellipsis":
-          return `overflow: hidden; text-overflow: ellipsis; ${dirStyle}`;
-        case "clip":
-          return `overflow: hidden; text-overflow: clip; ${dirStyle}`;
-        case "fade":
-          const fadeDir = direction === 'left' ? 'left' : 'right';
-          return `mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
-                -webkit-mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
-                ${dirStyle}`;
-        default:
-          return `overflow: hidden;`;
-      }
-    };
 
     const renderLabel = (
       template: any,
@@ -1112,6 +999,124 @@ export class EnergyLineGauge extends LitElement {
   }
 
   // State Calculations ------------------------------------------------------------------------------------------------
+
+  private _calculateTotalSeparatorWidth(configString: string, numberOfSeparators: number): number {
+    const firstDigitIndex = configString.search(/\d/);
+    if (firstDigitIndex === -1) {
+      console.error(`ELG: Invalid config: ${configString}.`);
+      return 0;
+    }
+
+    const mode = configString.substring(0, firstDigitIndex);
+    const value = parseInt(configString.substring(firstDigitIndex), 10) / 10;
+
+    if (isNaN(value)) {
+      console.error(`ELG: Invalid value parsed from: ${configString}`);
+      return 0;
+    }
+
+    switch (mode) {
+      case 'total':
+        return value;
+      case 'each':
+        return numberOfSeparators * value;
+      default:
+        return 5;
+    }
+  }
+  private _calculateSeparatorWidth(renderedLines: number): void {
+    if (!this._config.line_separator) {return;}
+    if (renderedLines <= 0) {return;}
+
+    const numberOfSeparators = this._untrackedObject.width > 0 ? renderedLines : Math.max(0, renderedLines - 1);
+    const totalSeparatorWidth: number = this._calculateTotalSeparatorWidth(this._config.line_separator_width ?? 'total050', numberOfSeparators,);
+    const multiplier = 1 - (totalSeparatorWidth * 0.01);
+
+    this._lineSeparatorWidth = totalSeparatorWidth / numberOfSeparators;
+
+    for (const deviceKey in this._entitiesObject) {
+      if (this._entitiesObject[deviceKey].width == 0) continue;
+      this._entitiesObject[deviceKey].width *= multiplier;
+    }
+
+    this._untrackedObject.width *= multiplier;
+  }
+  private _calculate(): void {
+    this._entitiesObject = {};
+    this._warnings = [];
+
+    if (this._config.offset) {
+      this._getOffsetHistory();
+    }
+    if (this._config.statistics) {
+      this._getStatisticsHistory();
+    }
+
+    const mainState: number = this._calcStateMain();
+
+    let max: number = this._getMax(mainState);
+    let min: number = this._getMin();
+
+    if (mainState > max) {max = mainState;}
+    let range: number = (max - min) || 1;
+
+    const clampedMain: number = Math.min(Math.max(mainState, min), max);
+    const mainWidth: number = ((clampedMain - min) / range) * 100;
+    const mainPercentage: number = clampedMain / max;
+
+    this._mainObject = {
+      state: mainState,
+      width: mainWidth,
+      percentage: mainPercentage,
+      stateObject: this.hass.states[this._config.entity],
+    };
+
+    let stateSum: number = 0;
+    let percentageSum: number = 0;
+    let widthSum: number = 0;
+    let renderedLines: number = 0;
+
+    for (const device of this._config.entities ?? []) {
+      if (!this._validate(device.entity)) continue;
+
+      const stateObj: HassEntity = this.hass.states[device.entity];
+      const state: number = this._calcState(stateObj, device.multiplier);
+      const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
+
+      const percentage: number = state / mainState ?? 0;
+      const clampedDevice = Math.min(Math.max(state, min), max);
+      const width: number = state <= cutoff ? 0 : ((clampedDevice - min) / range) * 100 ?? 0;
+
+      stateSum += state;
+      percentageSum += percentage;
+      widthSum += width;
+
+      if (width > 0) {
+        renderedLines += 1;
+      }
+
+      this._entitiesObject[device.entity] = {
+        state: state,
+        width: width,
+        percentage: percentage,
+        stateObject: stateObj,
+      };
+    }
+
+    this._entitiesTotalObject = {
+      state: stateSum,
+      width: widthSum,
+      percentage: percentageSum,
+    };
+
+    this._untrackedObject = {
+      state: mainState - stateSum,
+      width: mainWidth - widthSum,
+      percentage: (mainState - stateSum) / mainState,
+    };
+
+    this._calculateSeparatorWidth(renderedLines);
+  }
 
   private _calcStateMain(): number {
     if (this._config.offset) {return this._getOffsetState(this._config.entity);}

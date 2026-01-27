@@ -11,6 +11,7 @@ import {
 
 import {
   CORNER_TYPES,
+  SORTING_TYPES,
   INDICATOR_TYPES,
   LEGEND_ALIGNMENT_TYPES,
   LINE_POSITION_TYPES,
@@ -355,6 +356,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   unit?: string;
   cutoff?: number;
   offset?: string | number; // Duration string (e.g., "1h") or milliseconds
+  sorting?: SortingType;
 
   position?: ValuePositionType;
   text_size?: number;
@@ -552,6 +554,7 @@ export type RGBColor = [number, number, number] | [number, number, number, numbe
 export type ColorType = RGBColor | string | undefined;
 
 export type CornerType = typeof CORNER_TYPES[number];
+export type SortingType = typeof SORTING_TYPES[number];
 export type LineSeparatorWidthType = typeof LINE_SEPARATOR_WIDTH_TYPES[number];
 export type TextStyleType = typeof TEXT_STYLE_TYPES[number][];
 export type TextOverflowType = typeof TEXT_OVERFLOW_TYPES[number];

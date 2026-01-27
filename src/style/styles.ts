@@ -406,6 +406,23 @@ export const styles = css`
     }
 `;
 
+export const getOverflowStyle = memoizeOne((type: string, direction: string) => {
+  const dirStyle = `direction: ${direction === 'right' ? 'ltr' : 'rtl'};`;
+  switch (type) {
+    case 'ellipsis':
+      return `overflow: hidden; text-overflow: ellipsis; ${dirStyle}`;
+    case 'clip':
+      return `overflow: hidden; text-overflow: clip; ${dirStyle}`;
+    case 'fade':
+      const fadeDir = direction === 'left' ? 'left' : 'right';
+      return `mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
+                ${dirStyle}`;
+    default:
+      return `overflow: hidden;`;
+  }
+});
+
 export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: ColorType | undefined): string => {
   if (!style) {return '';}
 

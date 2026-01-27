@@ -4,6 +4,8 @@ export const DEFAULT_ACTIONS = ["more-info", "toggle", "navigate", "url", "perfo
 // Styling Options
 export const CORNER_TYPES = ['square', 'lite-rounded', 'medium-rounded', 'rounded', 'circular'] as const;
 
+export const SORTING_TYPES = ['ascending', 'descending', 'none'] as const;
+
 export const LINE_SEPARATOR_WIDTH_TYPES = [
   'total020', 'total030', 'total040', 'total050', 'total060', 'total070', 'total080', 'total090', 'total100',
   'each002', 'each004', 'each006', 'each008', 'each010', 'each012', 'each014', 'each016', 'each018', 'each020'
