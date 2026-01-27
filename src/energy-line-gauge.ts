@@ -64,6 +64,7 @@ window.customCards.push({
   preview: true,
 });
 
+// noinspection JSUnusedGlobalSymbols
 @customElement('energy-line-gauge')
 export class EnergyLineGauge extends LitElement {
   @property() public hass!: HomeAssistant;
@@ -91,19 +92,15 @@ export class EnergyLineGauge extends LitElement {
   private _offsetTime: number | undefined = undefined;
   private _historyWindow: number = 60000;
 
-  // noinspection JSUnusedGlobalSymbols
-  public async setConfig(config: ELGConfig): Promise<void> {
-    if (!config) {this._invalidConfig()}
-    this._config = setConfigDefaults(config);
-  }
-
-  // noinspection JSUnusedGlobalSymbols
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor/editor');
     return document.createElement('energy-line-gauge-editor') as LovelaceCardEditor;
   }
 
-  // noinspection JSUnusedGlobalSymbols
+  public async setConfig(config: ELGConfig): Promise<void> {
+    if (!config) {this._invalidConfig()}
+    this._config = setConfigDefaults(config);
+  }
   public static getStubConfig(hass: HomeAssistant, entities: string[], entitiesFallback: string[]): ELGConfig {
     const includeDomains = ["sensor"];
     const maxEntities = 4;
@@ -140,36 +137,6 @@ export class EnergyLineGauge extends LitElement {
         { entity: foundEntities[3], state_content: ["name"] },
       ],
     };
-  }
-
-  protected firstUpdated(changedProperties: PropertyValues): void {
-    super.firstUpdated(changedProperties);
-
-    if (!(['tooltip', 'tooltip-segment'].includes(this._config.line_text_overflow ?? 'tooltip'))) return;
-
-    this._resizeObserver = new ResizeObserver(() => {
-      this._checkAllLabelsOverflow();
-    });
-
-    const cardElement = this.shadowRoot?.querySelector('.line-gauge-card');
-    if (cardElement) {
-      this._resizeObserver.observe(cardElement);
-    }
-
-    requestAnimationFrame(() => this._checkAllLabelsOverflow());
-  }
-
-  public connectedCallback(): void {
-    super.connectedCallback();
-    this._tryConnect().catch(err => console.error("ELG: Template connect failed:", err));
-  }
-  public disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._tryDisconnect().catch(err => console.error("ELG: Template disconnect failed:", err));
-
-    if (this._resizeObserver) {
-      this._resizeObserver.disconnect();
-    }
   }
 
   protected shouldUpdate(changedProps: PropertyValues): boolean {
@@ -209,7 +176,22 @@ export class EnergyLineGauge extends LitElement {
 
     return true;
   }
+  protected firstUpdated(changedProperties: PropertyValues): void {
+    super.firstUpdated(changedProperties);
 
+    if (!(['tooltip', 'tooltip-segment'].includes(this._config.line_text_overflow ?? 'tooltip'))) return;
+
+    this._resizeObserver = new ResizeObserver(() => {
+      this._checkAllLabelsOverflow();
+    });
+
+    const cardElement = this.shadowRoot?.querySelector('.line-gauge-card');
+    if (cardElement) {
+      this._resizeObserver.observe(cardElement);
+    }
+
+    requestAnimationFrame(() => this._checkAllLabelsOverflow());
+  }
   protected updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
     if (this.hass && this._card) {this._card.hass = this.hass;}
@@ -224,15 +206,17 @@ export class EnergyLineGauge extends LitElement {
     requestAnimationFrame(() => this._resetAllLabelsToVisible());
   }
 
-  private _checkAllLabelsOverflow(): void {
-    if (!this.shadowRoot) return;
-    this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(label => {
-      this._checkLabelOverflow(label);
-    });
+  public connectedCallback(): void {
+    super.connectedCallback();
+    this._tryConnect().catch(err => console.error("ELG: Template connect failed:", err));
   }
+  public disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._tryDisconnect().catch(err => console.error("ELG: Template disconnect failed:", err));
 
-  public static get styles(): CSSResultGroup {
-    return styles;
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+    }
   }
 
   protected render(): TemplateResult | void {
@@ -671,6 +655,12 @@ export class EnergyLineGauge extends LitElement {
         labelElement.style.visibility = 'hidden';
       }
     }
+  }
+  private _checkAllLabelsOverflow(): void {
+    if (!this.shadowRoot) return;
+    this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(label => {
+      this._checkLabelOverflow(label);
+    });
   }
   private _resetAllLabelsToVisible(): void {
     if (!this.shadowRoot) return;
@@ -1432,5 +1422,11 @@ export class EnergyLineGauge extends LitElement {
   private _handleAction(ev: ActionHandlerEvent, device?: ELGEntity): void {
     ev.stopPropagation();
     handleAction(this, this.hass!, device ?? this._config!, ev.detail.action!);
+  }
+
+  // Styles ------------------------------------------------------------------------------------------------------------
+
+  public static get styles(): CSSResultGroup {
+    return styles;
   }
 }
