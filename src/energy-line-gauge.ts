@@ -159,11 +159,11 @@ export class EnergyLineGauge extends LitElement {
     requestAnimationFrame(() => this._checkAllLabelsOverflow());
   }
 
-  public connectedCallback() {
+  public connectedCallback(): void {
     super.connectedCallback();
     this._tryConnect().catch(err => console.error("ELG: Template connect failed:", err));
   }
-  disconnectedCallback(): void {
+  public disconnectedCallback(): void {
     super.disconnectedCallback();
     this._tryDisconnect().catch(err => console.error("ELG: Template disconnect failed:", err));
 
@@ -224,89 +224,6 @@ export class EnergyLineGauge extends LitElement {
     requestAnimationFrame(() => this._resetAllLabelsToVisible());
   }
 
-  private async _tryConnect(): Promise<void> {
-    if (!this.hass || !this._config) return;
-
-    // Subscribe to templates in config
-    const templateFields = ['title', 'subtitle', 'header', 'unit', 'untracked_legend_label']
-    templateFields.forEach((key) => {
-      if (this._config[key] && isTemplate(this._config[key])) {
-        this._subscribeToTemplate(key, this._config[key]);
-      }
-    });
-
-    this._config.entities?.forEach((entity, index) => {
-      if (entity.name && isTemplate(entity.name)) { // Subscribe to entity name template
-        this._subscribeToTemplate(`entity_${index}_name`, entity.name);
-      }
-
-      if (entity.unit && isTemplate(entity.unit)) { // Subscribe to entity unit template
-        this._subscribeToTemplate(`entity_${index}_unit`, entity.unit);
-      }
-    });
-  }
-  private async _subscribeToTemplate(key: string, template: string): Promise<void> {
-    if (this._unsubRenderTemplates.has(key)) {
-      return;
-    }
-
-    try {
-      const sub = subscribeRenderTemplate(
-        this.hass.connection,
-        (result: RenderTemplateResult) => {
-          this._templateResults = {
-            ...this._templateResults,
-            [key]: result.result,
-          };
-        },
-        {
-          template: template,
-          variables: {
-            config: this._config,
-            user: this.hass.user!.name,
-            entity: this._config.entity,
-          },
-          strict: true,
-        }
-      );
-      this._unsubRenderTemplates.set(key, sub);
-      await sub;
-    } catch (e) {
-      console.error("ELG: Error subscribing to template", e);
-      this._templateResults = {
-        ...this._templateResults,
-        [key]: template, // Fallback to raw string
-      };
-      this._unsubRenderTemplates.delete(key);
-    }
-  }
-  private async _tryDisconnect(): Promise<void> {
-    for (const key of this._unsubRenderTemplates.keys()) {
-      await this._tryDisconnectKey(key);
-    }
-  }
-  private async _tryDisconnectKey(key: string): Promise<void> {
-    const unsubPromise = this._unsubRenderTemplates.get(key);
-    if (!unsubPromise) return;
-
-    try {
-      const unsub = await unsubPromise;
-      unsub();
-      this._unsubRenderTemplates.delete(key);
-    } catch (err: any) {
-      if (err.code === "not_found" || err.code === "template_error") {
-        // Ignore normal closure errors
-      } else {
-        throw err;
-      }
-    }
-  }
-  private _getTemplateValue(key: string, fallback: string | undefined): string {
-    if (this._templateResults[key] !== undefined) {return this._templateResults[key];}
-    if (fallback && !isTemplate(fallback)) {return fallback;}
-    return fallback ?? "";
-  }
-
   private _checkAllLabelsOverflow(): void {
     if (!this.shadowRoot) return;
     this.shadowRoot.querySelectorAll<HTMLElement>('.device-line-label').forEach(label => {
@@ -325,6 +242,7 @@ export class EnergyLineGauge extends LitElement {
 
     if (!this._validate(this._config.entity)) {return this._renderWarnings();}
 
+    this._sortConfigEntitiesByState()
     this._calculate();
 
     return html`
@@ -1000,6 +918,24 @@ export class EnergyLineGauge extends LitElement {
 
   // State Calculations ------------------------------------------------------------------------------------------------
 
+  private _sortConfigEntitiesByState(): void {
+    if (!this._config.entities) return;
+
+    const ascending = (a: ELGEntity, b: ELGEntity): number => {
+      return (this._entitiesObject[a.entity]?.state ?? 0) - (this._entitiesObject[b.entity]?.state ?? 0);
+    }
+
+    switch (this._config.sorting) {
+      case 'ascending':
+        this._config.entities.sort(ascending);
+        break;
+      case 'descending':
+        this._config.entities.sort((a, b) => ascending(b, a));
+        break;
+      default:break;
+    }
+  }
+
   private _calculateTotalSeparatorWidth(configString: string, numberOfSeparators: number): number {
     const firstDigitIndex = configString.search(/\d/);
     if (firstDigitIndex === -1) {
@@ -1358,6 +1294,91 @@ export class EnergyLineGauge extends LitElement {
       `&no_attributes`;
 
     return this.hass?.callApi('GET', url);
+  }
+
+  // Templates ---------------------------------------------------------------------------------------------------------
+
+  private async _tryConnect(): Promise<void> {
+    if (!this.hass || !this._config) return;
+
+    // Subscribe to templates in config
+    const templateFields = ['title', 'subtitle', 'header', 'unit', 'untracked_legend_label']
+    templateFields.forEach((key) => {
+      if (this._config[key] && isTemplate(this._config[key])) {
+        this._subscribeToTemplate(key, this._config[key]);
+      }
+    });
+
+    this._config.entities?.forEach((entity, index) => {
+      if (entity.name && isTemplate(entity.name)) { // Subscribe to entity name template
+        this._subscribeToTemplate(`entity_${index}_name`, entity.name);
+      }
+
+      if (entity.unit && isTemplate(entity.unit)) { // Subscribe to entity unit template
+        this._subscribeToTemplate(`entity_${index}_unit`, entity.unit);
+      }
+    });
+  }
+  private async _subscribeToTemplate(key: string, template: string): Promise<void> {
+    if (this._unsubRenderTemplates.has(key)) {
+      return;
+    }
+
+    try {
+      const sub = subscribeRenderTemplate(
+        this.hass.connection,
+        (result: RenderTemplateResult) => {
+          this._templateResults = {
+            ...this._templateResults,
+            [key]: result.result,
+          };
+        },
+        {
+          template: template,
+          variables: {
+            config: this._config,
+            user: this.hass.user!.name,
+            entity: this._config.entity,
+          },
+          strict: true,
+        }
+      );
+      this._unsubRenderTemplates.set(key, sub);
+      await sub;
+    } catch (e) {
+      console.error("ELG: Error subscribing to template", e);
+      this._templateResults = {
+        ...this._templateResults,
+        [key]: template, // Fallback to raw string
+      };
+      this._unsubRenderTemplates.delete(key);
+    }
+  }
+  private async _tryDisconnect(): Promise<void> {
+    for (const key of this._unsubRenderTemplates.keys()) {
+      await this._tryDisconnectKey(key);
+    }
+  }
+  private async _tryDisconnectKey(key: string): Promise<void> {
+    const unsubPromise = this._unsubRenderTemplates.get(key);
+    if (!unsubPromise) return;
+
+    try {
+      const unsub = await unsubPromise;
+      unsub();
+      this._unsubRenderTemplates.delete(key);
+    } catch (err: any) {
+      if (err.code === "not_found" || err.code === "template_error") {
+        // Ignore normal closure errors
+      } else {
+        throw err;
+      }
+    }
+  }
+  private _getTemplateValue(key: string, fallback: string | undefined): string {
+    if (this._templateResults[key] !== undefined) {return this._templateResults[key];}
+    if (fallback && !isTemplate(fallback)) {return fallback;}
+    return fallback ?? "";
   }
 
   // Entities ----------------------------------------------------------------------------------------------------------

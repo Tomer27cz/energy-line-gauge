@@ -23,6 +23,7 @@ import {
 
 import {
   CORNER_TYPES,
+  SORTING_TYPES,
   LINE_SEPARATOR_WIDTH_TYPES,
   TEXT_OVERFLOW_TYPES,
   OVERFLOW_DIRECTION_TYPES,
@@ -35,7 +36,7 @@ import {
   UNTRACKED_STATE_CONTENT_TYPES,
   STATISTICS_PERIOD_TYPES,
   STATISTICS_FUNCTION_TYPES,
-} from './const';
+} from "./const";
 
 import { COLORS } from '../style/color';
 
@@ -64,6 +65,7 @@ export const CONFIG_DEFAULTS = {
   unit: undefined,
   cutoff: 0,
   offset: undefined, // parsed
+  sorting: undefined,
 
   position: 'left' as ValuePositionType,
   text_size: 2.5,
@@ -186,6 +188,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     unit: config.unit ?? CONFIG_DEFAULTS.unit,
     cutoff: config.cutoff ?? CONFIG_DEFAULTS.cutoff,
     offset: config.offset ? parseDurationToMilliseconds(config.offset) : CONFIG_DEFAULTS.offset,
+    sorting: validatedValue(config.sorting, SORTING_TYPES, CONFIG_DEFAULTS.sorting),
 
     position: validatedValue(config.position, VALUE_POSITION_TYPES, CONFIG_DEFAULTS.position),
     text_size: config.text_size ?? CONFIG_DEFAULTS.text_size,
