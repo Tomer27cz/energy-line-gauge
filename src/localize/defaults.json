@@ -16,6 +16,7 @@
   "line_separator": null,
   "line_separator_width": null,
   "line_separator_color": null,
+  "sorting": null,
 
   "expandable_appearance_value": "ui.panel.config.zwave_js.node_config.value",
   "position": "ui.panel.lovelace.editor.card.entities.secondary_info_values.position",
@@ -103,6 +104,13 @@
     "medium-rounded": null,
     "rounded": null,
     "circular": null
+  },
+  "sortingOptions": {
+    "alpha-asc": "ui.panel.lovelace.editor.card.todo-list.sort_modes.alpha_asc",
+    "alpha-desc": "ui.panel.lovelace.editor.card.todo-list.sort_modes.alpha_desc",
+    "value-asc": null,
+    "value-desc": null,
+    "none": "ui.panel.lovelace.editor.card.todo-list.sort_modes.none"
   },
   "lineSeparatorWidthOptions": {
     "total020": null,

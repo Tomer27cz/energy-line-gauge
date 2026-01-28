@@ -55,6 +55,14 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       { value: "circular", label: sl('cornerOptions.circular') },
     ];
 
+    const sortingOptions = [
+      { value: "alpha-asc", label: sl('sortingOptions.alpha-asc') },
+      { value: "alpha-desc", label: sl('sortingOptions.alpha-desc') },
+      { value: "value-asc", label: sl('sortingOptions.value-asc') },
+      { value: "value-desc", label: sl('sortingOptions.value-desc') },
+      { value: "none", label: sl('sortingOptions.none') },
+    ];
+
     const lineSeparatorWidthOptions = [
       { value: "total020", label: sl('lineSeparatorWidthOptions.total020') },
       { value: "total030", label: sl('lineSeparatorWidthOptions.total030') },
@@ -248,6 +256,13 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
             schema: [
               { name: "line_separator_width", required: false, selector: { select: { mode: "dropdown", options: lineSeparatorWidthOptions }}},
               { name: "line_separator_color", required: false, selector: { color_elg: { mode: "line" } } },
+            ],
+          },
+
+          {
+            type: "grid",
+            schema: [
+              { name: "sorting", required: false, selector: { select: { mode: "dropdown", options: sortingOptions }}},
             ],
           },
 

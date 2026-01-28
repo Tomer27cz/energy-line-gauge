@@ -16,6 +16,7 @@
   "line_separator": "Oddělovač linky",
   "line_separator_width": "Šířka oddělovače linky",
   "line_separator_color": "Barva oddělovače linky",
+  "sorting": "Třídění",
 
   "expandable_appearance_value": "Hodnota",
   "position": "Pozice",
@@ -103,6 +104,13 @@
     "medium-rounded": "Středně zaoblený",
     "rounded": "Zaoblený",
     "circular": "Kruhový"
+  },
+  "sortingOptions": {
+    "alpha-asc": "Abecedně (A-Z)",
+    "alpha-desc": "Abecedně (Z-A)",
+    "value-asc": "Hodnota (od nejnižší)",
+    "value-desc": "Hodnota (od nejvyšší)",
+    "none": "Výchozí"
   },
   "lineSeparatorWidthOptions": {
     "total020": "Celkem 2 %",

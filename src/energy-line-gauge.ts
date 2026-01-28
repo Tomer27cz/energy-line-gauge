@@ -252,7 +252,7 @@ export class EnergyLineGauge extends LitElement {
     `;
   }
 
-  _createDelta() {
+  _createDelta(): TemplateResult {
     return html`
       <div class="gauge-delta">
         <div class="gauge-delta-item">State: <span>${this._formatValueMain(this._mainObject?.state)}</span></div>
@@ -326,7 +326,7 @@ export class EnergyLineGauge extends LitElement {
       icon="${icon}"
     ></ha-icon>`;
   }
-  _createLegend() {
+  _createLegend(): TemplateResult {
     if (!this._config.entities || this._config.entities.length === 0 || this._config.legend_hide) {return html``;}
 
     const textSize = this._config.legend_text_size ?? this._config.text_size ?? 1;
@@ -364,7 +364,7 @@ export class EnergyLineGauge extends LitElement {
       </ul>
     </div>`;
   }
-  _createDeviceLines() {
+  _createDeviceLines(): TemplateResult {
     if (!this._config.entities) return html``;
 
     const renderLabel = (
@@ -474,7 +474,7 @@ export class EnergyLineGauge extends LitElement {
       </div>
     `;
   }
-  _createInnerHtml() {
+  _createInnerHtml(): TemplateResult {
     const titlePosition = this._config.title_position ?? "top-left";
     const legendPosition = this._config.legend_position ?? "bottom-center";
     const deltaPosition = this._config.delta_position ?? "bottom-center";
@@ -499,8 +499,9 @@ export class EnergyLineGauge extends LitElement {
     const titleText = this._getTemplateValue('title', this._config.title);
     const subtitleText = this._getTemplateValue('subtitle', this._config.subtitle);
 
-    if (!displayTitle) {valuePosition = "left";}
-    if (["in-title-right", "in-title-left"].includes(valuePosition)) {displayValue = false;}
+    if (["in-title-right", "in-title-left"].includes(valuePosition)) {
+      if (!displayTitle) {valuePosition = "left";} else {displayValue = false;}
+    }
 
     const valueTemplate = html`
       <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: ${valueColor}">
@@ -567,15 +568,16 @@ export class EnergyLineGauge extends LitElement {
   // ----------------------------------------------------- Entity ------------------------------------------------------
 
   private _entityName(device: ELGEntity): string {
-    if (device.name) {
-      const index = this._config.entities.indexOf(device);
-      if (index !== -1) {
-        const key = `entity_${index}_name`;
-        if (this._templateResults[key]) return this._templateResults[key];
-        if (!isTemplate(device.name)) return device.name;
-      }
+    if (!device.name) {
+      return this._entitiesObject[device.entity].stateObject.attributes.friendly_name || device.entity.split('.')[1];
     }
-    return this._entitiesObject[device.entity].stateObject.attributes.friendly_name || device.entity.split('.')[1];
+
+    if (isTemplate(device.name)) {
+      const key = `entity_${this._config.entities.indexOf(device)}_name`;
+      if (this._templateResults[key]) return this._templateResults[key];
+    }
+
+    return device.name;
   }
   private _entityIcon(device: ELGEntity): string {
     if (device.icon) {return device.icon;}
@@ -911,16 +913,30 @@ export class EnergyLineGauge extends LitElement {
   private _sortConfigEntitiesByState(): void {
     if (!this._config.entities) return;
 
-    const ascending = (a: ELGEntity, b: ELGEntity): number => {
+    const value_ascending = (a: ELGEntity, b: ELGEntity): number => {
       return (this._entitiesObject[a.entity]?.state ?? 0) - (this._entitiesObject[b.entity]?.state ?? 0);
     }
 
+    const alphabetic_ascending = (a: ELGEntity, b: ELGEntity): number => {
+      const nameA = this._entityName(a).toUpperCase();
+      const nameB = this._entityName(b).toUpperCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    }
+
     switch (this._config.sorting) {
-      case 'ascending':
-        this._config.entities.sort(ascending);
+      case 'value-asc':
+        this._config.entities.sort(value_ascending);
         break;
-      case 'descending':
-        this._config.entities.sort((a, b) => ascending(b, a));
+      case 'value-desc':
+        this._config.entities.sort((a, b) => value_ascending(b, a));
+        break;
+      case 'alpha-asc':
+        this._config.entities.sort(alphabetic_ascending);
+        break;
+      case 'alpha-desc':
+        this._config.entities.sort((a, b) => alphabetic_ascending(b, a));
         break;
       default:break;
     }

@@ -16,6 +16,7 @@
   "line_separator": "Line Separator",
   "line_separator_width": "Line Separator Width",
   "line_separator_color": "Line Separator Color",
+  "sorting": "Sorting",
 
   "expandable_appearance_value": "Value",
   "position": "Position",
@@ -103,6 +104,13 @@
     "medium-rounded": "Medium Rounded",
     "rounded": "Rounded",
     "circular": "Circular"
+  },
+  "sortingOptions": {
+    "alpha-asc": "Alphabetical (A-Z)",
+    "alpha-desc": "Alphabetical (Z-A)",
+    "value-asc": "Value (Low to High)",
+    "value-desc": "Value (High to Low)",
+    "none": "Default"
   },
   "lineSeparatorWidthOptions": {
     "total020": "Total 2%",
