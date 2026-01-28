@@ -66,6 +66,7 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
 * [Statistics](#statistics)
 * [Line Separators](#line_separators)
 * [Templating](#templating)
+* [Sorting](#sorting)
 * [Issues](#issues)
 * [Contribute](#contribute)
 
@@ -145,6 +146,7 @@ precision: 0
 unit: W
 cutoff: 5
 offset: 1d
+sorting: value-desc
 
 position: left
 text_size: 2.5
@@ -255,6 +257,7 @@ There are a lot of settings you can customize your sensors with:
 | `unit`                         |        string         |             *none*             |                                            W                                             | This string will be appended to the end of the value. Supports [templating](#templating).                                                  |
 | `cutoff`                       |        number         |              `0`               |                                            10                                            | Any entity with a value below or equal to this will not be displayed or counted.                                                           |
 | `offset`                       |        string         |             *none*             |                                            1d                                            | Offset state into the past [see more](#offset).                                                                                            |
+| `sorting`                      |      SortingType      |             *none*             |                                        alpha-asc                                         | Sort the line and legend entities [see more](#sorting).                                                                                    |
 | `line_height`                  |        number         |              `3`               |                                            2                                             | Height of the line in rem.                                                                                                                 |
 | `corner`                       |      CornerType       |            `square`            |                                         circular                                         | The theme (shape) of the gauge [see examples](#theme)                                                                                      |
 | `state_content_separator`      |        string         |            `' ⸱ '`             |                                           '-'                                            | This string is added between state content items in legend and line.                                                                       |
@@ -315,6 +318,7 @@ The types are used in the configuration. The type is used to define what kind of
 |   ValuePositionType   | Single: `left`, `right`, `none`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`, `in-title-right`, `in-title-left`                                                                                                                                                                                                           |
 |   LinePositionType    | Single: `left`, `right`, `none`, `center`, `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`                                                                                                                                                                                                                                    |
 |      CornerType       | Single: `square`, `lite-rounded`, `medium-rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
+|      SortingType      | Single: `alpha-asc`, `alpha-desc`, `value-asc`, `value-desc`, `none`                                                                                                                                                                                                                                                                                                |
 |  SeparatorWidthType   | Single: `total020`, `total030`, `total040`, `total050`, `total060`, `total070`, `total080`, `total090`, `total100`, `each002`, `each004`, `each006`, `each008`, `each010`, `each012`, `each014`, `each016`, `each018`, `each020` [mode]{num}{num}.{num}                                                                                                             |
 |     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                                                                                                                                                                                                                                                                  |
 |     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
@@ -822,6 +826,21 @@ title: "{{ states('binary_sensor.pump_status') | upper }}"
 ```
 
 You can learn more about templating in Home Assistant [here](https://www.home-assistant.io/docs/configuration/templating/).
+
+</div>
+
+## Sorting Entities
+
+<div id="sorting">
+
+Added in [v2.2.8](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.2.8). Feature request [#16](https://github.com/Tomer27cz/energy-line-gauge/issues/16).
+
+You can sort the entities in the legend and line by using the `sorting` configuration option. The options are:
+- `alpha-asc` - Sort entities alphabetically in ascending order (A-Z) based on their names.
+- `alpha-desc` - Sort entities alphabetically in descending order (Z-A) based on their names.
+- `value-asc` - Sort entities by their values (current, statistical or historical) from lowest to highest.
+- `value-desc` - Sort entities by their values (current, statistical or historical) from highest to lowest.
+- `none` - No sorting, display entities in the order they are defined in the configuration.
 
 </div>
 
