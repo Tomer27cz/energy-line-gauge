@@ -433,6 +433,10 @@ export interface ELGConfig extends LovelaceCardConfig {
   statistics_period?: StatisticsPeriodType;
   statistics_function?: StatisticsFunctionType;
 
+  // Severity Levels
+  severity?: boolean
+  severity_levels?: SeverityType[];
+
   // Sub-Entities
   entities: ELGEntity[];
 }
@@ -467,6 +471,12 @@ export interface ELGEntity {
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
+}
+
+export interface SeverityType {
+  from: number;
+  color?: ColorType;
+  colour?: ColorType; // British English support
 }
 
 // =====================================================================================================================

@@ -19,6 +19,7 @@ import {
   StatisticsFunctionType,
 
   ColorType,
+  SeverityType,
 } from '../types';
 
 import {
@@ -130,6 +131,11 @@ export const CONFIG_DEFAULTS = {
   statistics_period: 'hour' as StatisticsPeriodType,
   statistics_function: 'mean' as StatisticsFunctionType,
 
+  // Severity
+  severity: false,
+  severity_levels: undefined,
+
+  // Entities
   entities: [],
 }
 
@@ -254,6 +260,11 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     statistics_period: validatedValue(config.statistics_period, STATISTICS_PERIOD_TYPES, CONFIG_DEFAULTS.statistics_period),
     statistics_function: validatedValue(config.statistics_function, STATISTICS_FUNCTION_TYPES, CONFIG_DEFAULTS.statistics_function),
 
+    // Severity
+    severity: config.severity ?? CONFIG_DEFAULTS.severity,
+    severity_levels: Array.isArray(config.severity_levels) ? validateSeverityLevels(config.severity_levels) : config.severity_levels,
+
+    // Entities
     entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities,
   };
 };
@@ -308,6 +319,30 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
 
   return validatedEntities;
 };
+
+export const validateSeverityLevels = (levels: SeverityType[]): SeverityType[] | undefined => {
+  const usedColors = new Set(levels.map(e => e.color).filter(Boolean));
+
+  const validatedLevels: SeverityType[] = [];
+  for (const level of levels) {
+    let color = level.color ?? level.colour;
+
+    if (!color || color === "auto") {
+      color = COLORS.find(c => !usedColors.has(c));
+      usedColors.add(color);
+    }
+
+    validatedLevels.push({
+      from: level.from ?? 0,
+      color: validateColor(color, 'var(--primary-color)'),
+    });
+  }
+
+  // Sort from highest to lowest - Optimization for later processing (when checking severities can return on first match)
+  validatedLevels.sort((a, b) => b.from - a.from);
+
+  return validatedLevels;
+}
 
 // Config value transformers -------------------------------------------------------------------------------------------
 

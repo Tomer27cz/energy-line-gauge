@@ -36,7 +36,7 @@ import {
   IndicatorType,
   EntityWarning,
 
-  ActionHandlerEvent
+  ActionHandlerEvent,SeverityType,
 } from './types';
 
 import { styles, getTextStyle, getOverflowStyle } from './style/styles';
@@ -242,7 +242,7 @@ export class EnergyLineGauge extends LitElement {
       >
         <div class="line-gauge-card" 
              style="
-             --color: ${this._config.color}; 
+             --color: ${this._mainSeverity()};
              --background-color: ${this._config.color_bg};
              --line-height: ${this._config.line_height ?? 3}rem;
         ">
@@ -505,7 +505,7 @@ export class EnergyLineGauge extends LitElement {
 
     const valueTemplate = html`
       <div class="gauge-value" style="font-size: ${textSize}rem; height: ${textSize}rem; ${valueStyle}; color: ${valueColor}">
-        ${this._calcStateMain().toFixed(this._config.precision)}
+        ${this._mainObject?.state.toFixed(this._config.precision)}
         ${this._config.unit ? html`<span class="unit" style="font-size: ${textSize / 2}rem;">${this._getTemplateValue('unit', this._config.unit)}</span>` : ''}
       </div>
     `;
@@ -844,7 +844,7 @@ export class EnergyLineGauge extends LitElement {
 
   }
   private _formatValueMain(value: number): string {
-    return this._formatValue(value, this._config.precision, this._config.unit);
+    return this._formatValue(value, this._config.precision, this._getTemplateValue('unit', this._config.unit));
   }
   private _formatValueDevice(device: ELGEntity): string {
     const entityValue = this._entitiesObject[device.entity].state;
@@ -908,39 +908,7 @@ export class EnergyLineGauge extends LitElement {
     this._warnings.push(warning);
   }
 
-  // State Calculations ------------------------------------------------------------------------------------------------
-
-  private _sortConfigEntitiesByState(): void {
-    if (!this._config.entities) return;
-
-    const value_ascending = (a: ELGEntity, b: ELGEntity): number => {
-      return (this._entitiesObject[a.entity]?.state ?? 0) - (this._entitiesObject[b.entity]?.state ?? 0);
-    }
-
-    const alphabetic_ascending = (a: ELGEntity, b: ELGEntity): number => {
-      const nameA = this._entityName(a).toUpperCase();
-      const nameB = this._entityName(b).toUpperCase();
-      if (nameA < nameB) return -1;
-      if (nameA > nameB) return 1;
-      return 0;
-    }
-
-    switch (this._config.sorting) {
-      case 'value-asc':
-        this._config.entities.sort(value_ascending);
-        break;
-      case 'value-desc':
-        this._config.entities.sort((a, b) => value_ascending(b, a));
-        break;
-      case 'alpha-asc':
-        this._config.entities.sort(alphabetic_ascending);
-        break;
-      case 'alpha-desc':
-        this._config.entities.sort((a, b) => alphabetic_ascending(b, a));
-        break;
-      default:break;
-    }
-  }
+  // Calculations ------------------------------------------------------------------------------------------------------
 
   private _calculateTotalSeparatorWidth(configString: string, numberOfSeparators: number): number {
     const firstDigitIndex = configString.search(/\d/);
@@ -1059,6 +1027,8 @@ export class EnergyLineGauge extends LitElement {
 
     this._calculateSeparatorWidth(renderedLines);
   }
+
+  // State Calculations ------------------------------------------------------------------------------------------------
 
   private _calcStateMain(): number {
     if (this._config.offset) {return this._getOffsetState(this._config.entity);}
@@ -1411,6 +1381,37 @@ export class EnergyLineGauge extends LitElement {
   private _allConfigEntities(): string[] {
     return this._memoizedEntities(this._config);
   }
+  private _sortConfigEntitiesByState(): void {
+    if (!this._config.entities) return;
+
+    const value_ascending = (a: ELGEntity, b: ELGEntity): number => {
+      return (this._entitiesObject[a.entity]?.state ?? 0) - (this._entitiesObject[b.entity]?.state ?? 0);
+    }
+
+    const alphabetic_ascending = (a: ELGEntity, b: ELGEntity): number => {
+      const nameA = this._entityName(a).toUpperCase();
+      const nameB = this._entityName(b).toUpperCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    }
+
+    switch (this._config.sorting) {
+      case 'value-asc':
+        this._config.entities.sort(value_ascending);
+        break;
+      case 'value-desc':
+        this._config.entities.sort((a, b) => value_ascending(b, a));
+        break;
+      case 'alpha-asc':
+        this._config.entities.sort(alphabetic_ascending);
+        break;
+      case 'alpha-desc':
+        this._config.entities.sort((a, b) => alphabetic_ascending(b, a));
+        break;
+      default:break;
+    }
+  }
 
   // MIN / MAX ---------------------------------------------------------------------------------------------------------
 
@@ -1432,6 +1433,23 @@ export class EnergyLineGauge extends LitElement {
 
     return this._config.min;
   }
+
+  // Severity ----------------------------------------------------------------------------------------------------------
+
+  private _mainSeverity(): ColorType {
+  if (!this._config.severity) return this._config.color;
+
+  const severities = this._config.severity_levels;
+  if (severities) {
+    for (const severity of severities) {
+      if (this._mainObject.state >= severity.from) {
+        return severity.color!;
+      }
+    }
+  }
+
+  return this._config.color;
+}
 
   // Action Handling ---------------------------------------------------------------------------------------------------
 
