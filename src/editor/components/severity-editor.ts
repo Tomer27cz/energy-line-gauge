@@ -2,7 +2,7 @@ import { LitElement, html, css, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import { mdiDelete,mdiPlus } from '../../config/const';
+import { mdiDelete, mdiPlus } from '../../config/const';
 import { HomeAssistant, EditorTarget, SeverityType } from '../../types';
 import { fireEvent } from '../../interaction/event-helpers';
 import { configElementStyle } from '../../style/styles';
@@ -12,16 +12,6 @@ export class SeverityEditor extends LitElement {
   @property({ attribute: false }) severity_levels?: SeverityType[];
 
   @property({ attribute: false }) hass?: HomeAssistant;
-
-  private _severityKeys = new WeakMap<SeverityType, string>();
-
-  private _getKey(action: SeverityType) {
-    if (!this._severityKeys.has(action)) {
-      this._severityKeys.set(action, Math.random().toString());
-    }
-
-    return this._severityKeys.get(action)!;
-  }
 
   protected render() {
     if (!this.hass) {return nothing;}
@@ -33,7 +23,7 @@ export class SeverityEditor extends LitElement {
       <div class="severity_levels">
         ${repeat(
           this.severity_levels,
-          (severityConf) => this._getKey(severityConf),
+          (_severityConf, index) => index,
           (severityConf, index) => html`
             <div class="severity_level">
               <ha-selector-number
@@ -96,7 +86,7 @@ export class SeverityEditor extends LitElement {
 
     const severity: SeverityType = {
       from: 0,
-      color: 'red',
+      color: 'var(--primary-color)',
     };
 
     fireEvent(this, 'config-changed', [...this.severity_levels ?? [], severity]);
@@ -107,15 +97,14 @@ export class SeverityEditor extends LitElement {
     const index = (ev.target as EditorTarget).index;
     const value = ev.detail.value;
 
-    const levels = this.severity_levels!.concat();
-    if (index != undefined) {
+    if (index != undefined && this.severity_levels) {
+      const levels = [...this.severity_levels];
       levels[index] = {
         ...levels[index],
         [valueType === 'color' ? 'color' : 'from']: valueType === 'color' ? value : Number(value),
       };
+      fireEvent(this, 'config-changed', levels);
     }
-
-    fireEvent(this, 'config-changed', levels);
   }
   private _colorChanged(ev: any): void {
     this._configChanged(ev, 'color');
