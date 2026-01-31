@@ -8,6 +8,7 @@ import {
   mdiListBox,
   mdiChartBar,
   mdiChartAreaspline,
+  mdiGaugeFull,
 } from '../config/const';
 
 import memoizeOne  from 'memoize-one';
@@ -19,7 +20,8 @@ import { DEFAULT_ACTIONS } from '../config/const'
 
 import './item-editor';
 import './items-editor';
-import './color-editor';
+import './components/color-editor';
+import './components/severity-editor';
 import { configElementStyle } from '../style/styles';
 
 @customElement('energy-line-gauge-editor')
@@ -534,6 +536,31 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       ></ha-form>
       <ha-expansion-panel outlined>
         <div slot="header" role="heading" aria-level="3">
+          <ha-svg-icon slot="leading-icon" .path=${mdiGaugeFull}></ha-svg-icon>
+          ${localize("expandable_severity", this.hass)}
+        </div>
+        <div class="content">
+          <ha-formfield .label=${localize("severity", this.hass)}>
+            <ha-switch
+              .checked=${this._config.severity === true}
+              @change=${this._toggleSeverity}
+            ></ha-switch>
+          </ha-formfield>
+          
+          <energy-line-gauge-severity-editor 
+              .hass=${this.hass}
+              .severity_levels=${this._config.severity_levels}
+              @config-changed=${this._severityChanged}
+            ></energy-line-gauge-severity-editor>
+
+          ${this._config.severity ? html`
+            
+          ` : ''}
+        </div>  
+      </ha-expansion-panel>
+      <br />
+      <ha-expansion-panel outlined>
+        <div slot="header" role="heading" aria-level="3">
           <ha-svg-icon slot="leading-icon" .path=${mdiListBox}></ha-svg-icon>
           ${this.hass.localize("ui.panel.lovelace.editor.card.heading.entities")}
         </div>
@@ -607,9 +634,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
 
   private _itemChanged(ev: CustomEvent<ELGEntity>) {
     ev.stopPropagation();
-    if (!this._config || !this.hass) {
-      return;
-    }
+    if (!this._config || !this.hass) {return;}
     if (this._subElementEditor != undefined) {
       const entities = [...this._config.entities];
       entities[this._subElementEditor] = ev.detail;
@@ -622,11 +647,19 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
    */
 
   private _valueChanged(ev: any): void {
-    if (!this._config || !this.hass) {
-      return;
-    }
+    if (!this._config || !this.hass) {return;}
     const config = ev.detail.value;
     fireEvent(this, 'config-changed', { config: config });
+  }
+
+  private _toggleSeverity(ev: any): void {
+    if (!this._config || !this.hass) {return;}
+    const target = ev.target;
+    fireEvent(this, 'config-changed', { config: { ...this._config, severity: target.checked } as ELGConfig });
+  }
+  private _severityChanged(ev: any): void {
+    if (!this._config || !this.hass) {return;}
+    fireEvent(this, 'config-changed', { config: { ...this._config, severity_levels: ev.detail } as ELGConfig });
   }
 
   static get styles(): CSSResultGroup {

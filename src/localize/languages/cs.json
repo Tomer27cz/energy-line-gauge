@@ -77,6 +77,9 @@
   "hold_action": "Akce podržením",
   "double_tap_action": "Akce dvojitým klepnutím",
 
+  "expandable_severity": "Závažnost",
+  "severity": "Definovat závažnost",
+
   "itemEditor": {
     "entity": "Entita (požadováno)",
     "name": "Název",

@@ -77,6 +77,9 @@
   "hold_action": "Hold Action",
   "double_tap_action": "Double Tap Action",
 
+  "expandable_severity": "Severity",
+  "severity": "Define severity",
+
   "itemEditor": {
     "entity": "Entity (required)",
     "name": "Name",

@@ -593,7 +593,7 @@ export interface HassCustomElement extends CustomElementConstructor {
 
 export interface ELGColorSelector {
   color_elg: {
-    mode?: "text" | "line" | "all";
+    mode?: "text" | "line" | "severity" | "all";
     entity?: string;
     entities?: ELGEntity[];
   } | null;

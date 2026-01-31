@@ -77,6 +77,9 @@
   "hold_action": "ui.panel.lovelace.editor.card.generic.hold_action",
   "double_tap_action": "ui.panel.lovelace.editor.card.generic.double_tap_action",
 
+  "expandable_severity": null,
+  "severity": "ui.panel.lovelace.editor.card.gauge.severity.define",
+
   "itemEditor": {
     "entity": "ui.panel.lovelace.editor.card.generic.entity",
     "name": "ui.panel.lovelace.editor.card.generic.name",
