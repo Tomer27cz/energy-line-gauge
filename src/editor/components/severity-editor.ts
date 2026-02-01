@@ -5,13 +5,60 @@ import { repeat } from 'lit/directives/repeat.js';
 import { mdiDelete, mdiPlus } from '../../config/const';
 import { HomeAssistant, EditorTarget, SeverityType } from '../../types';
 import { fireEvent } from '../../interaction/event-helpers';
-import { configElementStyle } from '../../style/styles';
+import { configElementStyle, sortableStyle } from '../../style/styles';
+
+import { Sortable } from 'sortablejs/modular/sortable.core.esm';
+import type { SortableEvent } from 'sortablejs/modular/sortable.core.esm';
 
 @customElement('energy-line-gauge-severity-editor')
 export class SeverityEditor extends LitElement {
   @property({ attribute: false }) severity_levels?: SeverityType[];
 
   @property({ attribute: false }) hass?: HomeAssistant;
+
+  private _sortable?: Sortable;
+
+  public disconnectedCallback() {
+    super.disconnectedCallback();
+    this._destroySortable();
+  }
+  private _destroySortable() {
+    this._sortable?.destroy();
+    this._sortable = undefined;
+  }
+  protected async firstUpdated(): Promise<void> {
+    this._createSortable();
+  }
+  private _createSortable(): void {
+    const element = this.shadowRoot?.querySelector('.severity_levels') as HTMLElement;
+    if (!element) return;
+
+    this._sortable = new Sortable(element, {
+      animation: 150,
+      fallbackClass: 'sortable-fallback',
+      handle: '.handle',
+      onChoose: (evt: SortableEvent) => {
+        (evt.item as any).placeholder = document.createComment('sort-placeholder');
+        evt.item.after((evt.item as any).placeholder);
+      },
+      onEnd: (evt: SortableEvent) => {
+        if ((evt.item as any).placeholder) {
+          (evt.item as any).placeholder.replaceWith(evt.item);
+          delete (evt.item as any).placeholder;
+        }
+        this._rowMoved(evt);
+      },
+    });
+  }
+  private _rowMoved(ev: SortableEvent): void {
+    ev.stopPropagation();
+    if (ev.oldIndex === ev.newIndex || !this.severity_levels) return;
+
+    const newLevels = this.severity_levels.concat();
+    newLevels.splice(ev.newIndex!, 0, newLevels.splice(ev.oldIndex!, 1)[0]);
+
+    fireEvent(this, 'config-changed', newLevels);
+  }
 
   protected render() {
     if (!this.hass) {return nothing;}
@@ -26,6 +73,9 @@ export class SeverityEditor extends LitElement {
           (_severityConf, index) => index,
           (severityConf, index) => html`
             <div class="severity_level">
+              <div class="handle">
+                <ha-icon icon="mdi:drag"></ha-icon>
+              </div>
               <ha-selector-number
                 class="severity-value"
                 .hass=${this.hass}
@@ -117,6 +167,7 @@ export class SeverityEditor extends LitElement {
     // noinspection CssUnresolvedCustomProperty,CssInvalidHtmlTagReference,CssUnusedSymbol
     return [
         configElementStyle,
+        sortableStyle,
         css`
           .severity_level {
             display: flex;
@@ -132,6 +183,16 @@ export class SeverityEditor extends LitElement {
           }
           .remove-icon {
             flex: 0
+          }
+          .severity_level .handle {
+            padding-right: 8px;
+            cursor: move;
+            padding-inline-end: 8px;
+            padding-inline-start: initial;
+            direction: var(--direction);
+          }
+          .severity_level .handle > * {
+            pointer-events: none;
           }
           .add-preset {
             padding-right: 8px;

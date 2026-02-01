@@ -546,16 +546,11 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               @change=${this._toggleSeverity}
             ></ha-switch>
           </ha-formfield>
-          
           <energy-line-gauge-severity-editor 
               .hass=${this.hass}
               .severity_levels=${this._config.severity_levels}
               @config-changed=${this._severityChanged}
             ></energy-line-gauge-severity-editor>
-
-          ${this._config.severity ? html`
-            
-          ` : ''}
         </div>  
       </ha-expansion-panel>
       <br />
