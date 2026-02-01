@@ -608,6 +608,16 @@ export interface EditorTarget extends EventTarget {
   config: ActionConfig;
 }
 
+export type ColorEditorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' |
+  'text_primary' | 'text_secondary' | 'text_disabled' |
+  'line_primary' | 'line_accent' | 'line_primary_bg' | 'line_secondary_bg' | 'line_card_bg';
+
+export interface ColorEditorOption {
+  mode: ColorEditorMode;
+  value: string;
+  categories: ('text' | 'line' | 'severity' | undefined)[];
+}
+
 export interface LabelRenderResult {
   template: TemplateResult | string;
   text: string;

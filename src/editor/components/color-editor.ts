@@ -4,29 +4,21 @@ import { map } from 'lit/directives/map.js';
 
 import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '../../config/const';
 
-import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig } from '../../types';
+import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig, ColorEditorOption, ColorEditorMode } from '../../types';
 import { fireEvent } from '../../interaction/event-helpers';
 import { toRGB, rgbToHex } from '../../style/color'
 import { setConfigDefaults, setEntitiesDefaults } from '../../config/defaults';
 import { setupLocalize } from '../../localize/localize';
 
-type ColorMode = undefined | 'automatic' | 'custom_rgb' | 'custom_css' | 'text_primary' | 'text_secondary' | 'text_disabled' | 'line_primary' | 'line_accent' | 'line_primary_bg' | 'line_secondary_bg' | 'line_card_bg';
-
-interface ColorOption {
-  mode: ColorMode;
-  value?: string; // The CSS variable
-  category?: 'text' | 'line';
-}
-
-const COLOR_OPTIONS: ColorOption[] = [
-  { mode: 'text_primary',      value: 'var(--primary-text-color)',         category: 'text' },
-  { mode: 'text_secondary',    value: 'var(--secondary-text-color)',       category: 'text' },
-  { mode: 'text_disabled',     value: 'var(--disabled-text-color)',        category: 'text' },
-  { mode: 'line_primary',      value: 'var(--primary-color)',              category: 'line' },
-  { mode: 'line_accent',       value: 'var(--accent-color)',               category: 'line' },
-  { mode: 'line_primary_bg',   value: 'var(--primary-background-color)',   category: 'line' },
-  { mode: 'line_secondary_bg', value: 'var(--secondary-background-color)', category: 'line' },
-  { mode: 'line_card_bg',      value: 'var(--card-background-color)',      category: 'line' },
+const COLOR_OPTIONS: ColorEditorOption[] = [
+  { mode: 'text_primary',      value: 'var(--primary-text-color)',         categories: ['text'] },
+  { mode: 'text_secondary',    value: 'var(--secondary-text-color)',       categories: ['text'] },
+  { mode: 'text_disabled',     value: 'var(--disabled-text-color)',        categories: ['text'] },
+  { mode: 'line_primary',      value: 'var(--primary-color)',              categories: ['line', 'severity'] },
+  { mode: 'line_accent',       value: 'var(--accent-color)',               categories: ['line', 'severity'] },
+  { mode: 'line_primary_bg',   value: 'var(--primary-background-color)',   categories: ['line'] },
+  { mode: 'line_secondary_bg', value: 'var(--secondary-background-color)', categories: ['line'] },
+  { mode: 'line_card_bg',      value: 'var(--card-background-color)',      categories: ['line'] },
 ];
 
 @customElement('ha-selector-color_elg')
@@ -43,7 +35,7 @@ export class ColorEditor extends LitElement {
   @property({ type: Boolean }) public required = false;
 
   @state() private _menuOpen = false;
-  @state() private _mode: ColorMode = undefined;
+  @state() private _mode: ColorEditorMode = undefined;
 
   @query('.elg_color_container') private _container!: HTMLElement;
 
@@ -147,13 +139,9 @@ export class ColorEditor extends LitElement {
 
   private _renderMenuOptions(localizeFunc: (key: string) => string) {
     const mode = this.selector.color_elg?.mode;
-    const includeText = mode === 'text' || mode === 'all';
-    const includeLine = mode === 'line' || mode === 'all';
-
     const visibleOptions = COLOR_OPTIONS.filter(opt => {
-      if (opt.category === 'text') return includeText;
-      if (opt.category === 'line') return includeLine;
-      return false;
+      if (mode == 'all') return true;
+      return opt.categories.includes(mode);
     });
 
     return map(visibleOptions, (opt) => html`
