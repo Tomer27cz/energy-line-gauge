@@ -40,7 +40,7 @@ import {
 } from './types';
 
 import { styles, getTextStyle, getOverflowStyle } from './style/styles';
-import { toRGB, getTextColor } from './style/color';
+import { toRGB, getTextColor, getBlend } from './style/color';
 
 import { actionHandler } from './interaction/action-handler';
 import { hasAction, handleAction } from './interaction/event-helpers';
@@ -1441,8 +1441,14 @@ export class EnergyLineGauge extends LitElement {
 
   const severities = this._config.severity_levels;
   if (severities) {
-    for (const severity of severities) {
+    for (const [index, severity] of severities.entries()) {
       if (this._mainObject.state >= severity.from) {
+        if (this._config.severity_blend && index !== 0) {
+          const previous: SeverityType = severities[index-1];
+
+          return getBlend(severity, previous, this._mainObject.state);
+        }
+
         return severity.color!;
       }
     }

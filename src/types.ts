@@ -436,6 +436,7 @@ export interface ELGConfig extends LovelaceCardConfig {
   // Severity Levels
   severity?: boolean
   severity_levels?: SeverityType[];
+  severity_blend?: boolean;
 
   // Sub-Entities
   entities: ELGEntity[];
