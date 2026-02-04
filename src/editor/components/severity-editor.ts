@@ -105,6 +105,7 @@ export class SeverityEditor extends LitElement {
           `,
         )}
       </div>
+      <br />
       <div class="add-item row">
         <ha-button
           .appearance=${"outlined"}

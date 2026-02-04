@@ -79,6 +79,7 @@
 
   "expandable_severity": "Závažnost",
   "severity": "Definovat závažnost",
+  "severity_blend": "Míchat barvy",
 
   "itemEditor": {
     "entity": "Entita (požadováno)",

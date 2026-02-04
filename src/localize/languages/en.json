@@ -79,6 +79,7 @@
 
   "expandable_severity": "Severity",
   "severity": "Define severity",
+  "severity_blend": "Blend colors",
 
   "itemEditor": {
     "entity": "Entity (required)",

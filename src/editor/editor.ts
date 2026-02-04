@@ -546,6 +546,12 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
               @change=${this._toggleSeverity}
             ></ha-switch>
           </ha-formfield>
+          <ha-formfield .label=${localize("severity_blend", this.hass)}>
+            <ha-switch
+              .checked=${this._config.severity_blend === true}
+              @change=${this._toggleSeverityBlend}
+            ></ha-switch>
+          </ha-formfield>
           <energy-line-gauge-severity-editor 
               .hass=${this.hass}
               .severity_levels=${this._config.severity_levels}
@@ -651,6 +657,11 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     if (!this._config || !this.hass) {return;}
     const target = ev.target;
     fireEvent(this, 'config-changed', { config: { ...this._config, severity: target.checked } as ELGConfig });
+  }
+  private _toggleSeverityBlend(ev: any): void {
+    if (!this._config || !this.hass) {return;}
+    const target = ev.target;
+    fireEvent(this, 'config-changed', { config: { ...this._config, severity_blend: target.checked } as ELGConfig });
   }
   private _severityChanged(ev: any): void {
     if (!this._config || !this.hass) {return;}

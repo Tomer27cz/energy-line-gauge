@@ -79,6 +79,7 @@
 
   "expandable_severity": null,
   "severity": "ui.panel.lovelace.editor.card.gauge.severity.define",
+  "severity_blend": null,
 
   "itemEditor": {
     "entity": "ui.panel.lovelace.editor.card.generic.entity",
