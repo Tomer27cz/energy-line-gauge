@@ -341,11 +341,11 @@ export interface ELGConfig extends LovelaceCardConfig {
   title_text_size?: number;
   title_text_style?: TextStyleType;
 
-  title_text_color?: ColorType;
-  title_text_colour?: ColorType; // British English support
+  title_text_color?: CSSColor;
+  title_text_colour?: CSSColor; // British English support
 
-  subtitle_text_color?: ColorType;
-  subtitle_text_colour?: ColorType; // British English support
+  subtitle_text_color?: CSSColor;
+  subtitle_text_colour?: CSSColor; // British English support
 
   // Min / Max
   min?: number | string;
@@ -362,8 +362,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   text_size?: number;
   text_style?: TextStyleType;
 
-  text_color?: ColorType;
-  text_colour?: ColorType; // British English support
+  text_color?: CSSColor;
+  text_colour?: CSSColor; // British English support
 
   // Styling
   line_height?: number;
@@ -373,21 +373,21 @@ export interface ELGConfig extends LovelaceCardConfig {
   line_separator?: boolean;
   line_separator_width?: LineSeparatorWidthType;
 
-  line_separator_color?: ColorType;
-  line_separator_colour?: ColorType; // British English support
+  line_separator_color?: CSSColor;
+  line_separator_colour?: CSSColor; // British English support
 
-  color?: ColorType;
-  color_bg?: ColorType;
-  colour?: ColorType; // British English support
-  colour_bg?: ColorType; // British English support
+  color?: CSSColor;
+  color_bg?: CSSColor;
+  colour?: CSSColor; // British English support
+  colour_bg?: CSSColor; // British English support
 
   // Line Text
   line_text_position?: LinePositionType;
   line_text_size?: number;
   line_text_style?: TextStyleType;
 
-  line_text_color?: ColorType;
-  line_text_colour?: ColorType; // British English support
+  line_text_color?: CSSColor;
+  line_text_colour?: CSSColor; // British English support
 
   line_text_overflow?: TextOverflowType;
   overflow_direction?: OverflowDirectionType;
@@ -407,8 +407,8 @@ export interface ELGConfig extends LovelaceCardConfig {
   legend_text_size?: number;
   legend_text_style?: TextStyleType;
 
-  legend_text_color?: ColorType;
-  legend_text_colour?: ColorType; // British English support
+  legend_text_color?: CSSColor;
+  legend_text_colour?: CSSColor; // British English support
 
   // Show Delta
   show_delta?: boolean;
@@ -448,8 +448,8 @@ export interface ELGEntity {
   // Identity
   name?: string;
   icon?: string;
-  color?: ColorType;
-  colour?: ColorType; // British English support
+  color?: CSSColor;
+  colour?: CSSColor; // British English support
 
   // Value Processing
   cutoff?: number;
@@ -463,10 +463,10 @@ export interface ELGEntity {
 
   // Styling
   legend_indicator?: IndicatorType;
-  legend_text_color?: ColorType;
-  legend_text_colour?: ColorType; // British English support
-  line_text_color?: ColorType;
-  line_text_colour?: ColorType; // British English support
+  legend_text_color?: CSSColor;
+  legend_text_colour?: CSSColor; // British English support
+  line_text_color?: CSSColor;
+  line_text_colour?: CSSColor; // British English support
 
   // Actions
   tap_action?: ActionConfig;
@@ -476,8 +476,8 @@ export interface ELGEntity {
 
 export interface SeverityType {
   from: number;
-  color?: ColorType;
-  colour?: ColorType; // British English support
+  color?: CSSColor;
+  colour?: CSSColor; // British English support
 }
 
 // =====================================================================================================================
@@ -561,8 +561,8 @@ export type ELGHistoryStatistics = {
 // Derived from the constant arrays in const.ts.
 // =====================================================================================================================
 
-export type RGBColor = [number, number, number] | [number, number, number, number];
-export type ColorType = RGBColor | string | undefined;
+export type RGBColor = [number, number, number, number];
+export type CSSColor = string | undefined;
 
 export type CornerType = typeof CORNER_TYPES[number];
 export type SortingType = typeof SORTING_TYPES[number];

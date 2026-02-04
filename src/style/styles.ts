@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import memoizeOne from 'memoize-one';
-import { ColorType, TextStyleType } from '../types';
+import { CSSColor, TextStyleType } from '../types';
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
 export const sortableStyle = css`
@@ -514,7 +514,7 @@ export const getOverflowStyle = memoizeOne((type: string, direction: string) => 
   }
 });
 
-export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: ColorType | undefined): string => {
+export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: CSSColor | undefined): string => {
   if (!style) {return '';}
 
   const uniqueStyles = new Set(style);

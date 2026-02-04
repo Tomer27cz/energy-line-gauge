@@ -31,8 +31,7 @@ import {
   RendererContext,
   DeviceRendererContext,
 
-  RGBColor,
-  ColorType,
+  CSSColor,
   IndicatorType,
   EntityWarning,
 
@@ -40,7 +39,7 @@ import {
 } from './types';
 
 import { styles, getTextStyle, getOverflowStyle } from './style/styles';
-import { toRGB, getTextColor, getBlend } from './style/color';
+import { getTextColor, getBlend } from './style/color';
 
 import { actionHandler } from './interaction/action-handler';
 import { hasAction, handleAction } from './interaction/event-helpers';
@@ -260,25 +259,24 @@ export class EnergyLineGauge extends LitElement {
         <div class="gauge-delta-item delta">Delta: <span>${this._formatValueMain(this._untrackedObject?.state)}</span></div>
       </div>`;
   }
-  _createUntrackedLegend(style: string, size: number, textColor?: ColorType): TemplateResult {
+  _createUntrackedLegend(style: string, size: number, textColor?: CSSColor): TemplateResult {
     if (!this._config.untracked_legend) {return html``;}
     const untrackedLabelResult = this._untrackedLabel();
-    const color = toRGB(this._config.color);
 
     return html`
       <li title="${this._config.untracked_legend_label || untrackedLabelResult?.text}" id="legend-untracked" style="display: inline-grid;">
-        ${this._createLegendIndicator(undefined, color)}
+        ${this._createLegendIndicator(undefined, this._config.color)}
         <div class="label" style="font-size: ${size}rem; ${style}; color: ${textColor}">
           ${untrackedLabelResult?.template}
         </div>
       </li>`
   }
-  _createLegendIndicator(device: ELGEntity | undefined, color: RGBColor | undefined): TemplateResult {
+  _createLegendIndicator(device: ELGEntity | undefined, color: CSSColor): TemplateResult {
     const legendType: IndicatorType = (device ? device.legend_indicator : this._config.untracked_legend_indicator) ?? this._config.legend_indicator ?? 'circle';
     const textSize = (this._config.legend_text_size ?? this._config.text_size ?? 1) * 1.1;
 
     if (legendType === 'none') {return html``;}
-    const textStyle = `color: rgba(${color}); font-size: ${textSize}rem;`;
+    const textStyle = `color: ${color}; font-size: ${textSize}rem;`;
 
     switch (legendType) {
       case 'state':
@@ -303,10 +301,9 @@ export class EnergyLineGauge extends LitElement {
       // fallthrough
 
       default: {
-        const backgroundColor = color ? `rgba(${color.slice(0, 3).join(',')}, 0.5)` : 'transparent';
         const bulletStyle = `
-        background: ${backgroundColor};
-        border-color: rgba(${color});
+        background: color-mix(in srgb, ${color}, transparent 50%);
+        border-color: ${color};
         width: ${textSize}rem;
         height: ${textSize}rem;
       `;
@@ -314,13 +311,13 @@ export class EnergyLineGauge extends LitElement {
       }
     }
   }
-  _createIcon(device: ELGEntity | undefined, textSize?: number, color?: RGBColor | undefined): TemplateResult {
+  _createIcon(device: ELGEntity | undefined, textSize?: number, color?: CSSColor): TemplateResult {
     const icon = device ? this._entityIcon(device) : this._config.untracked_legend_icon;
     if (!icon) {return html``;}
 
     return html`<ha-icon 
       style="
-        ${color ? `color: rgba(${color});` : ''}
+        ${color ? `color: ${color};` : ''}
         ${textSize ? `--mdc-icon-size: ${textSize*1.25}rem;` : ''}
       "
       icon="${icon}"
@@ -354,7 +351,7 @@ export class EnergyLineGauge extends LitElement {
               title="${this._entityName(device)}"
               id="legend-${device.entity.replace('.', '-')}"
             >
-              ${this._createLegendIndicator(device, toRGB(device.color))}
+              ${this._createLegendIndicator(device, device.color)}
               <div class="label" style="font-size: ${textSize}rem; ${textStyle}; color: ${deviceTextColor}">
                 ${labelResult?.template}
               </div>
@@ -369,7 +366,7 @@ export class EnergyLineGauge extends LitElement {
 
     const renderLabel = (
       template: any,
-      color: RGBColor | undefined,
+      color: CSSColor,
       size: number,
       overflowStyle: string,
       textStyle: string,
@@ -377,7 +374,7 @@ export class EnergyLineGauge extends LitElement {
     ) => html`
       <div
         class="device-line-label line-text-position-${position}"
-        style="color: rgba(${color}); font-size: ${size}rem; ${overflowStyle} ${textStyle}">
+        style="color: ${color}; font-size: ${size}rem; ${overflowStyle} ${textStyle}">
         ${template}
       </div>
     `;
@@ -400,7 +397,7 @@ export class EnergyLineGauge extends LitElement {
         "></div>`
       : html``;
 
-    const visibleEntities = this._config.entities.filter(device => this._entitiesObject[device.entity] && this._entitiesObject[device.entity].width > 0);
+    const visibleEntities = this._config.entities.filter(device => this._entitiesObject[device.entity] && this._entitiesObject[device.entity].width > 0) ?? [];
     visibleEntities.forEach((device: ELGEntity, index: number) => {
       if (index > 0) {lineParts.push(separatorTemplate)}
 
@@ -1436,7 +1433,7 @@ export class EnergyLineGauge extends LitElement {
 
   // Severity ----------------------------------------------------------------------------------------------------------
 
-  private _mainSeverity(): ColorType {
+  private _mainSeverity(): CSSColor {
   if (!this._config.severity) return this._config.color;
 
   const severities = this._config.severity_levels;

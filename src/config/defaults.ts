@@ -18,7 +18,7 @@ import {
   StatisticsPeriodType,
   StatisticsFunctionType,
 
-  ColorType,
+  CSSColor,
   SeverityType,
 } from '../types';
 
@@ -54,8 +54,8 @@ export const CONFIG_DEFAULTS = {
   title_text_size: 2,
   title_text_style: undefined,
 
-  title_text_color: 'var(--primary-text-color)' as ColorType,
-  subtitle_text_color: 'var(--secondary-text-color)' as ColorType,
+  title_text_color: 'var(--primary-text-color)' as CSSColor,
+  subtitle_text_color: 'var(--secondary-text-color)' as CSSColor,
 
   // MIN/MAX
   min: 0,
@@ -71,7 +71,7 @@ export const CONFIG_DEFAULTS = {
   position: 'left' as ValuePositionType,
   text_size: 2.5,
   text_style: undefined,
-  text_color: 'var(--primary-text-color)' as ColorType,
+  text_color: 'var(--primary-text-color)' as CSSColor,
 
   // Styling
   line_height: 3,
@@ -89,7 +89,7 @@ export const CONFIG_DEFAULTS = {
   line_text_position: 'left' as LinePositionType,
   line_text_size: 1,
   line_text_style: undefined,
-  line_text_color: 'var(--primary-text-color)' as ColorType,
+  line_text_color: 'var(--primary-text-color)' as CSSColor,
   line_text_overflow: 'tooltip' as TextOverflowType,
   overflow_direction: 'right' as OverflowDirectionType,
 
@@ -107,7 +107,7 @@ export const CONFIG_DEFAULTS = {
   legend_indicator: 'icon-fallback' as IndicatorType,
   legend_text_size: 1,
   legend_text_style: undefined,
-  legend_text_color: 'var(--secondary-text-color)' as ColorType,
+  legend_text_color: 'var(--secondary-text-color)' as CSSColor,
 
   // Show Delta
   show_delta: false,
@@ -387,7 +387,7 @@ function validateArray<T extends readonly string[]>(
   return values.filter((item): item is T[number] => allowed.includes(item as T[number]));
 }
 
-function validateColor(color: ColorType, defaultValue: ColorType): ColorType | undefined {
+function validateColor(color: CSSColor, defaultValue: CSSColor): CSSColor {
   if (!color) return defaultValue;
   if (color === "auto") return defaultValue;
   if (Array.isArray(color)) return `rgba(${color})`;

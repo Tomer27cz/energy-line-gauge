@@ -4,7 +4,7 @@ import { map } from 'lit/directives/map.js';
 
 import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '../../config/const';
 
-import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig, ColorEditorOption, ColorEditorMode } from '../../types';
+import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig, ColorEditorOption, ColorEditorMode,CSSColor } from '../../types';
 import { fireEvent } from '../../interaction/event-helpers';
 import { toRGB, rgbToHex } from '../../style/color'
 import { setConfigDefaults, setEntitiesDefaults } from '../../config/defaults';
@@ -39,16 +39,25 @@ export class ColorEditor extends LitElement {
 
   @query('.elg_color_container') private _container!: HTMLElement;
 
-  // protected shouldUpdate(changedProps: PropertyValues): boolean {
-  //   const propertiesToCheck = [
-  //     '_mode',
-  //     '_menuOpen',
-  //     'selector',
-  //     'value',
-  //   ];
-  //
-  //   return propertiesToCheck.some(prop => changedProps.has(prop));
-  // }
+  private _determineInitialMode(): void {
+    if (this.value === undefined) {
+      this._mode = 'automatic';
+      return;
+    }
+
+    const matchedOption = COLOR_OPTIONS.find(opt => opt.value === this.value);
+    if (matchedOption) {
+      this._mode = matchedOption.mode;
+      return;
+    }
+
+    if (String(this.value).startsWith('rgb(')) {
+      this._mode = 'custom_rgb';
+      return;
+    }
+
+    this._mode = 'custom_css';
+  }
 
   protected render() {
     if (!this.name) {return html``;}
@@ -56,7 +65,7 @@ export class ColorEditor extends LitElement {
 
     const sl = setupLocalize(this.hass);
 
-    const { currentColorString, currentColor, automaticColor } = this._calculateEntityColors();
+    const { currentColor, automaticColor } = this._calculateEntityColors();
 
     const currentOption = COLOR_OPTIONS.find(opt => opt.mode === this._mode);
     let modeLabel = currentOption ? sl(`colorOptions.${currentOption.mode}`) : sl(`colorOptions.automatic`);
@@ -120,19 +129,19 @@ export class ColorEditor extends LitElement {
             ></ha-icon-button>
           `}
         </div>
-        <div class="color-display" style="background: ${currentColorString};"></div>
+        <div class="color-display" style="background: ${currentColor};"></div>
       </div>
     `;
   }
 
-  private _renderColorPreview(color: RGBColor | undefined) {
+  private _renderColorPreview(color: CSSColor) {
     if (!color) {
       return html`<ha-svg-icon .path=${mdiPalette} class="color-preview undefined-color"></ha-svg-icon>`;
     }
     return html`
       <div
         class="color-preview"
-        style="background-color: rgb(${color[0]}, ${color[1]}, ${color[2]});"
+        style="background: ${color};"
       ></div>
     `;
   }
@@ -146,20 +155,20 @@ export class ColorEditor extends LitElement {
 
     return map(visibleOptions, (opt) => html`
       <ha-list-item value="${opt.mode}" ?selected=${this._mode === opt.mode}>
-        ${this._renderColorPreview(toRGB(opt.value))}
+        ${this._renderColorPreview(opt.value)}
         <span>${localizeFunc(`colorOptions.${opt.mode}`)}</span>
       </ha-list-item>
     `);
   }
 
-  private _renderInput(currentColor: RGBColor | undefined, label: string) {
+  private _renderInput(currentColor: CSSColor, label: string) {
     if (this._mode === 'custom_rgb') {
       // noinspection HtmlUnknownAttribute
       return html`
         <input
           class="custom-rgb-input"
           type="color"
-          .value=${rgbToHex(currentColor) ?? ''}
+          .value=${rgbToHex(toRGB(currentColor)) ?? ''}
           .disabled=${this.disabled}
           .required=${this.required}
           @change=${this._valueChanged}
@@ -193,9 +202,8 @@ export class ColorEditor extends LitElement {
       );
 
       return {
-        currentColorString: currentEntityConfig?.color,
-        currentColor: toRGB(currentEntityConfig?.color),
-        automaticColor: toRGB(setEntitiesDefaults(entitiesWithoutColor).find(e => e.entity === config.entity)?.color)
+        currentColor: currentEntityConfig?.color,
+        automaticColor: setEntitiesDefaults(entitiesWithoutColor).find(e => e.entity === config.entity)?.color
       };
     }
 
@@ -204,40 +212,39 @@ export class ColorEditor extends LitElement {
     const automaticConfig = setConfigDefaults({ [this.name!]: undefined } as ELGConfig);
 
     return {
-      currentColorString: defaultConfig[this.name!],
-      currentColor: toRGB(defaultConfig[this.name!]),
-      automaticColor: toRGB(automaticConfig[this.name!] as RGBColor | undefined)
+      currentColor: defaultConfig[this.name!],
+      automaticColor: automaticConfig[this.name!]
     };
   }
 
-  private _determineInitialMode(): void {
-    if (this.value === undefined) {
-      this._mode = 'automatic';
-      return;
-    }
 
-    const matchedOption = COLOR_OPTIONS.find(opt => opt.value === this.value);
-    if (matchedOption) {
-      this._mode = matchedOption.mode;
-      return;
-    }
 
-    if (String(this.value).startsWith('rgb(')) {
-      this._mode = 'custom_rgb';
-      return;
-    }
 
-    this._mode = 'custom_css';
+
+
+
+  private _clear(ev: Event): void {
+    ev.stopPropagation();
+    fireEvent(this, 'value-changed', { value: undefined });
+    this._mode = 'automatic';
+  }
+  private _setValue(value: string) {
+    fireEvent(this, 'value-changed', { value: value });
   }
 
   private _openMenu(ev: Event) {
     ev.stopPropagation();
     this._menuOpen = true;
   }
-
   private _closeMenu(ev: Event) {
     ev.stopPropagation();
     this._menuOpen = false;
+  }
+  private _valueChanged(ev: CustomEvent) {
+    const value = (ev.target as any).value;
+    fireEvent(this, "value-changed", {
+      value: value,
+    });
   }
 
   private _handleMenuSelected(ev: CustomEvent) {
@@ -258,23 +265,6 @@ export class ColorEditor extends LitElement {
       this._setValue(colorValue);
       return;
     }
-  }
-
-  private _clear(ev: Event): void {
-    ev.stopPropagation();
-    fireEvent(this, 'value-changed', { value: undefined });
-    this._mode = 'automatic';
-  }
-
-  private _setValue(value: string) {
-    fireEvent(this, 'value-changed', { value: value });
-  }
-
-  private _valueChanged(ev: CustomEvent) {
-    const value = (ev.target as any).value;
-    fireEvent(this, "value-changed", {
-      value: value,
-    });
   }
 
   // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
