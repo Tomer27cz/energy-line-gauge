@@ -178,10 +178,10 @@ export function getBlend(start: SeverityType, end: SeverityType, state: number):
   const startRGBA = toRGB(start.color) ?? [0,0,0,0];
   const endRGBA = toRGB(end.color) ?? [0,0,0,0];
 
-  const r = startRGBA[0] + (endRGBA[0] - startRGBA[0]) * t;
-  const g = startRGBA[1] + (endRGBA[1] - startRGBA[1]) * t;
-  const b = startRGBA[2] + (endRGBA[2] - startRGBA[2]) * t;
-  const a = startRGBA[3] + (endRGBA[3] - startRGBA[3]) * t;
+  const r: number = startRGBA[0] + (endRGBA[0] - startRGBA[0]) * t;
+  const g: number = startRGBA[1] + (endRGBA[1] - startRGBA[1]) * t;
+  const b: number = startRGBA[2] + (endRGBA[2] - startRGBA[2]) * t;
+  const a: number = startRGBA[3] + (endRGBA[3] - startRGBA[3]) * t;
 
   return colorString.to.rgb(
     Math.round(r),

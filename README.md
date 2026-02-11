@@ -211,6 +211,16 @@ statistics_day_offset: 1
 statistics_period: 'hour'
 statistics_function: 'mean'
 
+severity: true 
+severity_levels:
+  - from: 50
+    color: red
+  - from: 100
+    color: yellow
+  - form: 200
+    color: green
+severity_blend: false
+
 entities:
   - entity: sensor.plug_0_power
     name: Plug 0
@@ -300,6 +310,9 @@ There are a lot of settings you can customize your sensors with:
 | `statistics_day_offset`        |        number         |              `1`               |                                            7                                             | Whole number of days into the past.                                                                                                        |
 | `statistics_period`            |   StatisticsPeriod    |             `hour`             |                                           day                                            | Statistical period [see more](#statistics).                                                                                                |
 | `statistics_function`          |  StatisticsFunction   |             `mean`             |                                           max                                            | Statistical function [see more](#statistics).                                                                                              |
+| `severity`                     |         bool          |            `false`             |                                           true                                           | Replace color of the main entity based on the state leves defined in `severity_levels` [see more](#severity)                               |
+| `severity_levels`              |     SeverityLevel     |             *none*             |                               (Example [here](#severity))                                | List of levels with associated colors (from {value} the color will be {color}) [see more](#severity)                                       |
+| `severity_blend`               |         bool          |            `false`             |                                           true                                           | Blend colors in between levels using RGB interpolation based on the state. [example](#severity)                                            |
 | `entities`                     |       Entities        |             *none*             |                                    (Example in yaml)                                     | The list of entities. Config [here.](#entities)                                                                                            |
 
 ### Types
@@ -841,6 +854,39 @@ You can sort the entities in the legend and line by using the `sorting` configur
 - `value-asc` - Sort entities by their values (current, statistical or historical) from lowest to highest.
 - `value-desc` - Sort entities by their values (current, statistical or historical) from highest to lowest.
 - `none` - No sorting, display entities in the order they are defined in the configuration.
+
+</div>
+
+## Severity
+
+<div id="severity">
+
+Added in [v2.2.8](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.2.8).
+
+You can set the color of the main line based on the value of the entity. The colors will show only if `severity: true`
+
+The colors and levels are defined in the `severity_levels` configuration option. Each level has a color and a "from" value. The "from" value is the minimum value for that level. The levels are evaluated from highest to lowest, meaning that if the value is above the "from" value of a level, that level's color will be used if there is not a level with a higher value.
+
+```yaml
+color: red
+severity: true
+severity_levels:
+  - from: 10
+    color: orange
+  - from: 20
+    color: yellow
+  - from: 30
+    color: green
+```
+
+- The base color is `red`. 
+- From `10` to `20` the color will be `orange`.
+- From `20` to `30` the color will be `yellow`.
+- From `30` and above the color will be `green`.
+
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/examples/severity_levels.png" alt="severity_levels">
+
+`severity_blend: true` - Blending is supported when the value is between two levels. The color will be a blend of the two levels based on the value's position between the two levels. RGB interpolation is used.
 
 </div>
 
