@@ -132,6 +132,9 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       { value: "space-around", label: sl("alignmentOptions.space-around") },
       { value: "space-between", label: sl("alignmentOptions.space-between") },
       { value: "space-evenly", label: sl("alignmentOptions.space-evenly") },
+      { value: "new-line", label: sl("alignmentOptions.new-line") },
+      { value: "new-line-left", label: sl("alignmentOptions.new-line-left") },
+      { value: "new-line-right", label: sl("alignmentOptions.new-line-right") },
     ];
 
     const styleOptions = [
@@ -563,7 +566,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       <ha-expansion-panel outlined>
         <div slot="header" role="heading" aria-level="3">
           <ha-svg-icon slot="leading-icon" .path=${mdiListBox}></ha-svg-icon>
-          ${this.hass.localize("ui.panel.lovelace.editor.card.heading.entities")}
+          ${localize("expandable_entities", this.hass)}
         </div>
         <div class="content">
           <energy-line-gauge-items-editor 

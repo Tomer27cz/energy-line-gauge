@@ -81,6 +81,7 @@
   "severity": "Definovat závažnost",
   "severity_blend": "Míchat barvy",
 
+  "expandable_entities": "Entity",
   "itemEditor": {
     "entity": "Entita (požadováno)",
     "name": "Název",
@@ -166,7 +167,10 @@
     "center": "Na střed (výchozí)",
     "space-around": "Odstupy po stranách",
     "space-between": "Odstupy mezi",
-    "space-evenly": "Rovnoměrné odstupy"
+    "space-evenly": "Rovnoměrné odstupy",
+    "new-line": "Nový řádek",
+    "new-line-left": "Nový řádek (vlevo)",
+    "new-line-right": "Nový řádek (vpravo)"
   },
   "styleOptions": {
     "weight-lighter": "Světlejší",

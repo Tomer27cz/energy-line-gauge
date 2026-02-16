@@ -446,7 +446,7 @@ export const styles = css`
     }
     
     /*Legend Alignment -------------------------------------------------*/
-    /*['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly']*/
+    /*['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly', 'new-line', 'new-line-left', 'new-line-right']*/
     
     .legend-alignment-left ul {justify-content: flex-start}
     .legend-alignment-right ul {justify-content: flex-end}
@@ -454,6 +454,10 @@ export const styles = css`
     .legend-alignment-space-around ul {justify-content: space-around}
     .legend-alignment-space-between ul {justify-content: space-between}
     .legend-alignment-space-evenly ul {justify-content: space-evenly}
+    
+    .legend-alignment-new-line ul {flex-direction: column; align-items: center;}
+    .legend-alignment-new-line-left ul {flex-direction: column; align-items: flex-start;}
+    .legend-alignment-new-line-right ul {flex-direction: column; align-items: flex-end;}
     
     /*Delta -------------------------------------------------*/
     

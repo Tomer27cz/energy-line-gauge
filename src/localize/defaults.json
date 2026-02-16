@@ -81,6 +81,7 @@
   "severity": "ui.panel.lovelace.editor.card.gauge.severity.define",
   "severity_blend": null,
 
+  "expandable_entities": "ui.panel.lovelace.editor.card.entities.name",
   "itemEditor": {
     "entity": "ui.panel.lovelace.editor.card.generic.entity",
     "name": "ui.panel.lovelace.editor.card.generic.name",
@@ -166,7 +167,10 @@
     "center": null,
     "space-around": null,
     "space-between": null,
-    "space-evenly": null
+    "space-evenly": null,
+    "new-line": null,
+    "new-line-left": null,
+    "new-line-right": null
   },
   "styleOptions": {
     "weight-lighter": null,

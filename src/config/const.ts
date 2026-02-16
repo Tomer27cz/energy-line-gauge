@@ -34,7 +34,7 @@ export const POSITION_TYPES = [
 
 export const VALUE_POSITION_TYPES = [...POSITION_TYPES, 'in-title-right', 'in-title-left'] as const;
 export const LINE_POSITION_TYPES = [...POSITION_TYPES, 'center'] as const;
-export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly'] as const;
+export const LEGEND_ALIGNMENT_TYPES = ['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly', 'new-line', 'new-line-left', 'new-line-right'] as const;
 
 // Content Configuration
 export const STATE_CONTENT_TYPES = ['name', 'state', 'last_changed', 'last_updated', 'percentage', 'icon'] as const;

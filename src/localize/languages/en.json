@@ -81,6 +81,7 @@
   "severity": "Define severity",
   "severity_blend": "Blend colors",
 
+  "expandable_entities": "Entities",
   "itemEditor": {
     "entity": "Entity (required)",
     "name": "Name",
@@ -166,7 +167,10 @@
     "center": "Center (default)",
     "space-around": "Space Around",
     "space-between": "Space Between",
-    "space-evenly": "Space Evenly"
+    "space-evenly": "Space Evenly",
+    "new-line": "New Line",
+    "new-line-left": "New Line (Left)",
+    "new-line-right": "New Line (Right)"
   },
   "styleOptions": {
     "weight-lighter": "Lighter Weight",
