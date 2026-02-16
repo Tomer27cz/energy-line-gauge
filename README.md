@@ -333,7 +333,7 @@ The types are used in the configuration. The type is used to define what kind of
 |      CornerType       | Single: `square`, `lite-rounded`, `medium-rounded`, `rounded`, `circular`                                                                                                                                                                                                                                                                                           |
 |      SortingType      | Single: `alpha-asc`, `alpha-desc`, `value-asc`, `value-desc`, `none`                                                                                                                                                                                                                                                                                                |
 |  SeparatorWidthType   | Single: `total020`, `total030`, `total040`, `total050`, `total060`, `total070`, `total080`, `total090`, `total100`, `each002`, `each004`, `each006`, `each008`, `each010`, `each012`, `each014`, `each016`, `each018`, `each020` [mode]{num}{num}.{num}                                                                                                             |
-|     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`                                                                                                                                                                                                                                                                                  |
+|     AlignmentType     | Single: `left`, `right`, `center`, `space-around`, `space-between`, `space-evenly`, `new-line`, `new-line-left`, `new-line-right`                                                                                                                                                                                                                                   |
 |     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
 |   TextOverflowType    | Single: `ellipsis`, `clip`, `tooltip`, `tooltip-segment`, `fade`                                                                                                                                                                                                                                                                                                    |
 | OverflowDirectionType | Single: `left`, `right`                                                                                                                                                                                                                                                                                                                                             |
@@ -568,6 +568,15 @@ untracked_legend_label: Untracked
 
 ### `legend_alignment: space-evenly`
 <img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/space-evenly.png" alt="space-evenly">
+
+### `legend_alignment: new-line`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/new-line.png" alt="new-line">
+
+### `legend_alignment: new-line-left`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/new-line-left.png" alt="new-line-left">
+
+### `legend_alignment: new-line-right`
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/legend_alignment/new-line-right.png" alt="new-line-right">
 
 ## Legend Indicator
 
