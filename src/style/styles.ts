@@ -1,6 +1,6 @@
 import { css } from 'lit';
 import memoizeOne from 'memoize-one';
-import { CSSColor, TextStyleType } from '../types';
+import { CSSColor,ELGStyle,TextOverflowType, TextStyleType } from '../types';
 
 // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
 export const sortableStyle = css`
@@ -367,42 +367,17 @@ export const styles = css`
     /* Device line label position --------------------------------------------*/
     /* 'left' | 'right' | 'center' | 'top-left' | 'top-right' | 'top-center' | 'bottom-left' | 'bottom-right' | 'bottom-center'; */
     
-    .line-text-position-left {
-        text-align: left;
-        align-content: center;
-    }
-    .line-text-position-right {
-        text-align: right;
-        align-content: center;
-    }
-    .line-text-position-center {
-        text-align: center;
-        align-content: center;
-    }
-    .line-text-position-top-left {
-        text-align: left;
-        align-content: start;
-    }
-    .line-text-position-top-right {
-        text-align: right;
-        align-content: start;
-    }
-    .line-text-position-top-center {
-        text-align: center;
-        align-content: start;
-    }
-    .line-text-position-bottom-left {
-        text-align: left;
-        align-content: end;
-    }
-    .line-text-position-bottom-right {
-        text-align: right;
-        align-content: end;
-    }
-    .line-text-position-bottom-center {
-        text-align: center;
-        align-content: end;
-    }
+    .line-text-position-left {text-align: left; align-content: center;}
+    .line-text-position-right {text-align: right; align-content: center;}
+    .line-text-position-center {text-align: center; align-content: center;}
+    
+    .line-text-position-top-left {text-align: left; align-content: start;}
+    .line-text-position-top-right {text-align: right; align-content: start;}
+    .line-text-position-top-center {text-align: center; align-content: start;}
+    
+    .line-text-position-bottom-left {text-align: left; align-content: end;}
+    .line-text-position-bottom-right {text-align: right; align-content: end;}
+    .line-text-position-bottom-center {text-align: center; align-content: end;}
     
     /*Theme  --------------------------------------------------*/
     
@@ -434,7 +409,7 @@ export const styles = css`
         width: 100%;
     }
     .chart-legend ul {
-        display: inline-flex;
+        display: flex;
         margin: 8px 0 0;
         width: 100%;
         padding-inline-start: 0;
@@ -443,8 +418,7 @@ export const styles = css`
     }
     .chart-legend li {
         cursor: pointer;
-        display: inline-grid;
-        grid-auto-flow: column;
+        display: flex;
         padding: 0 8px;
         box-sizing: border-box;
         align-items: center;
@@ -466,10 +440,20 @@ export const styles = css`
         width: 16px;
         direction: var(--direction);
     }
-  .indicator-state {
-    font-weight: bold;
-    margin-right: 0.5rem;
-  }
+    .indicator-state {
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+    
+    /*Legend Alignment -------------------------------------------------*/
+    /*['left', 'right', 'center', 'space-around', 'space-between', 'space-evenly']*/
+    
+    .legend-alignment-left ul {justify-content: flex-start}
+    .legend-alignment-right ul {justify-content: flex-end}
+    .legend-alignment-center ul {justify-content: center}
+    .legend-alignment-space-around ul {justify-content: space-around}
+    .legend-alignment-space-between ul {justify-content: space-between}
+    .legend-alignment-space-evenly ul {justify-content: space-evenly}
     
     /*Delta -------------------------------------------------*/
     
@@ -497,30 +481,39 @@ export const styles = css`
     }
 `;
 
-export const getOverflowStyle = memoizeOne((type: string, direction: string) => {
-  const dirStyle = `direction: ${direction === 'right' ? 'ltr' : 'rtl'};`;
+export const getOverflowStyle = memoizeOne((type: TextOverflowType, direction: 'right' | 'left'): ELGStyle => {
+  const styleMap: ELGStyle = {
+    'overflow': 'hidden',
+    'direction': direction === 'right' ? 'ltr' : 'rtl',
+  };
+
   switch (type) {
     case 'ellipsis':
-      return `overflow: hidden; text-overflow: ellipsis; ${dirStyle}`;
+      styleMap['text-overflow'] = 'ellipsis';
+      return styleMap;
     case 'clip':
-      return `overflow: hidden; text-overflow: clip; ${dirStyle}`;
+      styleMap['text-overflow'] = 'clip';
+      return styleMap;
     case 'fade':
-      const fadeDir = direction === 'left' ? 'left' : 'right';
-      return `mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
-                -webkit-mask-image: linear-gradient(to ${fadeDir}, black 85%, transparent 98%, transparent 100%);
-                ${dirStyle}`;
+      delete styleMap['overflow'];
+      styleMap['mask-image'] = `linear-gradient(to ${direction}, black 85%, transparent 98%, transparent 100%)`;
+      styleMap['-webkit-mask-image'] = `linear-gradient(to ${direction}, black 85%, transparent 98%, transparent 100%)`;
+      return styleMap;
     default:
-      return `overflow: hidden;`;
+      return styleMap;
   }
 });
 
-export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSize?: number | undefined, baseColor?: CSSColor | undefined): string => {
-  if (!style) {return '';}
+export const getTextStyleMap = memoizeOne((style: TextStyleType | undefined, textSize: number | undefined, color: CSSColor): ELGStyle => {
+  const s = textSize || 1;
+  const styleMap: ELGStyle = {
+    'font-size': `${s}rem`,
+    'color': color,
+  };
+
+  if (!style) return styleMap;
 
   const uniqueStyles = new Set(style);
-  const styleMap: Record<string, string> = {};
-
-  const s = textSize ? textSize : 1;
 
   // Font weight
   if (uniqueStyles.has('weight-bolder')) {
@@ -566,21 +559,14 @@ export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSi
     styleMap['-webkit-text-stroke'] = `${s*0.5}px white`;
   }
 
-  // Track the color if set earlier
-  if (styleMap['color'] && styleMap['color'] !== 'transparent') {
-    baseColor = styleMap['color'];
-  }
-
   // Shadow
   if (uniqueStyles.has('shadow-neon')) {
-    const neonColor = `${baseColor}` || 'rgba(255,255,255,1)';
-    styleMap['color'] = neonColor;
     styleMap['text-shadow'] = [
-      `0 0 ${s*5}px ${neonColor}`,
-      `0 0 ${s*10}px ${neonColor}`,
-      `0 0 ${s*20}px ${neonColor}`,
-      `0 0 ${s*40}px ${neonColor}`,
-      `0 0 ${s*80}px ${neonColor}`,
+      `0 0 ${s*5}px ${styleMap['color']}`,
+      `0 0 ${s*10}px ${styleMap['color']}`,
+      `0 0 ${s*20}px ${styleMap['color']}`,
+      `0 0 ${s*40}px ${styleMap['color']}`,
+      `0 0 ${s*80}px ${styleMap['color']}`,
     ].join(', ');
   } else if (uniqueStyles.has('shadow-hard')) {
     styleMap['text-shadow'] = `${s*1.25}px ${s*1.25}px 0 rgba(0, 0, 0)`; // 0.9
@@ -592,7 +578,6 @@ export const getTextStyle = memoizeOne((style: TextStyleType | undefined, textSi
     styleMap['text-shadow'] = `${s*1.25}px ${s*1.25}px ${s*4.5}px rgba(0, 0, 0, 0.5)`; // 0.2
   }
 
-  return Object.entries(styleMap)
-    .map(([key, value]) => `${key}:${value}`)
-    .join('; ');
-});
+  return styleMap;
+
+  });

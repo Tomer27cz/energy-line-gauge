@@ -39,7 +39,7 @@ import {
   STATISTICS_FUNCTION_TYPES,
 } from "./const";
 
-import { COLORS } from '../style/color';
+import { COLORS } from './const';
 
 // Some values are undefined but set programmatically in the code - comment
 export const CONFIG_DEFAULTS = {

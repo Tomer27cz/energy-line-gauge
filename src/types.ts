@@ -527,6 +527,8 @@ export type ELGHistoryOffset = {
   history: ELGHistoryOffsetEntities;
 };
 
+export type ELGStyle = Record<string, string | number | undefined>;
+
 // Statistics API
 export interface HassStatisticEntry {
   start: number;
