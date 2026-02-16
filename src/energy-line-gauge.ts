@@ -952,20 +952,16 @@ export class EnergyLineGauge extends LitElement {
     this._entitiesObject = {};
     this._warnings = [];
 
-    if (this._config.offset) {
-      this._getOffsetHistory();
-    }
-    if (this._config.statistics) {
-      this._getStatisticsHistory();
-    }
+    if (this._config.offset) {this._getOffsetHistory();}
+    if (this._config.statistics) {this._getStatisticsHistory();}
 
     const mainState: number = this._calcStateMain();
+    const maxValue: number = this._getMax(mainState);
+    const minValue: number = this._getMin();
 
-    let max: number = this._getMax(mainState);
-    let min: number = this._getMin();
-
-    if (mainState > max) {max = mainState;}
-    let range: number = (max - min) || 1;
+    const min = Math.min(minValue, maxValue);
+    const max = Math.max(mainState, Math.max(minValue, maxValue));
+    const range: number = (max - min) || 1;
 
     const clampedMain: number = Math.min(Math.max(mainState, min), max);
     const mainWidth: number = ((clampedMain - min) / range) * 100;
@@ -1339,13 +1335,12 @@ export class EnergyLineGauge extends LitElement {
     try {
       const unsub = await unsubPromise;
       unsub();
-      this._unsubRenderTemplates.delete(key);
     } catch (err: any) {
-      if (err.code === "not_found" || err.code === "template_error") {
-        // Ignore normal closure errors
-      } else {
-        throw err;
+      if (err.code !== "not_found" && err.code !== "template_error") {
+        console.error(`ELG: Unexpected error unsubscribing template [${key}]:`, err);
       }
+    } finally {
+      this._unsubRenderTemplates.delete(key);
     }
   }
   private _getTemplateValue(key: string, fallback: string | undefined): string {
@@ -1366,9 +1361,7 @@ export class EnergyLineGauge extends LitElement {
     ]
 
     for (const entity of otherEntities) {
-      if (entity && entity !== config.entity && typeof entity === 'string') {
-        if (!this._validate(entity)) {continue;}
-        if (entityIDs.includes(entity)) {continue;}
+      if (entity && entity !== config.entity && typeof entity === 'string' && !entityIDs.includes(entity)) {
         entityIDs.push(entity);
       }
     }
