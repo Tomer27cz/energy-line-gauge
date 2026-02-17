@@ -67,6 +67,7 @@ The card is designed to resemble the Home Assistant **Energy panel** style. The 
 * [Line Separators](#line_separators)
 * [Templating](#templating)
 * [Sorting](#sorting)
+* [Severity](#severity)
 * [Issues](#issues)
 * [Contribute](#contribute)
 
