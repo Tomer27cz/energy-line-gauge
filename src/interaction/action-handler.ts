@@ -33,7 +33,7 @@ interface ActionHandlerElement extends HTMLElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "action-handler": ActionHandler;
+    "elg-action-handler": ActionHandler;
   }
   interface HASSDomEvents {
     action: ActionHandlerDetail;
@@ -118,19 +118,6 @@ class ActionHandler extends HTMLElement implements ActionHandler {
         "keydown",
         element.actionHandler.handleKeyDown!
       );
-    } else {
-      element.addEventListener("contextmenu", (ev: Event) => {
-        const e = ev || window.event;
-        if (e.preventDefault) {
-          e.preventDefault();
-        }
-        if (e.stopPropagation) {
-          e.stopPropagation();
-        }
-        e.cancelBubble = true;
-        e.returnValue = false;
-        return false;
-      });
     }
 
     element.actionHandler = { options };
@@ -141,6 +128,9 @@ class ActionHandler extends HTMLElement implements ActionHandler {
 
     element.actionHandler.start = (ev: Event) => {
       this.cancelled = false;
+
+      if (ev.type === "mousedown" && (ev as MouseEvent).button === 2) {return;}
+
       let x;
       let y;
       if ((ev as TouchEvent).touches) {
@@ -235,13 +225,17 @@ class ActionHandler extends HTMLElement implements ActionHandler {
   }
 }
 
+if (!customElements.get("elg-action-handler")) {
+  customElements.define("elg-action-handler", ActionHandler);
+}
+
 const getActionHandler = (): ActionHandler => {
   const body = document.body;
-  if (body.querySelector("action-handler")) {
-    return body.querySelector("action-handler") as ActionHandler;
+  if (body.querySelector("elg-action-handler")) {
+    return body.querySelector("elg-action-handler") as ActionHandler;
   }
 
-  const actionhandler = document.createElement("action-handler");
+  const actionhandler = document.createElement("elg-action-handler");
   body.appendChild(actionhandler);
 
   return actionhandler as ActionHandler;
