@@ -331,6 +331,7 @@ export type ActionHandlerEvent = HASSDomEvent<ActionHandlerDetail>;
 
 export interface ELGConfig extends LovelaceCardConfig {
   entity: string;
+  attribute?: string;
 
   // Title
   title?: string;
@@ -444,6 +445,7 @@ export interface ELGConfig extends LovelaceCardConfig {
 
 export interface ELGEntity {
   entity: string;
+  attribute?: string;
 
   // Identity
   name?: string;
@@ -518,6 +520,7 @@ export type ELGHistoryOffsetEntities = {
 export type ELGHistoryOffsetEntry = {
   state: string;
   last_changed: string;
+  attributes?: any;
 };
 
 export type ELGHistoryOffset = {

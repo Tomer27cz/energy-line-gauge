@@ -528,6 +528,18 @@ export class EnergyLineGauge extends LitElement {
   private _entityNoStatistics(entityId: string): string {
     return this.hass.localize("ui.components.statistics_charts.no_statistics_found") + `(${entityId}), change function / see docs`;
   }
+  private _attributeNotFound(entity: string, attribute: string): string {
+    return this.hass.localize("ui.panel.lovelace.warning.attribute_not_found", {
+      attribute: attribute || "[empty]",
+      entity: entity || "[empty]"
+    });
+  }
+  private _attributeNotNumeric(entity: string, attribute: string): string {
+    return this.hass.localize("ui.panel.lovelace.warning.attribute_not_numeric", {
+      attribute: attribute || "[empty]",
+      entity: entity || "[empty]"
+    });
+  }
 
   // ----------------------------------------------------- Entity ------------------------------------------------------
 
@@ -1001,6 +1013,22 @@ export class EnergyLineGauge extends LitElement {
       return state;
     }
 
+    if (this._config.attribute) {
+      const attributes = this.hass.states[this._config.entity].attributes;
+      if (!attributes || !(this._config.attribute in attributes)) {
+        this._addWarning(this._attributeNotFound(this._config.entity, this._config.attribute), this._config.entity);
+        return 0;
+      }
+
+      const attrValue = attributes[this._config.attribute];
+      if (attrValue === undefined || isNaN(Number(attrValue))) {
+        this._addWarning(this._attributeNotNumeric(this._config.entity, this._config.attribute), this._config.entity);
+        return 0;
+      }
+
+      return parseFloat(attrValue);
+    }
+
     return parseFloat(this.hass.states[this._config.entity].state);
   }
   private _calcState(stateObj: HassEntity, multiplier?: number): number {
@@ -1014,13 +1042,43 @@ export class EnergyLineGauge extends LitElement {
         }
         return state;
       }
+
+      const attribute = this._getAttributeConfig(stateObj.entity_id);
+      if (attribute) {
+        const attributes = stateObj.attributes;
+        if (!attributes || !(attribute in attributes)) {
+          this._addWarning(this._attributeNotFound(stateObj.entity_id, attribute), stateObj.entity_id);
+          return 0;
+        }
+
+        const attrValue = attributes[attribute];
+        if (attrValue === undefined || isNaN(Number(attrValue))) {
+          this._addWarning(this._attributeNotNumeric(stateObj.entity_id, attribute), stateObj.entity_id);
+          return 0;
+        }
+
+        return parseFloat(attrValue);
+      }
+
       return parseFloat(stateObj?.state);
     })()
-    return isNaN(value) ? 0 : value * (multiplier ?? 1);
+
+    if (isNaN(value)) {
+      this._addWarning(this._entityNotNumeric(stateObj), stateObj.entity_id);
+      return 0;
+    }
+
+    return value * (multiplier ?? 1);
   }
 
   // History Offset ----------------------------------------------------------------------------------------------------
 
+  private _getOffsetEntryValue(entry: ELGHistoryOffsetEntry, entityID: string): number {
+    const attribute = this._getAttributeConfig(entityID);
+
+    const value = parseFloat(attribute ? entry.attributes?.[attribute] : entry.state);
+    return isNaN(value) ? 0 : value;
+  }
   private _getOffsetState(entityID: string): number {
     if (!this._offsetTime) {return 0;}
     if (!this._entitiesHistoryOffset) {return 0;}
@@ -1034,17 +1092,13 @@ export class EnergyLineGauge extends LitElement {
       const lastChangedTime: number = new Date(entry.last_changed).getTime();
 
       if (lastChangedTime <= this._offsetTime) {
-        // Found the state at or before the requested time
-        const stateValue = parseFloat(entry.state);
-        return isNaN(stateValue) ? 0 : stateValue;
+        return this._getOffsetEntryValue(entry, entityID);
       }
     }
+
     // If no entry is found before the offsetTime, return the earliest state
     const earliestEntry: ELGHistoryOffsetEntry = history[0];
-    if (earliestEntry) {
-      const stateValue: number = parseFloat(earliestEntry.state);
-      return isNaN(stateValue) ? 0 : stateValue;
-    }
+    if (earliestEntry) {return this._getOffsetEntryValue(earliestEntry, entityID);}
 
     return 0;
   }
@@ -1104,6 +1158,7 @@ export class EnergyLineGauge extends LitElement {
         acc[entityId].push({
           state: item.state,
           last_changed: item.last_changed,
+          attributes: item.attributes,
         });
       });
       return acc;
@@ -1222,12 +1277,14 @@ export class EnergyLineGauge extends LitElement {
     const startTime = typeof start === 'string' ? start : start.toISOString();
     const endTime = typeof end === 'string' ? end : end.toISOString();
 
+    const attributeFilter = this._anyHasAttributesConfig(entityIDs) ? '' : '&no_attributes';
+
     let url = `history/period/${startTime}?` +
       `filter_entity_id=${entityIDs.join(',')}` +
       `&end_time=${endTime}` +
       `&significant_changes_only` +
       `&minimal_response` +
-      `&no_attributes`;
+      attributeFilter;
 
     return this.hass?.callApi('GET', url);
   }
@@ -1368,6 +1425,19 @@ export class EnergyLineGauge extends LitElement {
         break;
       default:break;
     }
+  }
+
+  private _getAttributeConfig(entityID: string): any | undefined {
+    if (entityID === this._config.entity) {return this._config.attribute;}
+
+    const device = this._config.entities?.find(
+      (device: ELGEntity) => device.entity === entityID
+    );
+
+    return device?.attribute;
+  }
+  private _anyHasAttributesConfig(entityIDs: string[]): boolean {
+    return entityIDs.some(id => this._getAttributeConfig(id) !== undefined);
   }
 
   // MIN / MAX ---------------------------------------------------------------------------------------------------------

@@ -44,6 +44,7 @@ import { COLORS } from './const';
 // Some values are undefined but set programmatically in the code - comment
 export const CONFIG_DEFAULTS = {
   entity: undefined, // string
+  attribute: undefined,
 
   // Title
   title: undefined,
@@ -142,6 +143,7 @@ export const CONFIG_DEFAULTS = {
 
 export const ENTITY_DEFAULTS = {
   entity: undefined,
+  attribute: undefined,
 
   // Entity
   name: undefined,
@@ -173,6 +175,9 @@ export const ENTITY_DEFAULTS = {
 export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
   return {
     ...config,
+
+    // Entity
+    attribute: config.attribute ?? CONFIG_DEFAULTS.attribute,
 
     // Title
     title: config.title ?? CONFIG_DEFAULTS.title,
@@ -290,6 +295,9 @@ export const setEntitiesDefaults = (entities: ELGEntity[]): ELGEntity[] => {
 
     validatedEntities.push({
       ...entity,
+
+      // Attribute
+      attribute: entity.attribute ?? ENTITY_DEFAULTS.attribute,
 
       // Entity
       name: entity.name ?? ENTITY_DEFAULTS.name,
