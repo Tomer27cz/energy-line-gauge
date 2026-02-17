@@ -232,25 +232,25 @@ export class EnergyLineGauge extends LitElement {
     this._sortConfigEntitiesByState()
     this._calculate();
 
+    const style = {
+      '--color': this._mainSeverity(),
+      '--background-color': this._config.color_bg,
+      '--line-height': `${this._config.line_height ?? 3}rem`,
+    }
+
     return html`
       <ha-card
+        class="line-gauge-card"
+        style=${styleMap(style)}
         .header=${this._getTemplateValue('header', this._config.header)}
+        .label=${this._config.label}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
           hasHold: hasAction(this._config.hold_action),
           hasDoubleClick: hasAction(this._config.double_tap_action),
         })}
-        tabindex="0"
-        .label=${this._config.label}
       >
-        <div class="line-gauge-card" 
-             style="
-             --color: ${this._mainSeverity()};
-             --background-color: ${this._config.color_bg};
-             --line-height: ${this._config.line_height ?? 3}rem;
-        ">
-          ${this._createInnerHtml()}
-        </div>
+        ${this._createInnerHtml()}
       </ha-card>
     `;
   }

@@ -163,14 +163,13 @@ export const styles = css`
         --background: var(--secondary-background-color);
         --line-height: 3rem;
 
-        width: 95%;
         box-sizing:border-box;
         cursor: pointer;
         /*pointer-events: none;*/
         transition: all 0.3s ease-out;
 
         margin: 2px auto;
-        padding: 10px;
+        padding: 0.75rem 1.5rem;
     }
 
     .line-gauge-card div {
