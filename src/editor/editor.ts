@@ -9,6 +9,7 @@ import {
   mdiChartBar,
   mdiChartAreaspline,
   mdiGaugeFull,
+  NON_NUMERIC_ATTRIBUTES
 } from '../config/const';
 
 import memoizeOne  from 'memoize-one';
@@ -44,7 +45,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     }
   }
 
-  private _schema = memoizeOne(() => {
+  private _schema = memoizeOne((entityId) => {
     if (!this.hass) return [];
 
     const sl = setupLocalize(this.hass);
@@ -200,7 +201,10 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
         required: true,
         selector: { entity: { domain: ["sensor", "input_number", "number", "counter"] } },
       },
-
+      {
+        name: "attribute",
+        selector: {attribute: {entity_id: entityId, hide_attributes: NON_NUMERIC_ATTRIBUTES, } }
+      },
       {
         type: "grid",
         schema: [
@@ -533,7 +537,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       <ha-form
           .hass=${this.hass}
           .data=${data}
-          .schema=${this._schema()}
+          .schema=${this._schema(this._config!.entity)}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
       ></ha-form>

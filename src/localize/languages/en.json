@@ -1,5 +1,7 @@
 {
   "entity": "Entity (required)",
+  "attribute": "Attribute",
+
   "title": "Title",
   "subtitle": "Subtitle",
   "min": "Minimum",
@@ -84,6 +86,7 @@
   "expandable_entities": "Entities",
   "itemEditor": {
     "entity": "Entity (required)",
+    "attribute": "Attribute",
     "name": "Name",
     "color": "Color",
     "legend_indicator": "Legend Indicator",

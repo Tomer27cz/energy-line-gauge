@@ -5,7 +5,7 @@ import memoizeOne  from 'memoize-one';
 import { fireEvent } from '../interaction/event-helpers';
 import { localize, setupLocalize } from '../localize/localize';
 import { HomeAssistant, ELGEntity } from '../types';
-import { DEFAULT_ACTIONS } from '../config/const';
+import { DEFAULT_ACTIONS, NON_NUMERIC_ATTRIBUTES } from '../config/const';
 
 import { mdiGestureTap, mdiRuler, mdiTextShort } from '../config/const';
 
@@ -17,7 +17,7 @@ export class ItemEditor extends LitElement {
 
   @property({ attribute: false }) hass?: HomeAssistant;
 
-  private _schema = memoizeOne(() =>  {
+  private _schema = memoizeOne((entityId) =>  {
     if (!this.hass) return [];
 
     const sl = setupLocalize(this.hass);
@@ -58,6 +58,10 @@ export class ItemEditor extends LitElement {
         name: "entity",
         required: true,
         selector: {entity: {domain: "sensor"}},
+      },
+      {
+        name: "attribute",
+        selector: {attribute: {entity_id: entityId, hide_attributes: NON_NUMERIC_ATTRIBUTES, } }
       },
 
       {
@@ -180,7 +184,7 @@ export class ItemEditor extends LitElement {
       <ha-form
           .hass=${this.hass}
           .data=${{...this.config}}
-          .schema=${this._schema()}
+          .schema=${this._schema(this.config!.entity)}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
       ></ha-form>

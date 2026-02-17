@@ -1,5 +1,7 @@
 {
   "entity": "ui.panel.lovelace.editor.card.generic.entity",
+  "attribute": "ui.panel.lovelace.editor.card.generic.attribute",
+
   "title": "ui.panel.lovelace.editor.card.heading.heading_style_options.title",
   "subtitle": "ui.panel.lovelace.editor.card.heading.heading_style_options.subtitle",
   "min": "ui.panel.lovelace.editor.card.generic.minimum",
@@ -84,6 +86,7 @@
   "expandable_entities": "ui.panel.lovelace.editor.card.entities.name",
   "itemEditor": {
     "entity": "ui.panel.lovelace.editor.card.generic.entity",
+    "attribute": "ui.panel.lovelace.editor.card.generic.attribute",
     "name": "ui.panel.lovelace.editor.card.generic.name",
     "color": "ui.components.selectors.selector.types.color_rgb",
     "legend_indicator": null,

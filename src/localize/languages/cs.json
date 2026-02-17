@@ -1,5 +1,7 @@
 {
   "entity": "Entita (vyžadováno)",
+  "attribute": "Atribut",
+
   "title": "Název",
   "subtitle": "Podnázev",
   "min": "Minimum",
@@ -84,6 +86,7 @@
   "expandable_entities": "Entity",
   "itemEditor": {
     "entity": "Entita (požadováno)",
+    "attribute": "Atribut",
     "name": "Název",
     "color": "Barva",
     "legend_indicator": "Indikátor legendy",

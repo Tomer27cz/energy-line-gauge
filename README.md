@@ -238,6 +238,7 @@ entities:
       - percentage
     legend_indicator: '-'
   - entity: sensor.plug_1_power
+    attribute: device_class
     name: Plug 1
     color:
       - 244
@@ -254,6 +255,7 @@ There are a lot of settings you can customize your sensors with:
 | Setting                        |         type          |            default             |                                         example                                          | description                                                                                                                                |
 |--------------------------------|:---------------------:|:------------------------------:|:----------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------|
 | `entity`                       |       entityID        |          *!required*           |                                       sensor.power                                       | You can specify the entity_id here as well.                                                                                                |
+| `attribute`                    |        string         |             *none*             |                                     battery_voltage                                      | Replace the state with the value of this entity attribute.                                                                                 |
 | `title`                        |        string         |             *none*             |                                    Power Consumption                                     | The title of the Card (font_size: 2rem). Supports [templating](#templating).                                                               |
 | `subtitle`                     |        string         |             *none*             |                                           Glow                                           | Text in gray below the title (font_size: 1rem). Supports [templating](#templating).                                                        |
 | `title_position`               |     PositionType      |           `top-left`           |                                           left                                           | Position of the title [see examples](#position)                                                                                            |
@@ -364,6 +366,7 @@ You can set the `entity` to `none`, `null` or `undefined` to create a "spacer" t
 | Setting              |     type      |     default      |                                         example                                          | description                                                                                                                                          |
 |----------------------|:-------------:|:----------------:|:----------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `entity`             |   entityID    |   *!required*    |                                   sensor.plug_0_power                                    | You can specify the entity_id here as well.                                                                                                          |
+| `attribute`          |    string     |      *none*      |                                     battery_voltage                                      | Replace the state with the value of this entity attribute.                                                                                           |
 | `name`               |    string     |      *none*      |                                          Plug 0                                          | The name of the entity to be displayed in the legend. Supports [templating](#templating).                                                            |
 | `icon`               |    string     |      *none*      |                                        mdi:flash                                         | Display an icon instead of the colored circle. (icon will also be colored) [example](#icon)                                                          |
 | `color`              |   ColorType   |      `auto`      |                                           auto                                           | The color of the gauge and legend. (auto: Home Assistant Energy panel - the same order)                                                              |
