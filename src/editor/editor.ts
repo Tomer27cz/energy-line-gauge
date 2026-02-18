@@ -216,8 +216,8 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       {
         type: "grid",
         schema: [
-          { name: "min", required: false, selector: { number: { min: 0 } } },
-          { name: "max", required: false, selector: { number: { min: 0 } } },
+          { name: "min", required: false, selector: { number: { min: -999999999999, max: 999999999999, mode: "box", step: 1 } } },
+          { name: "max", required: false, selector: { number: { min: -999999999999, max: 999999999999, mode: "box", step: 1 } } },
         ]
       },
 
