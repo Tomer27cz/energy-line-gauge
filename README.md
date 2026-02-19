@@ -115,14 +115,6 @@ You can find the Card in your Card Selector or by scrolling down to the bottom o
 Then you can paste the following code into the Card Editor:
 `type: 'custom:energy-line-gauge'`
 
-### Visual Editor
-
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_v2-2-2.png" alt="Visual Editor"/>
-</p>
-
-<hr/>
-
 ## YAML Only
 
 Some features are not yet available in the Visual Editor. For example the ability to set `min` and `max` to be an entity or color `auto`.
@@ -340,7 +332,7 @@ The types are used in the configuration. The type is used to define what kind of
 |     TextStyleType     | Array of any: `weight-lighter`, `weight-bold`, `weight-bolder`, `style-italic`, `decoration-underline`, `decoration-overline`, `decoration-line-through`, `transform-uppercase`, `transform-lowercase`, `transform-capitalize`, `family-monospace`, `shadow-light`, `shadow-medium`, `shadow-heavy`, `shadow-hard`, `shadow-neon`, `black-outline`, `white-outline` |
 |   TextOverflowType    | Single: `ellipsis`, `clip`, `tooltip`, `tooltip-segment`, `fade`                                                                                                                                                                                                                                                                                                    |
 | OverflowDirectionType | Single: `left`, `right`                                                                                                                                                                                                                                                                                                                                             |
-|       ColorType       | An array of three numbers (RGB), `auto`, `var(--custom-color)`, or any string that will work as a CSS color                                                                                                                                                                                                                                                         |
+|       ColorType       | An array of three numbers (RGB), `auto`, `var(--custom-color)`, or any string that will work as a CSS color. See [examples and more](#colors)                                                                                                                                                                                                                       |
 |     ActionConfig      | Event cased by an Action. See more [Configuration](https://www.home-assistant.io/lovelace/actions/#configuration-variables)                                                                                                                                                                                                                                         |
 | UntrackedStateContent | Array of any: `state`, `name`, `percentage`, `icon`                                                                                                                                                                                                                                                                                                                 |
 |   StatisticsPeriod    | Single: `5minute`, `hour`, `day`, `week`, `month`                                                                                                                                                                                                                                                                                                                   |
@@ -353,10 +345,6 @@ The types are used in the configuration. The type is used to define what kind of
 ## Entities
 
 <div id="entities">
-
-<p align="center">
-<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/editor_entity_v2-2-1.png" alt="Visual Editor Entity"/>
-</p>
 
 The only required field is `entity`. The rest of the fields are optional. Color `auto` can only be set in the YAML file (or it will be set to `auto` by default when creating the card).
 
@@ -702,10 +690,54 @@ Each of the state content parts will disappear one by one when the text is too l
 
 </div>
 
+## Colors
+
+<div id="colors">
+
+The color configuration has been through a lot of changes in the past. The current version is very flexible and allows you to set the color of each entity separately, as well as the text color in the line and legend. The automatic color option is also available, which will use the same colors as the Home Assistant Energy panel.
+
+This card has a custom color selector that has been added in [v2.2.6](https://github.com/Tomer27cz/energy-line-gauge/releases/tag/v2.2.6). 
+
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/color/color-picker.png" alt="color-picker">
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/color/color-picker-rgb.png" alt="color-picker-rgb">
+
+It allows to select from Home Assistant color variables, custom RGB color or any CSS color string. It accepts any string that is a valid CSS color, for example `red`, `#ff0000`, `rgb(255, 0, 0)`, `var(--my-color)` and so on.
+
+### Linear Gradient
+
+One very powerful configuration option is the ability to set a linear gradient as the color of the main line, background or entity.
+
+You could set the main line to be an accent tick at the end.
+```
+linear-gradient(
+    to right, 
+    transparent 0%, 
+    transparent 99%, 
+    var(--accent-color) 99%, 
+    var(--accent-color) 100% 
+  );
+```
+And set the background to display a range of acceptable values.
+```
+linear-gradient(
+    to right, 
+    var(--secondary-background-color) 0%, 
+    var(--secondary-background-color) 40%, 
+    var(--primary-color) 40%, 
+    var(--primary-color) 60%, 
+    var(--secondary-background-color) 60%, 
+    var(--secondary-background-color) 100%
+  );
+```
+
+<img src="https://github.com/Tomer27cz/energy-line-gauge/raw/main/.github/img/color/linear-gradient.png" alt="linear-gradient">
+
+</div>
+
 ## State Content
 
 <div id="state_content">
-The state content is the text displayed in the legend and the line. You can choose what to display and in which order.  The order in the config matters. The text will be separated by a dot.
+The state content is the text displayed in the legend and the line. You can choose what to display and in which order.  The order in the config matters. The text will be separated by `state_content_separator` config option.
 
 The position of the text in the line is set by `line_text_position`. Options are `left`, `right`, `none`, `center`, `top-left`, `top-right`, `top-center`, `bottom-left`, `bottom-right`, `bottom-center`.
 
