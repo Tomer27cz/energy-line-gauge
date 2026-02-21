@@ -23,7 +23,7 @@ export default [
     output: {
       dir: 'dist',
       format: 'es',
-      chunkFileNames: 'elg-[name].js',
+      chunkFileNames: 'elg-[name]-[hash].js',
       entryFileNames: '[name].js',
     },
     plugins: [...plugins],
