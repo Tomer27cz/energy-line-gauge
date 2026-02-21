@@ -297,6 +297,7 @@ export class EnergyLineGauge extends LitElement {
     }
   }
   _createLegendItem(device: ELGEntity | undefined, style: ELGStyle): TemplateResult {
+    if (!device && !this._config.untracked_legend) {return html``;}
     const hasHold = device ? hasAction(device.hold_action) : hasAction(this._config.hold_action);
     const hasDoubleClick = device ? hasAction(device.double_tap_action) : hasAction(this._config.double_tap_action);
 
