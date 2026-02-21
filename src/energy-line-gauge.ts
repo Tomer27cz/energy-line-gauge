@@ -242,6 +242,7 @@ export class EnergyLineGauge extends LitElement {
       <ha-card
         class="line-gauge-card"
         style=${styleMap(style)}
+        tabindex="0"
         .header=${this._getTemplateValue('header', this._config.header)}
         .label=${this._config.label}
         @action=${this._handleAction}
