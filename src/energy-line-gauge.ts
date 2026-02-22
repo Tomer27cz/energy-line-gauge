@@ -995,7 +995,7 @@ export class EnergyLineGauge extends LitElement {
 
     this._untrackedObject = {
       state: mainState - stateSum,
-      width: mainWidth - widthSum,
+      width: Math.max(0, mainWidth - widthSum), // Ensure width doesn't go negative (it counts as positive during render)
       percentage: (mainState - stateSum) / mainState,
     };
 
