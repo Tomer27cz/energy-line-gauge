@@ -946,7 +946,7 @@ export class EnergyLineGauge extends LitElement {
 
     const clampedMain: number = Math.min(Math.max(mainState, min), max);
     const mainWidth: number = ((clampedMain - min) / range) * 100;
-    const mainPercentage: number = clampedMain / max;
+    const mainPercentage: number = max === 0 ? 0 : clampedMain / max;
 
     this._mainObject = {
       state: mainState,
@@ -967,20 +967,25 @@ export class EnergyLineGauge extends LitElement {
       const state: number = this._calcState(stateObj, device.multiplier);
       const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
 
-      const percentage: number = state / mainState ?? 0;
-      const clampedDevice = Math.min(Math.max(state, min), max);
-      const width: number = state <= cutoff ? 0 : ((clampedDevice - min) / range) * 100 ?? 0;
+      const percentage: number = mainState === 0 ? 0 : state / mainState;
 
-      stateSum += state;
-      percentageSum += percentage;
-      widthSum += width;
+      let width: number = 0;
+      let usedState: number = 0;
+      let usedPercentage: number = 0;
 
-      if (width > 0) {
+      if (state > cutoff) {
+        usedState = state;
+        usedPercentage = percentage;
+        width = Math.max(0, (state / range) * 100);
+
+        stateSum += usedState;
+        percentageSum += usedPercentage;
+        widthSum += width;
         renderedLines += 1;
       }
 
       this._entitiesObject[device.entity] = {
-        state: state,
+        state: state, // We keep the true state here so text labels still show the right number
         width: width,
         percentage: percentage,
         stateObject: stateObj,
@@ -993,10 +998,13 @@ export class EnergyLineGauge extends LitElement {
       percentage: percentageSum,
     };
 
+    const untrackedState = Math.max(0, mainState - stateSum);
+    const untrackedWidth = Math.max(0, mainWidth - widthSum);
+
     this._untrackedObject = {
-      state: mainState - stateSum,
-      width: Math.max(0, mainWidth - widthSum), // Ensure width doesn't go negative (it counts as positive during render)
-      percentage: (mainState - stateSum) / mainState,
+      state: untrackedState,
+      width: untrackedWidth,
+      percentage: mainState === 0 ? 0 : untrackedState / mainState,
     };
 
     this._calculateSeparatorWidth(renderedLines);
