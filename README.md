@@ -716,12 +716,12 @@ One very powerful configuration option is the ability to set a linear gradient a
 You could set the main line to be an accent tick at the end.
 ```
 linear-gradient(
-    to right, 
-    transparent 0%, 
-    transparent 99%, 
-    var(--accent-color) 99%, 
-    var(--accent-color) 100% 
-  );
+    to left,
+    var(--accent-color) 0%,
+    var(--accent-color) 0.2rem,
+    transparent 0.2rem,
+    transparent 100%
+);
 ```
 And set the background to display a range of acceptable values.
 ```
