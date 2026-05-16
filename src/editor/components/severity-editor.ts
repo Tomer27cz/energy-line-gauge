@@ -81,6 +81,7 @@ export class SeverityEditor extends LitElement {
                 .hass=${this.hass}
                 .value=${severityConf.from}
                 .selector=${{number:{mode: "box", step: 1}}}
+                .required=${false}
                 .index=${index}
                 @value-changed=${this._valueChanged}
               ></ha-selector-number>

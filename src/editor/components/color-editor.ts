@@ -1,10 +1,10 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 
 import { mdiClose, mdiMenuDown, mdiMenuUp, mdiPalette } from '../../config/const';
 
-import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig, ColorEditorOption, ColorEditorMode,CSSColor } from '../../types';
+import { HomeAssistant, ELGColorSelector, RGBColor, ELGConfig, ColorEditorOption, ColorEditorMode, CSSColor } from '../../types';
 import { fireEvent } from '../../interaction/event-helpers';
 import { toRGB, rgbToHex } from '../../style/color'
 import { setConfigDefaults, setEntitiesDefaults } from '../../config/defaults';
@@ -36,8 +36,6 @@ export class ColorEditor extends LitElement {
 
   @state() private _menuOpen = false;
   @state() private _mode: ColorEditorMode = undefined;
-
-  @query('.elg_color_container') private _container!: HTMLElement;
 
   private _determineInitialMode(): void {
     if (this.value === undefined) {
@@ -75,51 +73,44 @@ export class ColorEditor extends LitElement {
 
     return html`
       <div class="elg_color_container">
-        
+
         <div class="selector">
           <div class="content">
             <div class="label">${this.label ? this.label : this.name}${this.required ? '*' : ''}</div>
             <div class="input">${this._renderInput(currentColor, modeLabel)}</div>
           </div>
-          
-          <ha-icon-button
-            .path=${this._menuOpen ? mdiMenuUp : mdiMenuDown}
-            style="${this.value === undefined && this._mode === 'automatic' ? 'margin-right: 0.75rem;' : ''}"
-            class="menu-icon"
-            @click=${this._openMenu}
-          ></ha-icon-button>
-          
-          <ha-menu
-            .anchor=${this._container}
-            .fixed=${true}
-            
-            corner="BOTTOM_START"
-            menuCorner="START"
-            
-            naturalMenuWidth
-            
-            ?open=${this._menuOpen}
-            @closed=${this._closeMenu}
-            @selected=${this._handleMenuSelected}
+
+          <ha-dropdown
+              placement="bottom-end"
+              @wa-select=${this._handleMenuSelected}
+              @wa-show=${this._openMenu}
+              @wa-hide=${this._closeMenu}
           >
-            <ha-list-item value="automatic" ?selected=${this._mode === 'automatic'}>
+            <ha-icon-button
+                slot="trigger"
+                .path=${this._menuOpen ? mdiMenuUp : mdiMenuDown}
+                style="${this.value === undefined && this._mode === 'automatic' ? 'margin-right: 0.75rem;' : ''}"
+                class="menu-icon"
+            ></ha-icon-button>
+
+            <ha-dropdown-item .value=${'automatic'} ?selected=${this._mode === 'automatic'}>
               ${this._renderColorPreview(automaticColor)}
               <span>${sl(`colorOptions.automatic`)}</span>
-            </ha-list-item>
-            
+            </ha-dropdown-item>
+
             ${this._renderMenuOptions(sl)}
-  
-            <ha-list-item value="custom_rgb" ?selected=${this._mode === 'custom_rgb'}>
+
+            <ha-dropdown-item .value=${'custom_rgb'} ?selected=${this._mode === 'custom_rgb'}>
               ${this._renderColorPreview(this._mode === 'custom_rgb' ? currentColor : undefined)}
               <span>${sl(`colorOptions.custom_rgb`)}</span>
-            </ha-list-item>
-  
-            <ha-list-item value="custom_css" ?selected=${this._mode === 'custom_css'}>
+            </ha-dropdown-item>
+
+            <ha-dropdown-item .value=${'custom_css'} ?selected=${this._mode === 'custom_css'}>
               ${this._renderColorPreview(this._mode === 'custom_css' ? currentColor : undefined)}
               <span>${sl(`colorOptions.custom_css`)}</span>
-            </ha-list-item>
-          </ha-menu>
-  
+            </ha-dropdown-item>
+          </ha-dropdown>
+
           ${this.value === undefined && this._mode === 'automatic' ? html`` : html`
             <ha-icon-button
               .label=${this.hass!.localize('ui.common.clear')}
@@ -150,14 +141,14 @@ export class ColorEditor extends LitElement {
     const mode = this.selector.color_elg?.mode;
     const visibleOptions = COLOR_OPTIONS.filter(opt => {
       if (mode == 'all') return true;
-      return opt.categories.includes(mode);
+      return opt.categories.includes(mode as any);
     });
 
     return map(visibleOptions, (opt) => html`
-      <ha-list-item value="${opt.mode}" ?selected=${this._mode === opt.mode}>
+      <ha-dropdown-item .value=${opt.mode} ?selected=${this._mode === opt.mode}>
         ${this._renderColorPreview(opt.value)}
         <span>${localizeFunc(`colorOptions.${opt.mode}`)}</span>
-      </ha-list-item>
+      </ha-dropdown-item>
     `);
   }
 
@@ -217,12 +208,6 @@ export class ColorEditor extends LitElement {
     };
   }
 
-
-
-
-
-
-
   private _clear(ev: Event): void {
     ev.stopPropagation();
     fireEvent(this, 'value-changed', { value: undefined });
@@ -232,12 +217,11 @@ export class ColorEditor extends LitElement {
     fireEvent(this, 'value-changed', { value: value });
   }
 
-  private _openMenu(ev: Event) {
-    ev.stopPropagation();
+  private _openMenu() {
     this._menuOpen = true;
   }
-  private _closeMenu(ev: Event) {
-    ev.stopPropagation();
+
+  private _closeMenu() {
     this._menuOpen = false;
   }
   private _valueChanged(ev: CustomEvent) {
@@ -248,13 +232,11 @@ export class ColorEditor extends LitElement {
   }
 
   private _handleMenuSelected(ev: CustomEvent) {
-    const index = ev.detail.index;
-    const menu = ev.target as any;
+    ev.stopPropagation();
+    const value = ev.detail.item.value;
+    if (!value) return;
 
-    const selectedItem = menu.items[index];
-    if (!selectedItem) return;
-
-    this._mode = selectedItem.value;
+    this._mode = value;
     if (this._mode === 'automatic') {
       this._clear(ev);
       return;
@@ -270,14 +252,14 @@ export class ColorEditor extends LitElement {
   // noinspection CssUnresolvedCustomProperty,CssUnusedSymbol,CssInvalidHtmlTagReference
   static styles = css`
     .elg_color_container {
-      background-color: var(--mdc-text-field-fill-color, #f5f5f5);
+      background-color: var(--ha-color-form-background, #f5f5f5);
       height: 4rem;
       width: 100%;
       display: flex;
       flex-direction: column;
       
-      border-top-left-radius: var(--mdc-shape-small, 4px);
-      border-top-right-radius: var(--mdc-shape-small, 4px);
+      border-top-left-radius: var(--ha-border-radius-sm, 4px);
+      border-top-right-radius: var(--ha-border-radius-sm, 4px);
     }
   
     .selector {
@@ -317,7 +299,7 @@ export class ColorEditor extends LitElement {
       line-height: 1.25rem;
       padding-top: 0.25rem;
       padding-left: 1rem;
-      color: var(--mdc-text-field-label-ink-color,rgba(0,0,0,.6));
+      color: var(--secondary-text-color,rgba(0,0,0,.6));
     }
     .color-display {
       flex: 0 0 0.3rem;
@@ -357,12 +339,12 @@ export class ColorEditor extends LitElement {
       width: 100%;
       border: 0;
       outline: 0;
-      border-radius: var(--mdc-shape-small, 4px);
+      border-radius: var(--ha-border-radius-sm, 4px);
       padding: 0.3rem;
       background-color: unset;
     }
     .custom-css-input:hover {
-      background-color: var(--mdc-text-field-fill-color, #e0e0e0);
+      background-color: var(--ha-color-form-background-hover, #e0e0e0);
     }
     
     .custom-rgb-input {

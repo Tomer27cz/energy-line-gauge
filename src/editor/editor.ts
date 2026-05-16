@@ -622,9 +622,9 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     return html`
       <div class="header">
         <div class="back-title">
-          <mwc-icon-button @click=${this._goBack_subElementEditor}>
+          <ha-icon-button @click=${this._goBack_subElementEditor}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
-          </mwc-icon-button>
+          </ha-icon-button>
         </div>
       </div>
       <energy-line-gauge-item-editor
