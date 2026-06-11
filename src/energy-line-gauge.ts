@@ -955,7 +955,24 @@ export class EnergyLineGauge extends LitElement {
       stateObject: this.hass.states[this._config.entity],
     };
 
+    // Calculate the true state sum to catch sensor overflows
     let stateSum: number = 0;
+    for (const device of this._config.entities ?? []) {
+      if (!this._validate(device.entity)) continue;
+      const stateObj: HassEntity = this.hass.states[device.entity];
+      const state: number = this._calcState(stateObj, device.multiplier);
+      const cutoff: number = device.cutoff ?? this._config.cutoff ?? 0;
+
+      if (state > cutoff) {
+        stateSum += state;
+      }
+    }
+
+    // Define the ceiling to scale against (prevents visual overflow if devices > main)
+    const effectiveMainState = Math.max(mainState, stateSum);
+
+    // Calculate proportions relative to the visual mainWidth
+    stateSum = 0; // Reset for actual tracking
     let percentageSum: number = 0;
     let widthSum: number = 0;
     let renderedLines: number = 0;
@@ -976,7 +993,9 @@ export class EnergyLineGauge extends LitElement {
       if (state > cutoff) {
         usedState = state;
         usedPercentage = percentage;
-        width = Math.max(0, (state / range) * 100);
+
+        // Scale the width to fit strictly inside the rendered mainWidth container
+        width = effectiveMainState === 0 ? 0 : (state / effectiveMainState) * mainWidth;
 
         stateSum += usedState;
         percentageSum += usedPercentage;
@@ -985,7 +1004,7 @@ export class EnergyLineGauge extends LitElement {
       }
 
       this._entitiesObject[device.entity] = {
-        state: state, // We keep the true state here so text labels still show the right number
+        state: state,
         width: width,
         percentage: percentage,
         stateObject: stateObj,
@@ -998,8 +1017,9 @@ export class EnergyLineGauge extends LitElement {
       percentage: percentageSum,
     };
 
+    // Calculate untracked proportionally
     const untrackedState = Math.max(0, mainState - stateSum);
-    const untrackedWidth = Math.max(0, mainWidth - widthSum);
+    const untrackedWidth = effectiveMainState === 0 ? 0 : (untrackedState / effectiveMainState) * mainWidth;
 
     this._untrackedObject = {
       state: untrackedState,
