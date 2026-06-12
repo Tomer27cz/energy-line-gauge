@@ -229,8 +229,8 @@ export class EnergyLineGauge extends LitElement {
 
     if (!this._validate(this._config.entity)) {return this._renderWarnings();}
 
-    this._sortConfigEntitiesByState()
     this._calculate();
+    this._sortConfigEntitiesByState();
 
     const style = {
       '--color': this._mainSeverity(),
@@ -913,21 +913,31 @@ export class EnergyLineGauge extends LitElement {
     }
   }
   private _calculateSeparatorWidth(renderedLines: number): void {
-    if (!this._config.line_separator) {return;}
-    if (renderedLines <= 0) {return;}
+    if (!this._config.line_separator || renderedLines <= 0) return;
 
     const numberOfSeparators = this._untrackedObject.width > 0 ? renderedLines : Math.max(0, renderedLines - 1);
-    const totalSeparatorWidth: number = this._calculateTotalSeparatorWidth(this._config.line_separator_width ?? 'total050', numberOfSeparators,);
-    const multiplier = 1 - (totalSeparatorWidth * 0.01);
+    if (numberOfSeparators === 0) return;
+
+    let totalSeparatorWidth: number = this._calculateTotalSeparatorWidth(this._config.line_separator_width ?? 'total050', numberOfSeparators);
+    const mainWidth = this._mainObject.width;
+
+    if (totalSeparatorWidth > mainWidth) {
+      totalSeparatorWidth = mainWidth;
+    }
+
+    const multiplier = mainWidth > 0 ? (mainWidth - totalSeparatorWidth) / mainWidth : 0;
 
     this._lineSeparatorWidth = totalSeparatorWidth / numberOfSeparators;
 
     for (const deviceKey in this._entitiesObject) {
-      if (this._entitiesObject[deviceKey].width == 0) continue;
-      this._entitiesObject[deviceKey].width *= multiplier;
+      if (this._entitiesObject[deviceKey].width > 0) {
+        this._entitiesObject[deviceKey].width *= multiplier;
+      }
     }
 
-    this._untrackedObject.width *= multiplier;
+    if (this._untrackedObject.width > 0) {
+      this._untrackedObject.width *= multiplier;
+    }
   }
   private _calculate(): void {
     this._entitiesObject = {};
@@ -945,8 +955,9 @@ export class EnergyLineGauge extends LitElement {
     const range: number = (max - min) || 1;
 
     const clampedMain: number = Math.min(Math.max(mainState, min), max);
-    const mainWidth: number = ((clampedMain - min) / range) * 100;
-    const mainPercentage: number = max === 0 ? 0 : clampedMain / max;
+
+    const mainWidth: number = Math.max(0, ((clampedMain - min) / range) * 100);
+    const mainPercentage: number = max === 0 ? 0 : Math.max(0, clampedMain / max);
 
     this._mainObject = {
       state: mainState,
@@ -971,8 +982,7 @@ export class EnergyLineGauge extends LitElement {
     // Define the ceiling to scale against (prevents visual overflow if devices > main)
     const effectiveMainState = Math.max(mainState, stateSum);
 
-    // Calculate proportions relative to the visual mainWidth
-    stateSum = 0; // Reset for actual tracking
+    stateSum = 0;
     let percentageSum: number = 0;
     let widthSum: number = 0;
     let renderedLines: number = 0;
@@ -994,19 +1004,22 @@ export class EnergyLineGauge extends LitElement {
         usedState = state;
         usedPercentage = percentage;
 
-        // Scale the width to fit strictly inside the rendered mainWidth container
-        width = effectiveMainState === 0 ? 0 : (state / effectiveMainState) * mainWidth;
+        // Calculate width and prevent negative values
+        width = effectiveMainState === 0 ? 0 : Math.max(0, (state / effectiveMainState) * mainWidth);
 
         stateSum += usedState;
         percentageSum += usedPercentage;
         widthSum += width;
-        renderedLines += 1;
+
+        if (width > 0) {
+          renderedLines += 1;
+        }
       }
 
       this._entitiesObject[device.entity] = {
         state: state,
         width: width,
-        percentage: percentage,
+        percentage: Math.max(0, percentage),
         stateObject: stateObj,
       };
     }
@@ -1017,14 +1030,13 @@ export class EnergyLineGauge extends LitElement {
       percentage: percentageSum,
     };
 
-    // Calculate untracked proportionally
     const untrackedState = Math.max(0, mainState - stateSum);
-    const untrackedWidth = effectiveMainState === 0 ? 0 : (untrackedState / effectiveMainState) * mainWidth;
+    const untrackedWidth = effectiveMainState === 0 ? 0 : Math.max(0, (untrackedState / effectiveMainState) * mainWidth);
 
     this._untrackedObject = {
       state: untrackedState,
       width: untrackedWidth,
-      percentage: mainState === 0 ? 0 : untrackedState / mainState,
+      percentage: mainState === 0 ? 0 : Math.max(0, untrackedState / mainState),
     };
 
     this._calculateSeparatorWidth(renderedLines);
