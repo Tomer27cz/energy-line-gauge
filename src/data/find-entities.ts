@@ -1,16 +1,18 @@
+import { HomeAssistant, HassEntity } from '../types';
+
 export const computeDomain = (entityId: string): string =>
     entityId.substring(0, entityId.indexOf("."));
 
-const arrayFilter = (
-    array: any[],
-    conditions: ((value: any) => boolean)[],
+const arrayFilter = <T>(
+    array: T[],
+    conditions: ((value: T) => boolean)[],
     maxSize: number
 ) => {
   if (!maxSize || maxSize > array.length) {
     maxSize = array.length;
   }
 
-  const filteredArray: any[] = [];
+  const filteredArray: T[] = [];
 
   for (let i = 0; i < array.length && filteredArray.length < maxSize; i++) {
     let meetsConditions = true;
@@ -31,12 +33,12 @@ const arrayFilter = (
 };
 
 export const findEntities = (
-    hass: any,
+    hass: HomeAssistant,
     maxEntities: number,
     entities: string[],
     entitiesFallback: string[],
     includeDomains?: string[],
-    entityFilter?: (stateObj: any) => boolean
+    entityFilter?: (stateObj: HassEntity) => boolean
 ) => {
   const conditions: ((value: string) => boolean)[] = [];
 

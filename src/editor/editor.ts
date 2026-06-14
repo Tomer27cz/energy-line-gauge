@@ -15,7 +15,7 @@ import {
 import memoizeOne  from 'memoize-one';
 
 import { fireEvent } from '../interaction/event-helpers';
-import { HomeAssistant, LovelaceCardEditor, ELGConfig, HassCustomElement, ELGEntity } from '../types';
+import {HomeAssistant, LovelaceCardEditor, ELGConfig, HassCustomElement, ELGEntity, EditorTarget} from '../types';
 import { localize, setupLocalize } from '../localize/localize';
 import { DEFAULT_ACTIONS } from '../config/const'
 
@@ -654,23 +654,23 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
    * General config change
    */
 
-  private _valueChanged(ev: any): void {
+  private _valueChanged(ev: CustomEvent): void {
     if (!this._config || !this.hass) {return;}
     const config = ev.detail.value;
     fireEvent(this, 'config-changed', { config: config });
   }
 
-  private _toggleSeverity(ev: any): void {
+  private _toggleSeverity(ev: Event): void {
     if (!this._config || !this.hass) {return;}
-    const target = ev.target;
+    const target = ev.target as EditorTarget;
     fireEvent(this, 'config-changed', { config: { ...this._config, severity: target.checked } as ELGConfig });
   }
-  private _toggleSeverityBlend(ev: any): void {
+  private _toggleSeverityBlend(ev: Event): void {
     if (!this._config || !this.hass) {return;}
-    const target = ev.target;
+    const target = ev.target as EditorTarget;
     fireEvent(this, 'config-changed', { config: { ...this._config, severity_blend: target.checked } as ELGConfig });
   }
-  private _severityChanged(ev: any): void {
+  private _severityChanged(ev: CustomEvent): void {
     if (!this._config || !this.hass) {return;}
     fireEvent(this, 'config-changed', { config: { ...this._config, severity_levels: ev.detail } as ELGConfig });
   }
