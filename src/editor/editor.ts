@@ -45,7 +45,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
     }
   }
 
-  private _schema = memoizeOne((entityId) => {
+  private _schema = memoizeOne((entityId, _language) => {
     if (!this.hass) return [];
 
     const sl = setupLocalize(this.hass);
@@ -537,7 +537,7 @@ export class EnergyLineGaugeEditor extends LitElement implements LovelaceCardEdi
       <ha-form
           .hass=${this.hass}
           .data=${data}
-          .schema=${this._schema(this._config!.entity)}
+          .schema=${this._schema(this._config!.entity, this.hass.locale.language)}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
       ></ha-form>
