@@ -3,6 +3,8 @@ import { CSSColor, RGBColor, SeverityType } from '../types';
 import colorString from 'color-string';
 import { CONFIG_DEFAULTS } from '../config/defaults';
 
+const cssVarCache = new Map<string, string>();
+
 export function toRGB(color: CSSColor | RGBColor | [number, number, number]): RGBColor {
   if (!color) return [0,0,0,0];
 
@@ -13,7 +15,10 @@ export function toRGB(color: CSSColor | RGBColor | [number, number, number]): RG
 
   if (color.startsWith('var(')) {
     const varName = color.slice(4, -1).trim();
-    color = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    if (!cssVarCache.has(varName)) {
+      cssVarCache.set(varName, getComputedStyle(document.documentElement).getPropertyValue(varName).trim());
+    }
+    color = cssVarCache.get(varName)!;
   }
 
   return colorString.get.rgb(color) as RGBColor ?? [0,0,0,0];
