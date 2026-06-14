@@ -53,6 +53,15 @@ class ActionHandler extends HTMLElement implements ActionHandler {
 
   private dblClickTimeout?: number;
 
+  private _cancelHandler = () => {
+    this.cancelled = true;
+    if (this.timer) {
+      this.stopAnimation();
+      clearTimeout(this.timer);
+      this.timer = undefined;
+    }
+  };
+
   constructor() {
     super();
     this.ripple = document.createElement("mwc-ripple");
@@ -80,18 +89,21 @@ class ActionHandler extends HTMLElement implements ActionHandler {
       "wheel",
       "scroll",
     ].forEach((ev) => {
-      document.addEventListener(
-        ev,
-        () => {
-          this.cancelled = true;
-          if (this.timer) {
-            this.stopAnimation();
-            clearTimeout(this.timer);
-            this.timer = undefined;
-          }
-        },
-        { passive: true }
-      );
+      document.addEventListener(ev, this._cancelHandler, { passive: true });
+    });
+  }
+
+  public disconnectedCallback() {
+    [
+      "touchcancel",
+      "mouseout",
+      "mouseup",
+      "touchmove",
+      "mousewheel",
+      "wheel",
+      "scroll",
+    ].forEach((ev) => {
+      document.removeEventListener(ev, this._cancelHandler);
     });
   }
 
