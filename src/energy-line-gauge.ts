@@ -70,30 +70,29 @@ window.customCards.push({
 // noinspection JSUnusedGlobalSymbols
 @customElement('energy-line-gauge')
 export class EnergyLineGauge extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private _config!: ELGConfig;
-
   @property() private _card!: LovelaceCard;
 
   @state() private _templateResults: Record<string, string> = {};
   @state() private _unsubRenderTemplates: Map<string, Promise<UnsubscribeFunc>> = new Map();
-
+  private _activeTemplateStrings: Map<string, string> = new Map();
   private _warnings: EntityWarning[] = [];
 
-  private _mainObject!: ELGEntityState;
-  private _untrackedObject!: ELGState;
+  @state() private _mainObject!: ELGEntityState;
+  @state() private _untrackedObject!: ELGState;
 
-  private _entitiesObject: Record<string, ELGEntityState> = {};
-  private _entitiesTotalObject!: ELGState;
-
-  private _lineSeparatorWidth: number = 0;
+  @state() private _entitiesObject: Record<string, ELGEntityState> = {};
+  @state() private _entitiesTotalObject!: ELGState;
+  @state() private _lineSeparatorWidth: number = 0;
   private _resizeObserver!: ResizeObserver;
 
   @state() private _entitiesHistoryStatistics: ELGHistoryStatistics | undefined = undefined;
   @state() private _entitiesHistoryOffset: ELGHistoryOffset | undefined = undefined;
   private _offsetTime: number | undefined = undefined;
   private _historyWindow: number = 60000;
+  private _isFetchingHistory: boolean = false;
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor/editor');
@@ -143,29 +142,17 @@ export class EnergyLineGauge extends LitElement {
   }
 
   protected shouldUpdate(changedProps: PropertyValues): boolean {
-    if (!this._config) {
-      return true;
-    }
+    if (!this._config || !this.hass) return false;
 
-    if (changedProps.has('_templateResults')) {return true;}
-    if (changedProps.has('_entitiesHistoryOffset')) {return true;}
-    if (changedProps.has('_entitiesHistoryStatistics')) {return true;}
+    if (changedProps.has('_config')) return true;
+    if (changedProps.has('_entitiesHistoryOffset') || changedProps.has('_entitiesHistoryStatistics')) return true;
+    if (changedProps.has('_templateResults')) return true;
 
-    if (changedProps.has('_config')) {
-      const oldConfig = changedProps.get('_config') as ELGConfig;
-      if (!deepEqual(this._config, oldConfig)) {
-        return true;
-      }
-    }
+    if (changedProps.has('_mainObject') || changedProps.has('_entitiesObject') || changedProps.has('_untrackedObject')) return true;
 
     if (changedProps.has('hass')) {
-      if (this._config.statistics) {return false;}
-      if (this._config.offset) {return false;}
-
-      const oldHass = changedProps.get('hass') as HomeAssistant | undefined;
-      if (!oldHass) {
-        return true;
-      }
+      const oldHass = changedProps.get('hass') as HomeAssistant;
+      if (!oldHass) return true;
 
       const entities = this._allConfigEntities();
       for (const entity of entities) {
@@ -173,12 +160,23 @@ export class EnergyLineGauge extends LitElement {
           return true;
         }
       }
-
-      return false;
     }
 
-    return true;
+    return false;
   }
+
+  protected willUpdate(changedProps: PropertyValues): void {
+    super.willUpdate(changedProps);
+
+    if (changedProps.has('_config') || changedProps.has('hass') || changedProps.has('_entitiesHistoryOffset') || changedProps.has('_entitiesHistoryStatistics')) {
+      this._calculateSyncData();
+    }
+
+    if (changedProps.has('_config')) {
+      this._fetchHistoryData();
+    }
+  }
+
   protected firstUpdated(changedProperties: PropertyValues): void {
     super.firstUpdated(changedProperties);
 
@@ -223,14 +221,11 @@ export class EnergyLineGauge extends LitElement {
   }
 
   protected render(): TemplateResult | void {
-    if (!this._config || !this.hass) {
+    if (!this._config || !this.hass || !this._mainObject) {
       return html`<ha-card header="Energy Line Gauge"><div class="card-content">Waiting for configuration and Home Assistant.</div></ha-card>`;
     }
 
     if (!this._validate(this._config.entity)) {return this._renderWarnings();}
-
-    this._calculate();
-    this._sortConfigEntitiesByState();
 
     const style = {
       '--color': this._mainSeverity(),
@@ -939,12 +934,30 @@ export class EnergyLineGauge extends LitElement {
       this._untrackedObject.width *= multiplier;
     }
   }
-  private _calculate(): void {
+  private async _fetchHistoryData(): Promise<void> {
+    if (!this.hass || !this._config) return;
+    if (!this._config.offset && !this._config.statistics) return;
+
+    if (this._isFetchingHistory) return;
+    this._isFetchingHistory = true;
+
+    try {
+      if (this._config.offset) {
+        this._getOffsetHistory();
+      }
+
+      if (this._config.statistics) {
+        this._getStatisticsHistory();
+      }
+    } catch (error) {
+      console.error("ELG: Failed to fetch history data", error);
+    } finally {
+      this._isFetchingHistory = false;
+    }
+  }
+  private _calculateSyncData(): void {
     this._entitiesObject = {};
     this._warnings = [];
-
-    if (this._config.offset) {this._getOffsetHistory();}
-    if (this._config.statistics) {this._getStatisticsHistory();}
 
     const mainState: number = this._calcStateMain();
     const maxValue: number = this._getMax(mainState);
@@ -1040,6 +1053,7 @@ export class EnergyLineGauge extends LitElement {
     };
 
     this._calculateSeparatorWidth(renderedLines);
+    this._sortConfigEntitiesByState();
   }
 
   // State Calculations ------------------------------------------------------------------------------------------------
@@ -1355,9 +1369,15 @@ export class EnergyLineGauge extends LitElement {
     });
   }
   private async _subscribeToTemplate(key: string, template: string): Promise<void> {
-    if (this._unsubRenderTemplates.has(key)) {
+    const currentTemplate = this._activeTemplateStrings.get(key);
+    if (this._unsubRenderTemplates.has(key) && currentTemplate === template) {
       return;
     }
+
+    if (this._unsubRenderTemplates.has(key)) {
+      await this._tryDisconnectKey(key);
+    }
+    this._activeTemplateStrings.set(key, template);
 
     try {
       const sub = subscribeRenderTemplate(
