@@ -136,9 +136,6 @@ export const CONFIG_DEFAULTS = {
   severity: false,
   severity_levels: undefined,
   severity_blend: false,
-
-  // Entities
-  entities: [],
 }
 
 export const ENTITY_DEFAULTS = {
@@ -272,7 +269,7 @@ export const setConfigDefaults = (config: ELGConfig): ELGConfig => {
     severity_blend: config.severity_blend ?? CONFIG_DEFAULTS.severity_blend,
 
     // Entities
-    entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities,
+    entities: Array.isArray(config.entities) ? setEntitiesDefaults(config.entities) : config.entities || [],
   };
 };
 
